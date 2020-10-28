@@ -1,0 +1,27 @@
+{
+    "name": "daceej/waffles",
+    "description": "A tool to prevent waffling!",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Curtis Ogle",
+            "email": "curtis.jams.ogle@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "symfony/console": "^5.1",
+        "symfony/yaml": "^5.1",
+        "symfony/process": "^5.1"
+    },
+    "bin": [
+        "bin/waffles",
+        "bin/wfl"
+    ],
+    "autoload": {
+        "psr-4": {
+            "TagDeploy\\": "src"
+        },
+        "classmap": ["src"]
+    }
+}
