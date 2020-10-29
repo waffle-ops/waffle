@@ -10,15 +10,17 @@ use Waffles\Command\Site\Files;
 use Waffles\Command\Site\Login;
 use Waffles\Command\Site\Release;
 
-class CommandManager {
+class CommandManager
+{
 
-    public function getCommands() {
+    public function getCommands()
+    {
         return [
             // Site sync commands.
             new Sync(),
             new Db(),
             new Files(),
-            new Login,
+            new Login(),
             new Release(),
         ];
     }

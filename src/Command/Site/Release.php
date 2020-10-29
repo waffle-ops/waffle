@@ -12,7 +12,7 @@ use Waffles\Model\Drush\CacheClear;
 class Release extends Command
 {
 
-    const COMMAND_KEY = 'site:sync:release';
+    public const COMMAND_KEY = 'site:sync:release';
 
     protected function configure()
     {
@@ -25,7 +25,7 @@ class Release extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // TODO Load site config and alter behavior depending on the config. 
+        // TODO Load site config and alter behavior depending on the config.
         // Pantheon, Acquia, WP, Drupal, etc...
         // Currently assumes Drupal 8, no hosting provider
 

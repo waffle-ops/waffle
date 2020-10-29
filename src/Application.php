@@ -11,8 +11,8 @@ use Symfony\Component\Yaml\Yaml;
 
 class Application extends SymfonyApplication
 {
-    const NAME = 'Waffles';
-    const VERSION = '1.0.0-beta';
+    public const NAME = 'Waffles';
+    public const VERSION = '1.0.0-beta';
 
     public function __construct()
     {
@@ -34,26 +34,28 @@ class Application extends SymfonyApplication
         parent::run();
     }
 
-    public function getProjectConfig() {
+    public function getProjectConfig()
+    {
         $project_config_file = $this->getProjectConfigPath();
         $project_config = Yaml::parseFile($project_config_file);
 
         return $project_config;
     }
 
-    private function getProjectConfigPath() {
-        // For initial launch, we will only check the current directory (assuming 
+    private function getProjectConfigPath()
+    {
+        // For initial launch, we will only check the current directory (assuming
         // docroot) and the immediate parent directory.
         $cwd = getcwd();
 
         // Current directory.
-        $project_config_file = $cwd . '/.waffles.yml'; 
+        $project_config_file = $cwd . '/.waffles.yml';
         if (file_exists($project_config_file)) {
             return $project_config_file;
         }
 
         // Parent directory.
-        $project_config_file = $cwd . '/../.waffles.yml'; 
+        $project_config_file = $cwd . '/../.waffles.yml';
         if (file_exists($project_config_file)) {
             return $project_config_file;
         }
