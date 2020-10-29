@@ -2,6 +2,7 @@
 
 namespace Waffles\Model\Dependency;
 
-class DependencyManager {
+class DependencyManager
+{
 
 }

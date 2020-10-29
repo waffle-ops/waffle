@@ -12,7 +12,7 @@ use Symfony\Component\Process\Process;
 class Sync extends Command
 {
 
-    const COMMAND_KEY = 'site:sync';
+    public const COMMAND_KEY = 'site:sync';
 
     protected function configure()
     {
@@ -24,7 +24,7 @@ class Sync extends Command
         // TODO Will need to switch between prod and live for pantheon and acquia.
         // $default_upstream = $config['default_upstream'] ?? 'prod';
 
-        // Shortcuts would be nice, but there seems to be an odd bug as of now 
+        // Shortcuts would be nice, but there seems to be an odd bug as of now
         // when using dashes: https://github.com/symfony/symfony/issues/27333
         $this->addOption('upstream', null, InputArgument::OPTIONAL, 'The upstream environment to sync from.', 'prod');
         $this->addOption('skip-db', null, InputArgument::OPTIONAL, 'Option to skip the DB sync.', false);
@@ -39,7 +39,7 @@ class Sync extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // TODO Load site config and alter behavior depending on the config. 
+        // TODO Load site config and alter behavior depending on the config.
         // Pantheon, Acquia, WP, Drupal, etc...
         // Currently assumes Drupal 8
 
@@ -84,7 +84,8 @@ class Sync extends Command
         return Command::SUCCESS;
     }
 
-    private function validateUpstream($upstream) {
+    private function validateUpstream($upstream)
+    {
         $config = $this->getApplication()->getProjectConfig();
 
         $allowed_upstream = explode(',', $config['upstreams']);

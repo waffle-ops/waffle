@@ -12,7 +12,7 @@ use Waffles\Model\Drush\CacheClear;
 class Login extends Command
 {
 
-    const COMMAND_KEY = 'site:sync:login';
+    public const COMMAND_KEY = 'site:sync:login';
 
     protected function configure()
     {
@@ -26,7 +26,7 @@ class Login extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // TODO Load site config and alter behavior depending on the config. 
+        // TODO Load site config and alter behavior depending on the config.
         // Pantheon, Acquia, WP, Drupal, etc...
         // Currently assumes Drupal 8, no hosting provider
 

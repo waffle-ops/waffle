@@ -12,13 +12,15 @@ class DrushCommand
     private $args = [];
 
     /**
-     * 
+     *
      */
-    public function __construct(array $args) {
+    public function __construct(array $args)
+    {
         $this->args = $args;
     }
 
-    public function run($input = '') {
+    public function run($input = '')
+    {
         $args = array_unshift($this->args, 'drush');
         $process = new Process($this->args);
 
@@ -32,5 +34,4 @@ class DrushCommand
 
         return $process;
     }
-
 }

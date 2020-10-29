@@ -12,7 +12,7 @@ use Waffles\Model\Drush\CacheClear;
 class Files extends Command
 {
 
-    const COMMAND_KEY = 'site:sync:files';
+    public const COMMAND_KEY = 'site:sync:files';
 
     protected function configure()
     {
@@ -20,7 +20,7 @@ class Files extends Command
         $this->setDescription('Pulls the files down from the specified upstream.');
         $this->setHelp('Pulls the files down from the specified upstream.');
         
-        // Shortcuts would be nice, but there seems to be an odd bug as of now 
+        // Shortcuts would be nice, but there seems to be an odd bug as of now
         // when using dashes: https://github.com/symfony/symfony/issues/27333
         $this->addOption('upstream', null, InputArgument::OPTIONAL, 'The upstream environment to sync from.', 'prod');
 
@@ -31,7 +31,7 @@ class Files extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // TODO Load site config and alter behavior depending on the config. 
+        // TODO Load site config and alter behavior depending on the config.
         // Pantheon, Acquia, WP, Drupal, etc...
         // Currently assumes Drupal 8, no hosting provider
 
