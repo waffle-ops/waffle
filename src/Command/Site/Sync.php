@@ -8,8 +8,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
+use Waffles\Command\BaseCommand;
 
-class Sync extends Command
+class Sync extends BaseCommand
 {
 
     public const COMMAND_KEY = 'site:sync';
@@ -86,11 +87,11 @@ class Sync extends Command
 
     private function validateUpstream($upstream)
     {
-        $config = $this->getApplication()->getProjectConfig();
+        $config = $this->getConfig();
 
-        $allowed_upstream = explode(',', $config['upstreams']);
+        $allowed_upstreams = explode(',', $config['upstreams']);
 
-        if (in_array($upstream, $allowed_upstream)) {
+        if (in_array($upstream, $allowed_upstreams)) {
             return;
         }
         

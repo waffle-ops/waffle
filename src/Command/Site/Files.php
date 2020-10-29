@@ -6,10 +6,11 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Waffles\Command\BaseCommand;
 use Waffles\Model\Drush\DrushCommand;
 use Waffles\Model\Drush\CacheClear;
 
-class Files extends Command
+class Files extends BaseCommand
 {
 
     public const COMMAND_KEY = 'site:sync:files';
