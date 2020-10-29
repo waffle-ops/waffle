@@ -6,10 +6,11 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Waffles\Command\BaseCommand;
 use Waffles\Model\Drush\DrushCommand;
 use Waffles\Model\Drush\CacheClear;
 
-class Db extends Command
+class Db extends BaseCommand
 {
 
     public const COMMAND_KEY = 'site:sync:db';
@@ -40,10 +41,9 @@ class Db extends Command
         // TODO Add some error handling in general.
         // TODO Write to the console with general status updates.
 
-        // TODO Load in the project config via DI or perhaps just on a base command.
         // TODO Validate that drush alias is present / seems to be working with a status call.
         // TODO Validate upstream
-        $config = $this->getApplication()->getProjectConfig();
+        $config = $this->getConfig();
         // $upstream = $input->getOption('upstream');   // TODO Use this once every arguments are passed.
         $upstream = $config['default_upstream'];
         $drush_alias = sprintf('@%s.%s', $config['drush_alias'], $upstream);
