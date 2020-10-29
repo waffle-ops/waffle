@@ -9,9 +9,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Waffles\Command\BaseCommand;
 use Waffles\Model\Drush\DrushCommand;
 use Waffles\Model\Drush\CacheClear;
+use Waffles\Traits\DefaultUpstreamTrait;
 
 class Db extends BaseCommand
 {
+    use DefaultUpstreamTrait;
 
     public const COMMAND_KEY = 'site:sync:db';
 
@@ -23,11 +25,17 @@ class Db extends BaseCommand
         
         // Shortcuts would be nice, but there seems to be an odd bug as of now
         // when using dashes: https://github.com/symfony/symfony/issues/27333
-        $this->addOption('upstream', null, InputArgument::OPTIONAL, 'The upstream environment to sync from.', 'prod');
+        $this->addOption(
+            'upstream',
+            null,
+            InputArgument::OPTIONAL,
+            'The upstream environment to sync from.',
+            $this->getDefaultUpstream()
+        );
 
         // TODO Expand the help section.
         // TODO Dynamically load in the upstream options from the config file.
-        // TODO Validate the opstream option from the config file (in help).
+        // TODO Validate the upstream option from the config file (in help).
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

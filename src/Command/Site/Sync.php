@@ -9,9 +9,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
 use Waffles\Command\BaseCommand;
+use Waffles\Traits\DefaultUpstreamTrait;
 
 class Sync extends BaseCommand
 {
+    use DefaultUpstreamTrait;
 
     public const COMMAND_KEY = 'site:sync';
 
@@ -21,13 +23,15 @@ class Sync extends BaseCommand
         $this->setDescription('Syncs the local site from the specified upstream.');
         $this->setHelp('Syncs the local site from the specified upstream.');
 
-        // $config = $this->getApplication()->getProjectConfig();
-        // TODO Will need to switch between prod and live for pantheon and acquia.
-        // $default_upstream = $config['default_upstream'] ?? 'prod';
-
         // Shortcuts would be nice, but there seems to be an odd bug as of now
         // when using dashes: https://github.com/symfony/symfony/issues/27333
-        $this->addOption('upstream', null, InputArgument::OPTIONAL, 'The upstream environment to sync from.', 'prod');
+        $this->addOption(
+            'upstream',
+            null,
+            InputArgument::OPTIONAL,
+            'The upstream environment to sync from.',
+            $this->getDefaultUpstream()
+        );
         $this->addOption('skip-db', null, InputArgument::OPTIONAL, 'Option to skip the DB sync.', false);
         $this->addOption('skip-files', null, InputArgument::OPTIONAL, 'Option to skip the file sync.', true);
         $this->addOption('skip-release', null, InputArgument::OPTIONAL, 'Option to skip the release script.', false);
@@ -35,7 +39,7 @@ class Sync extends BaseCommand
 
         // TODO Expand the help section.
         // TODO Dynamically load in the upstream options from the config file.
-        // TODO Validate the opstream option from the config file (in help).
+        // TODO Validate the upstream option from the config file (in help).
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
