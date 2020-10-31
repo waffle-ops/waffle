@@ -1,14 +1,14 @@
 <?php
 
-namespace Waffles\Command\Site;
+namespace Waffle\Command\Site;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
-use Waffles\Command\BaseCommand;
-use Waffles\Model\Drush\DrushCommand;
-use Waffles\Model\Drush\CacheClear;
+use Waffle\Command\BaseCommand;
+use Waffle\Model\Drush\DrushCommand;
+use Waffle\Model\Drush\CacheClear;
 
 class Login extends BaseCommand
 {

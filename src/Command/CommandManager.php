@@ -1,14 +1,14 @@
 <?php
 
-namespace Waffles\Command;
+namespace Waffle\Command;
 
-use Waffles\Command\Dependency\CheckDependencies;
-use Waffles\Command\Misc\HelloworldCommand;
-use Waffles\Command\Site\Sync;
-use Waffles\Command\Site\Db;
-use Waffles\Command\Site\Files;
-use Waffles\Command\Site\Login;
-use Waffles\Command\Site\Release;
+use Waffle\Command\Dependency\CheckDependencies;
+use Waffle\Command\Misc\HelloworldCommand;
+use Waffle\Command\Site\Sync;
+use Waffle\Command\Site\Db;
+use Waffle\Command\Site\Files;
+use Waffle\Command\Site\Login;
+use Waffle\Command\Site\Release;
 
 class CommandManager
 {

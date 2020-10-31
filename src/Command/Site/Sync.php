@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffles\Command\Site;
+namespace Waffle\Command\Site;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -8,8 +8,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
-use Waffles\Command\BaseCommand;
-use Waffles\Traits\DefaultUpstreamTrait;
+use Waffle\Command\BaseCommand;
+use Waffle\Traits\DefaultUpstreamTrait;
 
 class Sync extends BaseCommand
 {

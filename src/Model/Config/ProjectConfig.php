@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffles\Model\Config;
+namespace Waffle\Model\Config;
 
 use Symfony\Component\Yaml\Yaml;
 
@@ -76,17 +76,17 @@ class ProjectConfig
         $cwd = getcwd();
 
         // Current directory.
-        $project_config_file = $cwd . '/.waffles.yml';
+        $project_config_file = $cwd . '/.waffle.yml';
         if (file_exists($project_config_file)) {
             return $project_config_file;
         }
 
         // Parent directory.
-        $project_config_file = $cwd . '/../.waffles.yml';
+        $project_config_file = $cwd . '/../.waffle.yml';
         if (file_exists($project_config_file)) {
             return $project_config_file;
         }
 
-        throw new \Exception('Unable to find .waffles.yml file.');
+        throw new \Exception('Unable to find .waffle.yml file.');
     }
 }

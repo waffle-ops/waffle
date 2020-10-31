@@ -3,7 +3,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Waffles\Application;
+use Waffle\Application;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
 $output = new ConsoleOutput();
