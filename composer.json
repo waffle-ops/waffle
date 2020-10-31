@@ -1,5 +1,5 @@
 {
-    "name": "daceej/waffles",
+    "name": "daceej/waffle",
     "description": "A tool to prevent waffling!",
     "type": "project",
     "authors": [
@@ -15,7 +15,7 @@
         "symfony/process": "^5.1"
     },
     "bin": [
-        "bin/waffles",
+        "bin/waffle",
         "bin/wfl"
     ],
     "autoload": {

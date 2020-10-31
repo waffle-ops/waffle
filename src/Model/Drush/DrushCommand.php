@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffles\Model\Drush;
+namespace Waffle\Model\Drush;
 
 use Symfony\Component\Process\Process;
 

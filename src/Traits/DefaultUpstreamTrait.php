@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffles\Traits;
+namespace Waffle\Traits;
 
 trait DefaultUpstreamTrait
 {

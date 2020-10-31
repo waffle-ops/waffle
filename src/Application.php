@@ -1,16 +1,16 @@
 <?php
 
-namespace Waffles;
+namespace Waffle;
 
 use Symfony\Component\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Consolidation\AnnotatedCommand\CommandFileDiscovery;
-use Waffles\Command\CommandManager;
+use Waffle\Command\CommandManager;
 
 class Application extends SymfonyApplication
 {
-    public const NAME = 'Waffles';
+    public const NAME = 'Waffle';
     public const VERSION = '1.0.0-beta';
 
     public function __construct()

@@ -1,9 +1,9 @@
 <?php
 
-namespace Waffles\Command;
+namespace Waffle\Command;
 
 use Symfony\Component\Console\Command\Command;
-use Waffles\Model\Config\ProjectConfig;
+use Waffle\Model\Config\ProjectConfig;
 
 class BaseCommand extends Command
 {

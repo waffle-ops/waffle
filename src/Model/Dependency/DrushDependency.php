@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffles\Model\Dependency;
+namespace Waffle\Model\Dependency;
 
 use Symfony\Component\Process\Process;
 
