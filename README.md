@@ -1,6 +1,6 @@
 # Who Doesn't Like a Good Waffle?
 
-## Waffle
+## :waffle: Waffle
 Or `wfl` for short lets you keep project-specific config in a project, while also providing a standard way of setting up projects so that the tool can do the waffling so that _you_ can focus on the coding.
 
 ## Premise
