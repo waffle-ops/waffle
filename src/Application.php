@@ -5,8 +5,7 @@ namespace Waffle;
 use Symfony\Component\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Consolidation\AnnotatedCommand\CommandFileDiscovery;
-use Waffle\Command\CommandManager;
+use Waffle\Model\Command\CommandManager;
 
 class Application extends SymfonyApplication
 {
