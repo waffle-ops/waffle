@@ -23,7 +23,11 @@ class Shell extends BaseCommand
 
         // Shortcuts would be nice, but there seems to be an odd bug as of now
         // when using dashes: https://github.com/symfony/symfony/issues/27333
-        $this->addArgument('cmd', InputArgument::REQUIRED | InputArgument::IS_ARRAY, 'Command that the process will be running.');
+        $this->addArgument(
+            'cmd',
+            InputArgument::REQUIRED | InputArgument::IS_ARRAY,
+            'Command that the process will be running.'
+        );
 
         // TODO Expand the help section.
         // TODO Dynamically load in the upstream options from the config file.
@@ -41,9 +45,8 @@ class Shell extends BaseCommand
         
         // TODO Handle output. Can it be steamed? Or do we actually have to
         // wait until process completes? What happens in the case of something
-        // like 'drush pmu' where the '-y' is ommitted? 
+        // like 'drush pmu' where the '-y' is ommitted?
 
         return Command::SUCCESS;
     }
-
 }
