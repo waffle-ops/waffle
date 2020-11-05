@@ -2,8 +2,12 @@
 
 namespace Waffle\Model\Command;
 
+use Waffle\Traits\ConfigTrait;
+
 class CommandManager
 {
+    use ConfigTrait;
+
     // Sadly, CommandFileDiscovery from consolidation/annotated-command is
     // deprecated. It also does not work with .phar files, which is also a deal
     // breaker. I'm not thrilled with maintaining a static list of commands,
@@ -19,9 +23,15 @@ class CommandManager
         \Waffle\Command\Site\Release::class,
         \Waffle\Command\Site\UpdateStatus::class,
         \Waffle\Command\Site\UpdateApply::class,
-    
-        // Command for running shell commands.
-        \Waffle\Command\Shell\Shell::class,
+    ];
+
+    // These commands are needed to add custom features to Waffle, but they
+    // should not appear by the 'list' command by default. Users must define
+    // these custom options in the config file before they will appear. 
+    private $hidden_classes = [
+        // Commands for user defined tasks 
+        \Waffle\Command\Custom\Shell::class,
+        \Waffle\Command\Custom\Multi::class,
     ];
 
     // I'm interested in lazy loading, but that's is something for another day.
@@ -50,9 +60,43 @@ class CommandManager
         // This would be the best place add user defined commands. We can
         // likely also allow users to override core commands if they use the
         // right key.
+        $tasks = $this->getUserDefinedTasks();
+
+        foreach ($tasks as $task) {
+            $command_key = $task->getName(); // TODO 
+            $commands[$command_key] = $task;
+        }
 
         // TODO: Determine how user defined tasks work. Validate as needed.
 
+        // TODO: Any 'core' commands that should not be able to be overrided
+        // should go here.
+
         return $commands;
+    }
+
+    /**
+     * getUserDefinedTasks
+     * 
+     * Gets a list of user defined task.
+     * 
+     * @return Command[]
+     */
+    private function getUserDefinedTasks() {
+        $config = $this->getConfig();
+
+        $user_tasks = [];
+
+        // Shell commands. (Allows overriding names.)
+        
+        // Tasks (runs multiple commands) (Allows overriding names.)
+        $tasks = isset($config['tasks']) ? $config['tasks'] : [];
+
+        foreach ($tasks as $task => $task_args) {
+            $user_tasks[] = new \Waffle\Command\Custom\Multi($task);
+        }
+
+        // echo json_encode($config['tasks']) . PHP_EOL;
+        return $user_tasks;
     }
 }
