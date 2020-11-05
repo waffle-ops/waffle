@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffle\Command\Shell;
+namespace Waffle\Command\Custom;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -10,24 +10,13 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
 
-class Shell extends BaseCommand
+class Multi extends BaseCommand
 {
-
-    public const COMMAND_KEY = 'shell:command';
 
     protected function configure()
     {
-        $this->setName(self::COMMAND_KEY);
         $this->setDescription('Syncs the local site from the specified upstream.');
         $this->setHelp('Syncs the local site from the specified upstream.');
-
-        // Shortcuts would be nice, but there seems to be an odd bug as of now
-        // when using dashes: https://github.com/symfony/symfony/issues/27333
-        $this->addArgument(
-            'cmd',
-            InputArgument::REQUIRED | InputArgument::IS_ARRAY,
-            'Command that the process will be running.'
-        );
 
         // TODO Expand the help section.
         // TODO Dynamically load in the upstream options from the config file.
@@ -37,15 +26,21 @@ class Shell extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
-        $cmd = $input->getArgument('cmd');
-
-        $process = new Process($cmd);
-        $process->run();
-        $process_output = $process->getOutput();
+        // Note: This is not explicitly defined here, but is from the parent
+        // class.
+        $command = $input->getArgument('command');
         
-        // TODO Handle output. Can it be steamed? Or do we actually have to
-        // wait until process completes? What happens in the case of something
-        // like 'drush pmu' where the '-y' is ommitted?
+        $config = $this->getConfig();
+        $tasks = isset($config['tasks'][$command]) ? $config['tasks'][$command] : [];
+
+        foreach ($tasks as $task) {
+            $output->writeln('<info>Calling ' . $task . '</info>');
+
+            $command = $this->getApplication()->find($task);
+            $args = new ArrayInput([]); // TODO Handle arguments.
+            $return_code = $command->run($args, $output);
+            // TODO Handle return code issues.
+        }
 
         return Command::SUCCESS;
     }
