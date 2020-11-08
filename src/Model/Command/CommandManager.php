@@ -27,7 +27,7 @@ class CommandManager
 
     // These commands are needed to add custom features to Waffle, but they
     // should not appear by the 'list' command by default. Users must define
-    // these custom options in the config file before they will appear. 
+    // these custom options in the config file before they will appear.
     private $hidden_classes = [
         // Commands for user defined tasks and recipes.
         \Waffle\Command\Custom\Recipe::class,
@@ -57,12 +57,12 @@ class CommandManager
             $commands[$command_key] = new $clazz();
         }
 
-        // Handle user defined tasks. Users can also override 'core' tasks by 
+        // Handle user defined tasks. Users can also override 'core' tasks by
         // using the right key.
         $tasks = $this->getUserDefinedTasks();
 
         foreach ($tasks as $task) {
-            $command_key = $task->getName(); // TODO 
+            $command_key = $task->getName(); // TODO
             $commands[$command_key] = $task;
         }
 
@@ -71,26 +71,27 @@ class CommandManager
         $recipes = $this->getUserDefinedRecipes();
 
         foreach ($recipes as $recipe) {
-            $command_key = $recipe->getName(); // TODO 
+            $command_key = $recipe->getName(); // TODO
             $commands[$command_key] = $recipe;
         }
 
         // TODO: Any 'core' commands that should not be able to be overrided
         // should go here.
 
-        // TODO: Consider updating the 'list' command to separate recipes. 
+        // TODO: Consider updating the 'list' command to separate recipes.
 
         return $commands;
     }
 
     /**
      * getUserDefinedTasks
-     * 
+     *
      * Gets a list of user defined task.
-     * 
+     *
      * @return Command[]
      */
-    private function getUserDefinedTasks() {
+    private function getUserDefinedTasks()
+    {
         $config = $this->getConfig();
 
         $user_tasks = [];
@@ -107,12 +108,13 @@ class CommandManager
 
     /**
      * getUserDefinedRecipes
-     * 
+     *
      * Gets a list of user defined recipes.
-     * 
+     *
      * @return Command[]
      */
-    private function getUserDefinedRecipes() {
+    private function getUserDefinedRecipes()
+    {
         $config = $this->getConfig();
 
         $user_recipes = [];
