@@ -10,42 +10,40 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
 
-class Shell extends BaseCommand
+class Task extends BaseCommand
 {
-
-    public const COMMAND_KEY = 'shell:command';
 
     protected function configure()
     {
-        $this->setName(self::COMMAND_KEY);
         $this->setDescription('Syncs the local site from the specified upstream.');
         $this->setHelp('Syncs the local site from the specified upstream.');
-
-        // Shortcuts would be nice, but there seems to be an odd bug as of now
-        // when using dashes: https://github.com/symfony/symfony/issues/27333
-        $this->addArgument(
-            'cmd',
-            InputArgument::REQUIRED | InputArgument::IS_ARRAY,
-            'Command that the process will be running.'
-        );
-
-        // TODO Expand the help section.
-        // TODO Dynamically load in the upstream options from the config file.
-        // TODO Validate the upstream option from the config file (in help).
+        // TODO -- Using the array input option would be a really nice feature.
+        // In order to do that, we would need to change the way these tasks are
+        // getting created in the CommandManager class.
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 
-        $cmd = $input->getArgument('cmd');
+        // Note: This is not explicitly defined here, but is from the parent
+        // class.
+        $command = $input->getArgument('command');
+        
+        $config = $this->getConfig();
+        $task = isset($config['tasks'][$command]) ? $config['tasks'][$command] : [];
 
-        $process = new Process($cmd);
+        // TODO: Would be wise to add some sort of validation here.
+
+        // TODO: I'm not a huge fan of using the shell command line method. 
+        // Would be better id this used an input array.
+        $process = Process::fromShellCommandline($task);
         $process->run();
         $process_output = $process->getOutput();
         
-        // TODO Handle output. Can it be steamed? Or do we actually have to
+        // TODO Handle output. Can it be streamed? Or do we actually have to
         // wait until process completes? What happens in the case of something
         // like 'drush pmu' where the '-y' is ommitted?
+        $output->writeln($process_output);
 
         return Command::SUCCESS;
     }

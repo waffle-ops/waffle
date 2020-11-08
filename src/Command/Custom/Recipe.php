@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
 
-class Multi extends BaseCommand
+class Recipe extends BaseCommand
 {
 
     protected function configure()
@@ -31,12 +31,12 @@ class Multi extends BaseCommand
         $command = $input->getArgument('command');
         
         $config = $this->getConfig();
-        $tasks = isset($config['tasks'][$command]) ? $config['tasks'][$command] : [];
+        $recipes = isset($config['recipes'][$command]) ? $config['recipes'][$command] : [];
 
-        foreach ($tasks as $task) {
-            $output->writeln('<info>Calling ' . $task . '</info>');
+        foreach ($recipes as $recipe) {
+            $output->writeln('<info>Calling recipe' . $recipe . '</info>');
 
-            $command = $this->getApplication()->find($task);
+            $command = $this->getApplication()->find($recipe);
             $args = new ArrayInput([]); // TODO Handle arguments.
             $return_code = $command->run($args, $output);
             // TODO Handle return code issues.
