@@ -34,7 +34,7 @@ class Task extends BaseCommand
 
         // TODO: Would be wise to add some sort of validation here.
 
-        // TODO: I'm not a huge fan of using the shell command line method. 
+        // TODO: I'm not a huge fan of using the shell command line method.
         // Would be better id this used an input array.
         $process = Process::fromShellCommandline($task);
         $process->run();
