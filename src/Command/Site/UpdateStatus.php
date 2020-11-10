@@ -66,7 +66,6 @@ class UpdateStatus extends BaseCommand
         if (!isset($this->config['composer_path'])) {
             $this->io->warning('Unable to generate composer reports: Missing composer file.');
         } else {
-    
             // @todo: should we run `composer install` here?
     
             $this->generateComposerReport();
