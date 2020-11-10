@@ -68,23 +68,32 @@ class UpdateStatus extends BaseCommand
         // @todo: refactor this to reduce nesting and be separate functions.
         if (!isset($config['composer_path'])) {
             $io->warning('Unable to generate composer reports: Missing composer file.');
-        }
-        else {
-            Runner::message($io, 'Checking minor version composer updates', 'composer outdated -Dmn --no-ansi --working-dir="' . $config['composer_path'] . '" "*/*"');
-            Runner::message($io, 'Checking major version composer updates', 'composer outdated -Dn --no-ansi --working-dir="' . $config['composer_path'] . '" "*/*"  | grep -v "!"');
+        } else {
+            Runner::message(
+                $io,
+                'Checking minor version composer updates',
+                'composer outdated -Dmn --no-ansi --working-dir="' . $config['composer_path'] . '" "*/*"'
+            );
+            Runner::message(
+                $io,
+                'Checking major version composer updates',
+                'composer outdated -Dn --no-ansi --working-dir="' . $config['composer_path'] . '" "*/*"  | grep -v "!"'
+            );
             
             if (!isset($config['symfony_cli'])) {
                 $io->warning('Unable to generate Symfony security reports: Missing Symfony CLI installation.');
-            }
-            else {
-                Runner::message($io, 'Checking Symfony CLI security', 'symfony security:check --dir="' . $config['composer_path'] . '"');
+            } else {
+                Runner::message(
+                    $io,
+                    'Checking Symfony CLI security',
+                    'symfony security:check --dir="' . $config['composer_path'] . '"'
+                );
             }
         }
         
         if (!isset($config['drush_major_version'])) {
             $io->warning('Unable to generate Drush module status: Missing drush install.');
-        }
-        else {
+        } else {
             $pmSecurity = new PmSecurity();
             Runner::message($io, 'Checking Drupal core and contrib via drush', $pmSecurity->setup());
         }
