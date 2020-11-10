@@ -30,7 +30,8 @@ class DrushCommand
         $this->projectConfig = $project_config->getProjectConfig();
     }
     
-    protected function setArgs(array $args) {
+    protected function setArgs(array $args)
+    {
         $this->args = $args;
     }
     
