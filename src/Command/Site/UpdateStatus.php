@@ -37,12 +37,11 @@ class UpdateStatus extends BaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $io = new SymfonyStyle($input, $output);
-        $config = $this->getConfig();
-        
-        switch ($config['cms']) {
+        parent::execute($input, $output);
+    
+        switch ($this->config['cms']) {
             case "drupal8":
-                $this->generateDrupal8Report($io);
+                $this->generateDrupal8Report();
                 break;
             case "drupal7":
             case "wordpress":
@@ -56,46 +55,44 @@ class UpdateStatus extends BaseCommand
     
     /**
      * Outputs a Drupal 8 update report.
-     *
-     * @param SymfonyStyle $io
      */
-    protected function generateDrupal8Report(SymfonyStyle $io)
+    protected function generateDrupal8Report()
     {
-        $config = $this->getConfig();
-        
-        $io->title('Generating Drupal 8 Update Reports');
+        $this->io->title('Generating Drupal 8 Update Reports');
         
         // @todo: refactor this to reduce nesting and be separate functions.
-        if (!isset($config['composer_path'])) {
-            $io->warning('Unable to generate composer reports: Missing composer file.');
+        if (!isset($this->config['composer_path'])) {
+            $this->io->warning('Unable to generate composer reports: Missing composer file.');
         } else {
             Runner::message(
-                $io,
+                $this->io,
                 'Checking minor version composer updates',
-                'composer outdated -Dmn --no-ansi --working-dir="' . $config['composer_path'] . '" "*/*"'
+                'composer outdated -Dmn --no-ansi --working-dir="' . $this->config['composer_path'] . '" "*/*"'
             );
             Runner::message(
-                $io,
+                $this->io,
                 'Checking major version composer updates',
-                'composer outdated -Dn --no-ansi --working-dir="' . $config['composer_path'] . '" "*/*"  | grep -v "!"'
+                'composer outdated -Dn --no-ansi --working-dir="' .
+                $this->config['composer_path'] .
+                '" "*/*"  | grep -v "!"'
             );
             
-            if (!isset($config['symfony_cli'])) {
-                $io->warning('Unable to generate Symfony security reports: Missing Symfony CLI installation.');
+            if (!isset($this->config['symfony_cli'])) {
+                $this->io->warning('Unable to generate Symfony security reports: Missing Symfony CLI installation.');
             } else {
                 Runner::message(
-                    $io,
+                    $this->io,
                     'Checking Symfony CLI security',
-                    'symfony security:check --dir="' . $config['composer_path'] . '"'
+                    'symfony security:check --dir="' . $this->config['composer_path'] . '"'
                 );
             }
         }
         
-        if (!isset($config['drush_major_version'])) {
-            $io->warning('Unable to generate Drush module status: Missing drush install.');
+        if (!isset($this->config['drush_major_version'])) {
+            $this->io->warning('Unable to generate Drush module status: Missing drush install.');
         } else {
             $pmSecurity = new PmSecurity();
-            Runner::message($io, 'Checking Drupal core and contrib via drush', $pmSecurity->setup());
+            Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity->setup());
         }
         
         // @todo: What other type of reporting should be done here? `npm audit`?

@@ -40,39 +40,61 @@ class Runner
             $io->writeln($command->getCommandLine());
         }
         $io->newLine();
-        
+    
         $output = Runner::getOutput($command);
         $io->writeln($output);
-        
+    
         return $output;
     }
     
-    public static function getOutput($command)
+    /**
+     * Get the output of a command
+     *
+     * @param string|Process $command
+     * @param bool $withRun
+     * @return string
+     */
+    public static function getOutput($command, $withRun = true)
     {
-        $process = null;
-        if (is_string($command)) {
-            $process = Process::fromShellCommandline($command);
-        } elseif ($command instanceof Process) {
-            $process = $command;
+        $process = Runner::setup($command);
+        
+        if ($withRun) {
+            $process->run();
         }
         
-        $process->run();
-        $output = $process->getOutput();
+        // Lots of commands (ex: composer) seem to use both channels for normal output so we
+        // combine them so that nothing is hidden.
+        $output = $process->getOutput() . "\n\r" . $process->getErrorOutput();
         if (!empty($output)) {
             return $output;
         }
         
-        // We didn't get anything back, so let's check some things.
-        $output = $process->getErrorOutput();
-        if (!empty($output)) {
-            return $output;
-        }
-        
+        // We didn't get anything back, so try to determine exit code instead.
         $output = $process->getExitCodeText();
         if (!empty($output)) {
             return $output;
         }
         
         return 'NO OUTPUT';
+    }
+    
+    /**
+     * Setup the process based on the type of passed command.
+     *
+     * @param $command
+     * @return Process|null
+     */
+    public static function setup($command)
+    {
+        $process = null;
+        if (is_string($command)) {
+            $process = Process::fromShellCommandline($command);
+        } else {
+            if ($command instanceof Process) {
+                $process = $command;
+            }
+        }
+        
+        return $process;
     }
 }
