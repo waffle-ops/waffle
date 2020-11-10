@@ -36,8 +36,7 @@ class Runner
         $io->section($message);
         if (is_string($command)) {
             $io->writeln($command);
-        }
-        else if ($command instanceof Process) {
+        } elseif ($command instanceof Process) {
             $io->writeln($command->getCommandLine());
         }
         $io->newLine();
@@ -53,8 +52,7 @@ class Runner
         $process = null;
         if (is_string($command)) {
             $process = Process::fromShellCommandline($command);
-        }
-        else if ($command instanceof Process) {
+        } elseif ($command instanceof Process) {
             $process = $command;
         }
         
@@ -77,6 +75,4 @@ class Runner
         
         return 'NO OUTPUT';
     }
-    
-    
 }

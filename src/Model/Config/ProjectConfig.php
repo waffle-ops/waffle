@@ -102,7 +102,7 @@ class ProjectConfig
             return $project_config_file;
         }
         
-        return FALSE;
+        return false;
     }
     
     /**
@@ -167,6 +167,6 @@ class ProjectConfig
             return '../';
         }
         
-        return FALSE;
+        return false;
     }
 }
