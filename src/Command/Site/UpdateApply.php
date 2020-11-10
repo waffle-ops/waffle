@@ -203,6 +203,8 @@ class UpdateApply extends BaseCommand
                 $this->applyDrupal8Updates();
                 break;
             case "drupal7":
+                $this->applyDrupal7Updates();
+                break;
             case "wordpress":
             default:
                 throw new Exception('Platform not implemented yet.');
@@ -224,6 +226,21 @@ class UpdateApply extends BaseCommand
         } else {
             $this->updateMinorComposerDependencies();
         }
+    }
+    
+    /**
+     * Applies Drupal 7 site and dependency updates.
+     */
+    protected function applyDrupal7Updates()
+    {
+        $this->io->title('Applying Drupal 7 Pending Updates');
+        
+        if (isset($this->config['composer_path'])) {
+            $this->updateMinorComposerDependencies();
+        }
+        
+        // drush upc MODULE
+        // what else?
     }
     
     /**
