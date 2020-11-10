@@ -64,7 +64,7 @@ class Runner
         
         // Lots of commands (ex: composer) seem to use both channels for normal output so we
         // combine them so that nothing is hidden.
-        $output = $process->getOutput() . "\n\r" . $process->getErrorOutput();
+        $output = $process->getErrorOutput() . "\n\r" . $process->getOutput();
         if (!empty($output)) {
             return $output;
         }

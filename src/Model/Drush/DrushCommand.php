@@ -20,12 +20,18 @@ class DrushCommand
     /**
      *
      */
-    public function __construct(array $args)
+    public function __construct(array $args = null)
     {
-        $this->args = $args;
+        if (!empty($args)) {
+            $this->args = $args;
+        }
         
         $project_config = ProjectConfig::getInstance();
         $this->projectConfig = $project_config->getProjectConfig();
+    }
+    
+    protected function setArgs(array $args) {
+        $this->args = $args;
     }
     
     public function setup($input = '')
