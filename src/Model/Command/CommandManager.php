@@ -17,6 +17,7 @@ class CommandManager
         \Waffle\Command\Site\Files::class,
         \Waffle\Command\Site\Login::class,
         \Waffle\Command\Site\Release::class,
+        \Waffle\Command\Site\UpdateStatus::class,
 
         // Command for running shell commands.
         \Waffle\Command\Shell\Shell::class,
