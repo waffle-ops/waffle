@@ -49,13 +49,18 @@ class Db extends BaseCommand
         // TODO Add some error handling in general.
         // TODO Write to the console with general status updates.
 
-        // TODO Validate that drush alias is present / seems to be working with a status call.
-        // TODO Validate upstream
         $config = $this->getConfig();
-        // $upstream = $input->getOption('upstream');   // TODO Use this once every arguments are passed.
-        $upstream = $config['default_upstream'];
+
+        // TODO Validate that drush alias is present / seems to be working with a status call.
+        $upstream = $input->getOption('upstream');
         $drush_alias = sprintf('@%s.%s', $config['drush_alias'], $upstream);
-        
+
+        // Ensure upstream is valid.
+        $avaliable_upstreams = explode(',', $config['upstreams']);
+        if (!in_array($upstream, $avaliable_upstreams)) {
+            throw new \Exception('Error: Invalid upstream ' . $upstream);
+        }
+
         // Creates or clears the DB.
         $output->writeln('<info>Resetting the local database...</info>');
         $db_reset = new DrushCommand(['sql-create', '-y']);

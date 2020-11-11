@@ -28,20 +28,83 @@ class Recipe extends BaseCommand
 
         // Note: This is not explicitly defined here, but is from the parent
         // class.
-        $command = $input->getArgument('command');
+        $recipe = $input->getArgument('command');
         
         $config = $this->getConfig();
-        $recipes = isset($config['recipes'][$command]) ? $config['recipes'][$command] : [];
+        $recipe_tasks = isset($config['recipes'][$recipe]) ? $config['recipes'][$recipe] : [];
 
-        foreach ($recipes as $recipe) {
-            $output->writeln('<info>Calling recipe' . $recipe . '</info>');
+        $tasks = [];
+        $arguments = [];
 
-            $command = $this->getApplication()->find($recipe);
-            $args = new ArrayInput([]); // TODO Handle arguments.
-            $return_code = $command->run($args, $output);
+        // Doing some simple validation before we start. Just enough to verify
+        // that the tasks are present (before we run any of them).
+        foreach ($recipe_tasks as $task) {
+            // This will throw an exception if not a string or array.
+            $task_key = $this->getTaskKey($task);
+            $args = $this->getTaskArguments($task_key, $task);
+
+            // This will throw an exception if the task is not found.
+            $command = $this->getApplication()->find($task_key);
+            
+            $arguments = isset($task[$task_key]) ? $task[$task_key] : [];
+            $tasks[] = [$task_key => $arguments];
+        }
+        
+        // Runs the tasks for the recipes.
+        foreach ($tasks as $task) {
+            $output->writeln('<info>Recipe - running <comment>' . $task_key . '</comment></info>');
+
+            $task_key = $this->getTaskKey($task);
+            $args = $this->getTaskArguments($task_key, $task);
+
+            $task_command = $this->getApplication()->find($task_key);
+
+            $task_arguments = $this->prepareTaskArguments($args);
+            // $task_arguments = new ArrayInput([$arguments]);
+
+            // $output->writeln('<info>Recipe - running <comment>' . json_encode($arguments) . '</comment></info>');
+
+            $return_code = $task_command->run($task_arguments, $output);
             // TODO Handle return code issues.
         }
 
         return Command::SUCCESS;
+    }
+
+    private function getTaskKey($task)
+    {
+        if (is_string($task)) {
+            $task_key = $task;
+        } elseif (is_array($task)) {
+            $task_key = array_key_first($task);
+        } else {
+            throw new \Exception('Invalid task definition : ' . json_encode($task));
+        }
+
+        return $task_key;
+    }
+
+    private function getTaskArguments($task_key, $task)
+    {
+        if (is_string($task)) {
+            return [];
+        }
+
+        if (isset($task[$task_key])) {
+            return $task[$task_key];
+        }
+
+        return [];
+    }
+
+    private function prepareTaskArguments($args)
+    {
+        $input_args = [];
+
+        foreach ($args as $key => $value) {
+            $input_args[$key] = $value;
+        }
+        
+        return new ArrayInput($input_args);
     }
 }
