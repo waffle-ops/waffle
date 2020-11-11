@@ -15,11 +15,12 @@ class Task extends BaseCommand
 
     protected function configure()
     {
-        $this->setDescription('Syncs the local site from the specified upstream.');
-        $this->setHelp('Syncs the local site from the specified upstream.');
-        // TODO -- Using the array input option would be a really nice feature.
-        // In order to do that, we would need to change the way these tasks are
-        // getting created in the CommandManager class.
+        // TODO: Help and description are not set since these are populated.
+        // Consider allow help and description text to be set in config.
+
+        // Forces all tasks to fall under the task namespace.
+        $name = $this->getName();
+        $this->setName('task:' . $name);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -38,13 +39,19 @@ class Task extends BaseCommand
         // Would be better id this used an input array.
         $process = Process::fromShellCommandline($task);
         $process->run();
-        $process_output = $process->getOutput();
-        
+                
         // TODO Handle output. Can it be streamed? Or do we actually have to
         // wait until process completes? What happens in the case of something
         // like 'drush pmu' where the '-y' is ommitted?
-        $output->writeln($process_output);
 
-        return Command::SUCCESS;
+        if ($process->isSuccessful()) {
+            $output->writeln('<info>Task <comment>' . $command . '</comment> ran sucessfully</info>');
+            return Command::SUCCESS;
+        } else {
+            $output->writeln('<error>Task ' . $command . ' returned with an error.</error>');
+            $output->writeln('<error>' . $process->getOutput() . '</error>');
+            $output->writeln('<error>' . $process->getErrorOutput() . '</error>');
+            return Command::FAILURE;
+        }
     }
 }
