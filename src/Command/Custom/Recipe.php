@@ -15,12 +15,12 @@ class Recipe extends BaseCommand
 
     protected function configure()
     {
-        $this->setDescription('Syncs the local site from the specified upstream.');
-        $this->setHelp('Syncs the local site from the specified upstream.');
+        // TODO: Help and description are not set since these are populated.
+        // Consider allow help and description text to be set in config.
 
-        // TODO Expand the help section.
-        // TODO Dynamically load in the upstream options from the config file.
-        // TODO Validate the upstream option from the config file (in help).
+        // Forces all recipes to fall under the task namespace.
+        $name = $this->getName();
+        $this->setName('recipe:' . $name);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
