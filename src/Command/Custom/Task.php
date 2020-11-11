@@ -42,7 +42,11 @@ class Task extends BaseCommand
 
         if ($process->isSuccessful()) {
             $output->writeln('<info>Task <comment>' . $task_key . '</comment> ran sucessfully</info>');
-            $output->writeln('<info>' . $process->getOutput() . '</info>');
+            
+            if (!empty($process->getOutput())) {
+                $output->writeln('<info>' . $process->getOutput() . '</info>');
+            }
+            
             return Command::SUCCESS;
         } else {
             $output->writeln('<error>Task ' . $task_key . ' returned with an error.</error>');
