@@ -13,34 +13,21 @@ use Waffle\Command\BaseCommand;
 class Task extends BaseCommand
 {
 
-    /**
-     * @var string
-     *
-     * The config key used to define this task.
-     */
-    private $config_key;
-
     protected function configure()
     {
         // TODO: Help and description are not set since these are populated.
         // Consider allow help and description text to be set in config.
-
-        // Storing the config to be used later.
-        $this->config_key = $this->getName();
-
-        // Forces all tasks to fall under the task namespace.
-        $task_key = $this->getTaskKey($this->config_key);
-        $this->setName($task_key);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $task_key = $this->getTaskKey($this->config_key);
+        // Note: The 'command' argument is defined by the Symfony Command class.
+        $task_key = $input->getArgument('command');
 
         $output->writeln('<info>Running task <comment>' . $task_key . '</comment></info>');
         
         $config = $this->getConfig();
-        $task = isset($config['tasks'][$this->config_key]) ? $config['tasks'][$this->config_key] : '';
+        $task = isset($config['tasks'][$task_key]) ? $config['tasks'][$task_key] : '';
 
         // TODO: Would be wise to add some sort of validation here.
 
@@ -55,6 +42,7 @@ class Task extends BaseCommand
 
         if ($process->isSuccessful()) {
             $output->writeln('<info>Task <comment>' . $task_key . '</comment> ran sucessfully</info>');
+            $output->writeln('<info>' . $process->getOutput() . '</info>');
             return Command::SUCCESS;
         } else {
             $output->writeln('<error>Task ' . $task_key . ' returned with an error.</error>');
