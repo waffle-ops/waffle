@@ -1,4 +1,4 @@
-# CI for running 
+# Workflow to run the 'ci' task defined in .waffle.yml.
 on: [push, pull_request]
 
 jobs:
@@ -20,4 +20,4 @@ jobs:
     - name: Run PHPCS
       run: | 
           composer install
-          ./scripts/tests/phpcs.sh
+          bin/wfl recipe:ci
