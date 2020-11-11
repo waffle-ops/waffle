@@ -62,16 +62,15 @@ class CommandManager
         $tasks = $this->getUserDefinedTasks();
 
         foreach ($tasks as $task) {
-            $command_key = $task->getName(); // TODO
+            $command_key = $task->getName();
             $commands[$command_key] = $task;
         }
 
-        // Handle user defined recipes. Users can also override 'core' recipes
-        // by using the right key.
+        // Handle user defined recipes.
         $recipes = $this->getUserDefinedRecipes();
 
         foreach ($recipes as $recipe) {
-            $command_key = $recipe->getName(); // TODO
+            $command_key = $recipe->getName();
             $commands[$command_key] = $recipe;
         }
 
