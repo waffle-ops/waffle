@@ -13,25 +13,34 @@ use Waffle\Command\BaseCommand;
 class Task extends BaseCommand
 {
 
+    /**
+     * @var string
+     *
+     * The config key used to define this task.
+     */
+    private $config_key;
+
     protected function configure()
     {
         // TODO: Help and description are not set since these are populated.
         // Consider allow help and description text to be set in config.
 
+        // Storing the config to be used later.
+        $this->config_key = $this->getName();
+
         // Forces all tasks to fall under the task namespace.
-        $name = $this->getName();
-        $this->setName('task:' . $name);
+        $task_key = $this->getTaskKey($this->config_key);
+        $this->setName($task_key);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $task_key = $this->getTaskKey($this->config_key);
 
-        // Note: This is not explicitly defined here, but is from the parent
-        // class.
-        $command = $input->getArgument('command');
+        $output->writeln('<info>Running task <comment>' . $task_key . '</comment></info>');
         
         $config = $this->getConfig();
-        $task = isset($config['tasks'][$command]) ? $config['tasks'][$command] : [];
+        $task = isset($config['tasks'][$this->config_key]) ? $config['tasks'][$this->config_key] : '';
 
         // TODO: Would be wise to add some sort of validation here.
 
@@ -45,13 +54,18 @@ class Task extends BaseCommand
         // like 'drush pmu' where the '-y' is ommitted?
 
         if ($process->isSuccessful()) {
-            $output->writeln('<info>Task <comment>' . $command . '</comment> ran sucessfully</info>');
+            $output->writeln('<info>Task <comment>' . $task_key . '</comment> ran sucessfully</info>');
             return Command::SUCCESS;
         } else {
-            $output->writeln('<error>Task ' . $command . ' returned with an error.</error>');
+            $output->writeln('<error>Task ' . $task_key . ' returned with an error.</error>');
             $output->writeln('<error>' . $process->getOutput() . '</error>');
             $output->writeln('<error>' . $process->getErrorOutput() . '</error>');
             return Command::FAILURE;
         }
+    }
+
+    private function getTaskKey($config_key)
+    {
+        return 'task:' . $config_key;
     }
 }
