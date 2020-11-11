@@ -13,25 +13,38 @@ use Waffle\Command\BaseCommand;
 class Recipe extends BaseCommand
 {
 
+    /**
+     * @var string
+     *
+     * The config key used to define this recipe.
+     */
+    private $config_key;
+
     protected function configure()
     {
         // TODO: Help and description are not set since these are populated.
         // Consider allow help and description text to be set in config.
 
-        // Forces all recipes to fall under the task namespace.
-        $name = $this->getName();
-        $this->setName('recipe:' . $name);
+        // Storing the config to be used later.
+        $this->config_key = $this->getName();
+
+        // Forces all recipes to fall under the recipe namespace.
+        $recipe_key = $this->getRecipeKey($this->config_key);
+        $this->setName($recipe_key);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $recipe_key = $this->getRecipeKey($this->config_key);
+
+        $output->writeln('<info>Running recipe <comment>' . $recipe_key . '</comment></info>');
 
         // Note: This is not explicitly defined here, but is from the parent
         // class.
         $recipe = $input->getArgument('command');
         
         $config = $this->getConfig();
-        $recipe_tasks = isset($config['recipes'][$recipe]) ? $config['recipes'][$recipe] : [];
+        $recipe_tasks = isset($config['recipes'][$this->config_key]) ? $config['recipes'][$this->config_key] : [];
 
         $tasks = [];
         $arguments = [];
@@ -60,13 +73,16 @@ class Recipe extends BaseCommand
             $task_command = $this->getApplication()->find($task_key);
 
             $task_arguments = $this->prepareTaskArguments($args);
-            // $task_arguments = new ArrayInput([$arguments]);
-
-            // $output->writeln('<info>Recipe - running <comment>' . json_encode($arguments) . '</comment></info>');
-
             $return_code = $task_command->run($task_arguments, $output);
-            // TODO Handle return code issues.
+            
+            if ($return_code !== Command::SUCCESS) {
+                $output->writeln('<error>Recipe ' . $recipe_key . ' failed while running ' . $task_key . '.</error>');
+                $output->writeln('<error>See error output for more details.</error>');
+                return Command::FAILURE;
+            }
         }
+
+        $output->writeln('<info>Recipe <comment>' . $recipe_key . '</comment> complete</info>');
 
         return Command::SUCCESS;
     }
@@ -106,5 +122,10 @@ class Recipe extends BaseCommand
         }
         
         return new ArrayInput($input_args);
+    }
+
+    private function getRecipeKey($config_key)
+    {
+        return 'recipe:' . $config_key;
     }
 }
