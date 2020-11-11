@@ -41,4 +41,26 @@ class Application extends SymfonyApplication
 
         parent::run();
     }
+
+    /**
+     * Overrides the find method to install call get.
+     *
+     * The default behavior of the application is to call a best guess if it is
+     * reasonibly sure it is correct. For example, if a 'phpcs' command existed
+     * and the user only typed 'phpc', the base code is smart enough to run
+     * 'phpcs' instead.
+     *
+     * We are suppressing the above behavior because we are creating tasks in a
+     * non-standard way. The tasks and recipes defined in the config file do
+     * not get picked up properly. This may be revisited, but for now, I think
+     * it best to force a hard fail if a command is mistyped.
+     *
+     * @return Command A Command instance
+     *
+     * @throws CommandNotFoundException When command does not exist.
+     */
+    public function find(string $name)
+    {
+        return $this->get($name);
+    }
 }
