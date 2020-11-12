@@ -1,0 +1,50 @@
+# This is an example .waffle file. You can use this as a reference for the keys 
+# that are supported by the tool.
+
+# The CMS of the project. Valid keys are drupal7|drupal8|wordpress
+cms: drupal8
+
+# The hosting provider. Valid keys are acquia|pantheon|custom
+host: pantheon
+
+# The drush alias for the project. 
+# TODO - Change this to alias.
+drush_alias: my-sandbox
+
+# List of upstream environments that Waffle can pull down from. This list 
+# should include all applicable upstreams (including Panthone multidevs) that
+# you wish to pull data from.
+upstreams: dev,test,live 
+
+# This is the default upstream (from the list above). Site sync commands will 
+# assume to use the default upstream if an explicit upstream is not provided
+# as an option.
+default_upstream: live
+
+# These are custom tasks defined per-project. Keys will be used to create 
+# commands. Values should be shell command, local scripts, etc...
+#
+# If you use a key already provided by Waffle, your task will be called 
+# instead. This is useful if you need to change the behavior of a core Waffle
+# command.
+tasks:
+  notify:slack: "../scripts/notify-salck.sh"
+  hello:world: "echo 'Hello World!'"
+  site:sync:db: "../path/to/custom/db/sync/script.sh"
+
+# Recipes allow you to chain together tasks. Custom tasks from the previous
+# section are avaliable.
+#
+# Similar to tasks, any key found here that is provided by Waffle will replace
+# the regulary Waffle behavior for this project. 
+recipes:
+  site:sync: # Overrides site:sync to add an extra step. 
+    - site:sync:db
+    - site:sync:files
+    - site:sync:release
+    - site:sync:login
+    - hello:world # References custom task.
+  
+  foo:bar: # New recipe that is added as a command to Waffle.
+    - hello:world # References custom task.
+    - notify:slack # References custom task. 

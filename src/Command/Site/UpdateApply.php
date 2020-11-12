@@ -114,7 +114,7 @@ class UpdateApply extends BaseCommand
             'skip-git',
             null,
             null,
-            'Whether or not to skip the git commit step. The updater will stop after each dependency instead.',
+            'Whether or not to skip the git commit step. The updater will stop after each dependency instead.'
         );
         
         $this->addOption(

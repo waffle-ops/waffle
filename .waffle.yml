@@ -1,0 +1,11 @@
+host: custom
+
+# Defining CI tasks for Waffle here instead of implementing via a workflow.
+tasks:
+  # Defining a task to run the phpcs script. 
+  test:phpcs: ./scripts/tests/phpcs.sh
+
+recipes:
+  # Defining a ci recipe.
+  ci:
+    - test:phpcs: {}
