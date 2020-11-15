@@ -53,8 +53,15 @@ class Sync extends BaseCommand
         // TODO Need to check that example settings file is present.
         // TODO Add error handling in general.
 
+        $config = $this->getConfig();
         $upstream = $input->getOption('upstream');
-        $this->validateUpstream($upstream);
+        $allowed_upstreams = $config->getUpstreams();
+
+        if (!in_array($upstream, $allowed_upstreams)) {
+            $output->writeln('<error>Invalid upstream: ' . $upstream . '</error>');
+            $output->writeln('<error>Allowed upstreams: ' . implode('|', $allowed_upstreams) . '</error>');
+            return Command::FAILURE;
+        }
 
         $skip_db = $input->getOption('skip-db');
         if (!$skip_db) {
@@ -91,17 +98,4 @@ class Sync extends BaseCommand
         return Command::SUCCESS;
     }
 
-    private function validateUpstream($upstream)
-    {
-        $config = $this->getConfig();
-
-        $allowed_upstreams = explode(',', $config['upstreams']);
-
-        if (in_array($upstream, $allowed_upstreams)) {
-            return;
-        }
-
-        // TODO Better exceptions.
-        throw new \Exception('Invalid upstream...');
-    }
 }
