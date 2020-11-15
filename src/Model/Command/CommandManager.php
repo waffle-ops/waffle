@@ -91,12 +91,10 @@ class CommandManager
      */
     private function getUserDefinedTasks()
     {
-        $config = $this->getConfig()->getProjectConfig();
-
         $user_tasks = [];
 
         // Recipes (runs multiple tasks). Allows overriding 'core' recipes.
-        $tasks = isset($config['tasks']) ? $config['tasks'] : [];
+        $tasks = $this->getConfig()->getTasks() ?? [];
 
         foreach ($tasks as $task => $task_list) {
             $user_tasks[] = new \Waffle\Command\Custom\Task($task);
@@ -114,11 +112,9 @@ class CommandManager
      */
     private function getUserDefinedRecipes()
     {
-        $config = $this->getConfig()->getProjectConfig();
-
         $user_recipes = [];
 
-        $recipes = isset($config['recipes']) ? $config['recipes'] : [];
+        $recipes = $this->getConfig()->getRecipes() ?? [];
 
         foreach ($recipes as $recipe => $task_list) {
             $user_recipes[] = new \Waffle\Command\Custom\Recipe($recipe);

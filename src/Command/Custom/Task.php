@@ -28,8 +28,8 @@ class Task extends BaseCommand
 
         $output->writeln('<info>Running task <comment>' . $task_key . '</comment></info>');
 
-        $config = $this->getConfig();
-        $task = isset($config['tasks'][$task_key]) ? $config['tasks'][$task_key] : '';
+        $config_tasks = $this->getConfig()->getTasks() ?? [];
+        $task = isset($config_tasks[$task_key]) ? $config_tasks[$task_key] : '';
 
         // TODO: Would be wise to add some sort of validation here.
 
@@ -58,8 +58,4 @@ class Task extends BaseCommand
         }
     }
 
-    private function getTaskKey($config_key)
-    {
-        return 'task:' . $config_key;
-    }
 }
