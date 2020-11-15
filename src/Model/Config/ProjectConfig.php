@@ -138,6 +138,11 @@ class ProjectConfig
      */
     private function setProjectConfigDefaults()
     {
+        // TODO: Create a new a ConfigDeriver class to handle this sort of
+        // thing. We will also need decide / track which keys can be entered by
+        // users and which keys are derived. Many of the items here would be a
+        // good fit to live in a ~/.waffle.yml file.
+
         // Attempt to derive the composer.json path.
         if (!isset($this->project_config['composer_path'])) {
             $composer_path = $this->getComposerPath();
@@ -203,7 +208,7 @@ class ProjectConfig
      * @return string|array
      */
     private function get($key) {
-
+        return $this->project_config[$key];
     }
 
     /**
