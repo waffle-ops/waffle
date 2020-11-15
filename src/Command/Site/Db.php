@@ -54,13 +54,16 @@ class Db extends BaseCommand
         $config = $this->getConfig();
 
         // TODO Validate that drush alias is present / seems to be working with a status call.
+        $config = $this->getConfig();
         $upstream = $input->getOption('upstream');
-        $drush_alias = sprintf('@%s.%s', $config['drush_alias'], $upstream);
+        $allowed_upstreams = $config->getUpstreams();
+        $remote_alias = sprintf('@%s.%s', $config->getAlias(), $upstream);
 
         // Ensure upstream is valid.
-        $avaliable_upstreams = explode(',', $config['upstreams']);
-        if (!in_array($upstream, $avaliable_upstreams)) {
-            throw new \Exception('Error: Invalid upstream ' . $upstream);
+        if (!in_array($upstream, $allowed_upstreams)) {
+            $output->writeln('<error>Invalid upstream: ' . $upstream . '</error>');
+            $output->writeln('<error>Allowed upstreams: ' . implode('|', $allowed_upstreams) . '</error>');
+            return Command::FAILURE;
         }
 
         // Creates or clears the DB.
@@ -82,7 +85,7 @@ class Db extends BaseCommand
 
         // Pulls down the DB.
         $output->writeln('<info>Downloading latest database...</info>');
-        $db_export =  new DrushCommand([$drush_alias, 'sql-dump']);
+        $db_export =  new DrushCommand([$remote_alias, 'sql-dump']);
         // The 'sql-sync' command does not work on all Pantheon sites. See
         // https://pantheon.io/docs/drush
         $db_export_process = $db_export->run();
@@ -91,7 +94,8 @@ class Db extends BaseCommand
         // Installs the DB.
         $output->writeln('<info>Installing latest database...</info>');
         $db_import = new DrushCommand(['sql-cli']);
-        $db_import->run($db_export_output);
+        $db_import_process = $db_import->run($db_export_output);
+        $db_import_output = $db_import_process->getOutput();
 
         // Clears the caches.
         $output->writeln('<info>Clearing caches...</info>');

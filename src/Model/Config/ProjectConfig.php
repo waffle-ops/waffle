@@ -208,7 +208,11 @@ class ProjectConfig
      * @return string|array
      */
     private function get($key) {
-        return $this->project_config[$key];
+        if (isset($this->project_config[$key])) {
+            return $this->project_config[$key];
+        }
+
+        return null;
     }
 
     /**
@@ -268,9 +272,11 @@ class ProjectConfig
     /**
      * Gets the upstreams value as defined in the config file.
      *
-     * @return string
+     * @return string[]
      */
     public function getUpstreams() {
-        return $this->get(self::KEY_UPSTREAMS);
+        $raw_upstreams =  $this->get(self::KEY_UPSTREAMS) ?? '';
+        $allowed_upstreams = explode(',', $raw_upstreams);
+        return $allowed_upstreams;
     }
 }
