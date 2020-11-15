@@ -2,8 +2,10 @@
 
 namespace Waffle\Model\Config;
 
-use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
+use Waffle\Exception\Config\AmbiguousConfigException;
+use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Model\Output\Runner;
 
 class ProjectConfig
@@ -22,6 +24,13 @@ class ProjectConfig
      * $project_config The project configuration
      */
     private $project_config = [];
+
+    /**
+     * @var string
+     *
+     * Constant for config file name.
+     */
+    public const CONFIG_FILE = '.waffle.yml';
 
     /**
      * Constants for referencing keys in the config file.
@@ -83,25 +92,20 @@ class ProjectConfig
     }
 
     /**
-     * Loads the $project_config array.
+     * Loads the $project_config array (if possible).
+     *
+     * @throws MissingConfigFileException
+     * @throws AmbiguousConfigException
      *
      * @return void
      */
     private function loadProjectConfig()
     {
         $project_config_file = $this->getProjectConfigPath();
-        $this->project_config = [];
-        if (!empty($project_config_file)) {
-            $this->project_config = Yaml::parseFile($project_config_file);
-            $this->project_config['config_path'] = str_replace('.waffle.yml', '', $project_config_file);
-        } else {
-            $output = new ConsoleOutput();
-            $output->writeln('<error>Unable to find .waffle.yml - Falling back to derived defaults.</error>');
-        }
 
-        if (empty($this->project_config['config_path'])) {
-            $this->project_config['config_path'] = getcwd();
-        }
+        $this->project_config = [];
+        $this->project_config = Yaml::parseFile($project_config_file);
+        $this->project_config['config_path'] = str_replace('.waffle.yml', '', $project_config_file);
 
         $this->setProjectConfigDefaults();
     }
@@ -109,27 +113,38 @@ class ProjectConfig
     /**
      * Gets the project config path.
      *
+     * @throws MissingConfigFileException
+     * @throws AmbiguousConfigException
+     *
      * @return string
      */
     private function getProjectConfigPath()
     {
         // For initial launch, we will only check the current directory (assuming
         // docroot) and the immediate parent directory.
-        $cwd = getcwd();
+        $finder = new Finder();
+        $finder->ignoreDotFiles(false);
+        $finder->files();
+        $finder->in([
+            getcwd(),
+            dirname(getcwd() . '..'),
+        ]);
+        $finder->depth('== 0');
+        $finder->name(self::CONFIG_FILE);
 
-        // Current directory.
-        $project_config_file = $cwd . '/.waffle.yml';
-        if (file_exists($project_config_file)) {
-            return $project_config_file;
+        if (!$finder->hasResults()) {
+            throw new MissingConfigFileException();
         }
 
-        // Parent directory.
-        $project_config_file = $cwd . '/../.waffle.yml';
-        if (file_exists($project_config_file)) {
-            return $project_config_file;
+        if ($finder->count() > 1) {
+            throw new AmbiguousConfigException();
         }
 
-        return false;
+        $iterator = $finder->getIterator();
+        $iterator->rewind();
+        $file = $iterator->current();
+
+        return $file->getRealPath();
     }
 
     /**
@@ -200,27 +215,6 @@ class ProjectConfig
         }
 
         return false;
-    }
-
-    /**
-     * Performs a rough validation of the config file.
-     *
-     * @return string[]
-     */
-    public function validate() {
-        // TODO: Remove this extra load once derived config has been updated.
-
-        // Loading the config file again for validation.
-        $project_config_file = $this->getProjectConfigPath();
-        $validate_config = Yaml::parseFile($project_config_file);
-
-        $errors = [];
-
-        foreach($validate_config as $key => $value) {
-            if (!in_array($this->allowed_keys)) {
-                $errors[] = sprintf('Unknown key \'%s\'', $key);
-            }
-        }
     }
 
     /**

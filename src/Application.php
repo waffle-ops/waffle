@@ -5,14 +5,16 @@ namespace Waffle;
 use Symfony\Component\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Model\Command\CommandManager;
+use Waffle\Model\Validate\Preflight\PreflightValidator;
 
 class Application extends SymfonyApplication
 {
     public const NAME = 'Waffle';
-    
+
     public const VERSION = '1.0.0-alpha';
-        
+
     public const EMOJI_POOL = [
         // Older emojis that should be supported everywhere.
         "\u{1F353}", // Strawberry
@@ -36,8 +38,31 @@ class Application extends SymfonyApplication
 
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
-        $command_manager = new CommandManager();
-        $this->addCommands($command_manager->getCommands());
+        $passed_preflight_checks = true;
+        $missing_config = false;
+
+        try {
+            $validator = new PreflightValidator();
+            $validator->runChecks();
+        } catch (MissingConfigFileException $e) {
+            $passed_preflight_checks = false;
+            $missing_config = true;
+        } catch (\Exception $e) {
+            $passed_preflight_checks = false;
+        }
+
+        // Most exceptions should prevent Waffle commands from loading.
+        if ($passed_preflight_checks) {
+            $command_manager = new CommandManager();
+            $this->addCommands($command_manager->getCommands());
+        }
+
+        if ($missing_config) {
+            // TODO: Attach some sort of 'init' command that can help guide
+            // users in creating a .waffle.yml file.
+            $output->writeln('<error>No .waffle.yml file was found!</error>');
+            $output->writeln('<error>Waffle can\'t do much without knowing more about your project.</error>');
+        }
 
         parent::run();
     }
