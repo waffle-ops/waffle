@@ -2,6 +2,7 @@
 
 namespace Waffle\Model\Site\Sync;
 
-interface SiteSyncInterface {
+interface SiteSyncInterface
+{
     
 }

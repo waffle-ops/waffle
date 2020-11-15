@@ -26,13 +26,13 @@ class ProjectConfig
     /**
      * Constants for referencing keys in the config file.
      */
-    const KEY_ALIAS = 'alias';
-    const KEY_CMS = 'cms';
-    const KEY_DEFAULT_UPSTREAM = 'default_upstream';
-    const KEY_HOST = 'host';
-    const KEY_RECIPES = 'recipes';
-    const KEY_TASKS = 'tasks';
-    const KEY_UPSTREAMS = 'upstreams';
+    public const KEY_ALIAS = 'alias';
+    public const KEY_CMS = 'cms';
+    public const KEY_DEFAULT_UPSTREAM = 'default_upstream';
+    public const KEY_HOST = 'host';
+    public const KEY_RECIPES = 'recipes';
+    public const KEY_TASKS = 'tasks';
+    public const KEY_UPSTREAMS = 'upstreams';
 
     /**
      * @var array
@@ -79,10 +79,6 @@ class ProjectConfig
     public function getProjectConfig()
     {
         trigger_error('Warning: ProjectConfig::getProjectConfig() is deprecated. Use access methods instead.');
-
-        $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
-        trigger_error(json_encode($caller));
-
         return $this->project_config;
     }
 
@@ -207,11 +203,33 @@ class ProjectConfig
     }
 
     /**
+     * Performs a rough validation of the config file.
+     *
+     * @return string[]
+     */
+    public function validate() {
+        // TODO: Remove this extra load once derived config has been updated.
+
+        // Loading the config file again for validation.
+        $project_config_file = $this->getProjectConfigPath();
+        $validate_config = Yaml::parseFile($project_config_file);
+
+        $errors = [];
+
+        foreach($validate_config as $key => $value) {
+            if (!in_array($this->allowed_keys)) {
+                $errors[] = sprintf('Unknown key \'%s\'', $key);
+            }
+        }
+    }
+
+    /**
      * Gets the the config item for the specified key.
      *
      * @return string|array
      */
-    private function get($key) {
+    private function get($key)
+    {
         if (isset($this->project_config[$key])) {
             return $this->project_config[$key];
         }
@@ -224,7 +242,8 @@ class ProjectConfig
      *
      * @return string
      */
-    public function getAlias() {
+    public function getAlias()
+    {
         return $this->get(self::KEY_ALIAS);
     }
 
@@ -233,7 +252,8 @@ class ProjectConfig
      *
      * @return string
      */
-    public function getCms() {
+    public function getCms()
+    {
         return $this->get(self::KEY_CMS);
     }
 
@@ -242,7 +262,8 @@ class ProjectConfig
      *
      * @return string
      */
-    public function getDefaultUpstream() {
+    public function getDefaultUpstream()
+    {
         return $this->get(self::KEY_DEFAULT_UPSTREAM);
     }
 
@@ -251,7 +272,8 @@ class ProjectConfig
      *
      * @return string
      */
-    public function getHost() {
+    public function getHost()
+    {
         return $this->get(self::KEY_HOST);
     }
 
@@ -260,7 +282,8 @@ class ProjectConfig
      *
      * @return string
      */
-    public function getRecipes() {
+    public function getRecipes()
+    {
         return $this->get(self::KEY_RECIPES);
     }
 
@@ -269,7 +292,8 @@ class ProjectConfig
      *
      * @return string
      */
-    public function getTasks() {
+    public function getTasks()
+    {
         return $this->get(self::KEY_TASKS);
     }
 
@@ -278,7 +302,8 @@ class ProjectConfig
      *
      * @return string[]
      */
-    public function getUpstreams() {
+    public function getUpstreams()
+    {
         $raw_upstreams =  $this->get(self::KEY_UPSTREAMS) ?? '';
         $allowed_upstreams = explode(',', $raw_upstreams);
         return $allowed_upstreams;
