@@ -10,10 +10,12 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
 use Waffle\Traits\DefaultUpstreamTrait;
+use Waffle\Traits\ConfigTrait;
 
 class Sync extends BaseCommand
 {
     use DefaultUpstreamTrait;
+    use ConfigTrait;
 
     public const COMMAND_KEY = 'site:sync';
 
@@ -98,7 +100,7 @@ class Sync extends BaseCommand
         if (in_array($upstream, $allowed_upstreams)) {
             return;
         }
-        
+
         // TODO Better exceptions.
         throw new \Exception('Invalid upstream...');
     }

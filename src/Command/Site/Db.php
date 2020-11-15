@@ -10,10 +10,12 @@ use Waffle\Command\BaseCommand;
 use Waffle\Model\Drush\DrushCommand;
 use Waffle\Model\Drush\CacheClear;
 use Waffle\Traits\DefaultUpstreamTrait;
+use Waffle\Traits\ConfigTrait;
 
 class Db extends BaseCommand
 {
     use DefaultUpstreamTrait;
+    use ConfigTrait;
 
     public const COMMAND_KEY = 'site:sync:db';
 
@@ -22,7 +24,7 @@ class Db extends BaseCommand
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Pulls the database down from the specified upstream.');
         $this->setHelp('Pulls the database down from the specified upstream.');
-        
+
         // Shortcuts would be nice, but there seems to be an odd bug as of now
         // when using dashes: https://github.com/symfony/symfony/issues/27333
         $this->addOption(
@@ -66,12 +68,12 @@ class Db extends BaseCommand
         $db_reset = new DrushCommand(['sql-create', '-y']);
         $db_reset_process = $db_reset->run();
         $db_reset_output = $db_reset_process->getOutput();
-        
+
         // It may be wise to have a flag to try using the below. It is
         // technically better for larger databases, but is harder to debug when
         // things go wrong.
         // $db_sync = Process::fromShellCommandline('drush @local-ci-test.dev sql-dump | drush sql-cli');
-        
+
         // Note: Writing the DB to a temporary file and deleting also falls in
         // category.
 
