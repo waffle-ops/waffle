@@ -57,5 +57,4 @@ class Task extends BaseCommand
             return Command::FAILURE;
         }
     }
-
 }

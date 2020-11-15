@@ -4,9 +4,11 @@ namespace Waffle\Model\Validate\Preflight;
 
 use Symfony\Component\Validator\Validation;
 
-class PreflightValidator {
+class PreflightValidator
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         $validator = Validation::createValidator();
     }
 }
