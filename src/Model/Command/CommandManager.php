@@ -91,7 +91,7 @@ class CommandManager
      */
     private function getUserDefinedTasks()
     {
-        $config = $this->getConfig();
+        $config = $this->getConfig()->getProjectConfig();
 
         $user_tasks = [];
 
@@ -114,10 +114,10 @@ class CommandManager
      */
     private function getUserDefinedRecipes()
     {
-        $config = $this->getConfig();
+        $config = $this->getConfig()->getProjectConfig();
 
         $user_recipes = [];
-        
+
         $recipes = isset($config['recipes']) ? $config['recipes'] : [];
 
         foreach ($recipes as $recipe => $task_list) {

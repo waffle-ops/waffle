@@ -4,7 +4,7 @@ namespace Waffle\Traits;
 
 trait DefaultUpstreamTrait
 {
-    
+
     /**
      * getDefaultUpstream
      *
@@ -14,7 +14,7 @@ trait DefaultUpstreamTrait
      */
     private function getDefaultUpstream()
     {
-        $config = $this->getConfig();
+        $config = $this->getConfig()->getProjectConfig();
 
         if (isset($config['default_upstream'])) {
             return $config['default_upstream'];
