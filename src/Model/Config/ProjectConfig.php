@@ -79,6 +79,10 @@ class ProjectConfig
     public function getProjectConfig()
     {
         trigger_error('Warning: ProjectConfig::getProjectConfig() is deprecated. Use access methods instead.');
+
+        $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
+        trigger_error(json_encode($caller));
+
         return $this->project_config;
     }
 

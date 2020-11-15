@@ -45,8 +45,8 @@ class Recipe extends BaseCommand
         // class.
         $recipe = $input->getArgument('command');
 
-        $config = $this->getConfig();
-        $recipe_tasks = isset($config['recipes'][$this->config_key]) ? $config['recipes'][$this->config_key] : [];
+        $config_recipes = $this->getConfig()->getRecipes();
+        $recipe_tasks = isset($config_recipes[$this->config_key]) ? $config_recipes[$this->config_key] : [];
 
         $tasks = [];
         $arguments = [];
