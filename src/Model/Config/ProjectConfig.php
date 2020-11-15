@@ -22,7 +22,33 @@ class ProjectConfig
      * $project_config The project configuration
      */
     private $project_config = [];
-    
+
+    /**
+     * Constants for referencing keys in the config file.
+     */
+    const KEY_ALIAS = 'alias';
+    const KEY_CMS = 'cms';
+    const KEY_DEFAULT_UPSTREAM = 'default_upstream';
+    const KEY_HOST = 'host';
+    const KEY_RECIPES = 'recipes';
+    const KEY_TASKS = 'tasks';
+    const KEY_UPSTREAMS = 'upstreams';
+
+    /**
+     * @var array
+     *
+     * $allowed_keys The allowed top level keys of the config file.
+     */
+    private $allowed_keys = [
+        self::KEY_ALIAS,
+        self::KEY_CMS,
+        self::KEY_DEFAULT_UPSTREAM,
+        self::KEY_HOST,
+        self::KEY_RECIPES,
+        self::KEY_TASKS,
+        self::KEY_UPSTREAMS,
+    ];
+
     /**
      * Constructor
      */
@@ -30,7 +56,7 @@ class ProjectConfig
     {
         $this->loadProjectConfig();
     }
-    
+
     /**
      * Gets the ProjectConfig singleton.
      *
@@ -41,7 +67,7 @@ class ProjectConfig
         if (self::$instance == null) {
             self::$instance = new ProjectConfig();
         }
-    
+
         return self::$instance;
     }
 
@@ -52,6 +78,7 @@ class ProjectConfig
      */
     public function getProjectConfig()
     {
+        trigger_error('Warning: ProjectConfig::getProjectConfig() is deprecated. Use access methods instead.');
         return $this->project_config;
     }
 
@@ -71,11 +98,11 @@ class ProjectConfig
             $output = new ConsoleOutput();
             $output->writeln('<error>Unable to find .waffle.yml - Falling back to derived defaults.</error>');
         }
-    
+
         if (empty($this->project_config['config_path'])) {
             $this->project_config['config_path'] = getcwd();
         }
-        
+
         $this->setProjectConfigDefaults();
     }
 
@@ -95,16 +122,16 @@ class ProjectConfig
         if (file_exists($project_config_file)) {
             return $project_config_file;
         }
-    
+
         // Parent directory.
         $project_config_file = $cwd . '/../.waffle.yml';
         if (file_exists($project_config_file)) {
             return $project_config_file;
         }
-        
+
         return false;
     }
-    
+
     /**
      * If config is not explicitly set, then define some defaults from info that
      * can be derived from project structure and environment.
@@ -118,7 +145,7 @@ class ProjectConfig
                 $this->project_config['composer_path'] = $composer_path;
             }
         }
-        
+
         // Attempt to see if the Symfony CLI is installed.
         if (!isset($this->project_config['symfony_cli'])) {
             $output = Runner::getOutput('which symfony');
@@ -126,7 +153,7 @@ class ProjectConfig
                 $this->project_config['symfony_cli'] = $output;
             }
         }
-        
+
         // Attempt to determine the Drush minor and major versions.
         $drush_version = Runner::getOutput('drush version --format=string');
         if (!isset($this->project_config['drush_version'])) {
@@ -134,18 +161,18 @@ class ProjectConfig
                 $this->project_config['drush_version'] = $drush_version;
             }
         }
-    
+
         if (!isset($this->project_config['drush_major_version'])) {
             $drush_major_version = explode('.', $this->project_config['drush_version'])[0];
             if (!empty($drush_major_version)) {
                 $this->project_config['drush_major_version'] = $drush_major_version;
             }
         }
-    
-        
+
+
         // @todo: define and derive other config defaults based on project files.
     }
-    
+
     /**
      * Gets the composer.json path.
      *
@@ -154,19 +181,91 @@ class ProjectConfig
     private function getComposerPath()
     {
         $cwd = getcwd();
-        
+
         // Current directory.
         $composer_path = $cwd . '/composer.json';
         if (file_exists($composer_path)) {
             return './';
         }
-        
+
         // Parent directory.
         $composer_path = $cwd . '/../composer.json';
         if (file_exists($composer_path)) {
             return '../';
         }
-        
+
         return false;
+    }
+
+    /**
+     * Gets the the config item for the specified key.
+     *
+     * @return string|array
+     */
+    private function get($key) {
+
+    }
+
+    /**
+     * Gets the site alias as defined in the config file.
+     *
+     * @return string
+     */
+    public function getAlias() {
+        return $this->get(self::KEY_ALIAS);
+    }
+
+    /**
+     * Gets the cms as defined in the config file.
+     *
+     * @return string
+     */
+    public function getCms() {
+        return $this->get(self::KEY_CMS);
+    }
+
+    /**
+     * Gets the default upstream as defined in the config file.
+     *
+     * @return string
+     */
+    public function getDefaultUpstream() {
+        return $this->get(self::KEY_DEFAULT_UPSTREAM);
+    }
+
+    /**
+     * Gets the host value as defined in the config file.
+     *
+     * @return string
+     */
+    public function getHost() {
+        return $this->get(self::KEY_HOST);
+    }
+
+    /**
+     * Gets the recipes as defined in the config file.
+     *
+     * @return string
+     */
+    public function getRecipes() {
+        return $this->get(self::KEY_RECIPES);
+    }
+
+    /**
+     * Gets the task as defined in the config file.
+     *
+     * @return string
+     */
+    public function getTasks() {
+        return $this->get(self::KEY_TASKS);
+    }
+
+    /**
+     * Gets the upstreams value as defined in the config file.
+     *
+     * @return string
+     */
+    public function getUpstreams() {
+        return $this->get(self::KEY_UPSTREAMS);
     }
 }
