@@ -12,11 +12,8 @@ use Waffle\Model\Output\Runner;
 use Waffle\Model\Git\GitStatusShort;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Process\Process;
-use Waffle\Model\Drush\CacheClear;
-use Waffle\Model\Drush\UpdateDatabase;
 use Waffle\Model\Git\GitAddAll;
 use Waffle\Model\Git\GitCommit;
-use Waffle\Model\Drush\ConfigExport;
 
 class UpdateApply extends BaseCommand
 {
@@ -216,7 +213,7 @@ class UpdateApply extends BaseCommand
             );
         }
         
-        switch ($this->config['cms']) {
+        switch ($this->config->getCms()) {
             case "drupal8":
                 $this->applyDrupal8Updates();
                 break;
@@ -226,7 +223,6 @@ class UpdateApply extends BaseCommand
             case "wordpress":
             default:
                 throw new Exception('Platform not implemented yet.');
-                break;
         }
         
         return Command::SUCCESS;
@@ -234,12 +230,14 @@ class UpdateApply extends BaseCommand
     
     /**
      * Applies Drupal 8 site and dependency updates.
+     *
+     * @throws Exception
      */
     protected function applyDrupal8Updates()
     {
         $this->io->title('Applying Drupal 8 Pending Updates');
-        
-        if (!isset($this->config['composer_path'])) {
+    
+        if (empty($this->config->getComposerPath())) {
             $this->io->warning('Unable to apply pending composer updates: Missing composer file.');
         } else {
             $this->updateMinorComposerDependencies();
@@ -248,28 +246,29 @@ class UpdateApply extends BaseCommand
     
     /**
      * Applies Drupal 7 site and dependency updates.
+     *
+     * @throws Exception
      */
     protected function applyDrupal7Updates()
     {
         $this->io->title('Applying Drupal 7 Pending Updates');
-        
-        if (isset($this->config['composer_path'])) {
+    
+        if (!empty($this->config->getComposerPath())) {
             $this->updateMinorComposerDependencies();
         }
-        
+    
         // @todo: Abstract this into a command class?
-        $ups = Process::fromShellCommandline('drush ups --check-disabled --format=json');
-        $ups->run();
-        
+        $ups = $this->drushRunner->pmSecurity('json');
+    
         // @todo: check for errors before continuing.
         $ups_output = $ups->getOutput();
         $updates = json_decode($ups_output, true);
-        
+    
         if (empty($updates)) {
             $this->io->writeln('No pending updates found.');
             exit(0);
         }
-        
+    
         foreach ($updates as $module => $update) {
             $this->updateDrupal7Item($update);
         }
@@ -277,32 +276,33 @@ class UpdateApply extends BaseCommand
     
     /**
      * Updates a single Drupal 7 module/core package.
+     *
+     * @param $package
+     * @throws Exception
      */
     protected function updateDrupal7Item($package)
     {
         $name = $package['name'];
         $from = $package['existing_version'];
         $to = $package['latest_version'];
-        
+    
         $this->io->section("Updating {$name} from {$from} to {$to} ...");
+        // @todo: use $this->drushRunner for upc call
         $upc = Runner::failIfError(
             $this->io,
             "drush upc {$name} --check-disabled -y",
             "Error updating item {$name} ({$from} => {$to})"
         );
         $this->io->writeln(Runner::getOutput($upc));
-        
+    
         $this->io->section('Clearing Drupal cache');
-        $cc = (new CacheClear())->setup();
-        Runner::failIfError($this->io, $cc, 'Error when clearing Drupal cache.');
-        $this->io->writeln(Runner::getOutput($cc));
-        
-        
+        $cc = $this->drushRunner->clearCaches();
+        Runner::outputOrFail($this->io, $cc, 'Error when clearing Drupal cache.');
+    
         $this->io->section('Running any pending Drupal DB updates');
-        $updb = (new UpdateDatabase())->setup();
-        Runner::failIfError($this->io, $updb, 'Error when running pending Drupal DB updates.');
-        $this->io->writeln(Runner::getOutput($updb));
-        
+        $updb = $this->drushRunner->updateDatabase();
+        Runner::outputOrFail($this->io, $updb, 'Error when running pending Drupal DB updates.');
+    
         $git_pending_output = (new GitStatusShort())->run()->getOutput();
         if (empty($git_pending_output)) {
             $this->io->warning("No git changes found for: {$name} ({$from} => {$to})");
@@ -313,15 +313,15 @@ class UpdateApply extends BaseCommand
             $git_add = (new GitAddAll())->setup();
             Runner::failIfError($this->io, $git_add, 'Error when adding pending changes to git index.');
             $this->io->writeln(Runner::getOutput($git_add));
-            
+        
             $this->io->section('Committing changes to git.');
             $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
             $git_commit = (new GitCommit($message))->setup();
             Runner::failIfError($this->io, $git_commit, 'Error when committing to git.');
             $this->io->writeln(Runner::getOutput($git_commit));
         }
-        
-        if (!$this->config['drush_patcher_installed']) {
+    
+        if (!$this->config->getDrushPatcherInstalled()) {
             $this->io->warning(
                 "Unable to automatically reapply patches due to missing dependency: Drush Patcher"
             );
@@ -366,12 +366,14 @@ class UpdateApply extends BaseCommand
     
     /**
      * Gets a list of the composer minor outdated dependencies and applies the update.
+     *
+     * @throws Exception
      */
     protected function updateMinorComposerDependencies()
     {
         $pending_updates = Runner::getOutput(
             'composer outdated -Dmn --no-ansi --format="json" --working-dir="' .
-            $this->config['composer_path'] .
+            $this->config->getComposerPath() .
             '" "*/*"'
         );
         $pending_updates = json_decode($pending_updates, true);
@@ -409,6 +411,7 @@ class UpdateApply extends BaseCommand
      * Updates a single composer dependency minor update.
      *
      * @param $package
+     * @throws Exception
      */
     protected function updateMinorComposerDependency($package)
     {
@@ -425,7 +428,7 @@ class UpdateApply extends BaseCommand
     
         $update_command =
             "composer update --with-dependencies --no-ansi -n " .
-            "--working-dir='{$this->config['composer_path']}' {$package['name']}";
+            "--working-dir='{$this->config->getComposerPath()}' {$package['name']}";
         $update_process = Process::fromShellCommandline($update_command);
         // Increase the default timeout since this can sometimes take awhile.
         $update_process->setTimeout($this->timeout);
@@ -444,34 +447,22 @@ class UpdateApply extends BaseCommand
             $this->dumpProcess($update_process);
             exit(1);
         }
-        
+    
         // For some reason Composer puts the "error" output before the normal output.
         $this->io->writeln($update_process->getErrorOutput());
         $this->io->writeln($update_process->getOutput());
-        
+    
         // Clear the Drupal cache.
         $this->io->section('Clearing Drupal cache');
-        $cc = (new CacheClear())->setup();
-        $cc_output = Runner::getOutput($cc);
+        $cc = $this->drushRunner->clearCaches();
         // @todo: This isn't detecting php error output for some reason.
-        if (!empty($cc->getExitCode())) {
-            $this->io->error('Error when clearing Drupal cache.');
-            $this->dumpProcess($cc);
-            exit(1);
-        }
-        $this->io->writeln($cc_output);
-        
+        Runner::outputOrFail($this->io, $cc, 'Error when clearing Drupal cache.');
+    
         // Run any pending Drupal database updates.
         $this->io->section('Running any pending Drupal DB updates');
-        $updb = (new UpdateDatabase())->setup();
-        $updb_output = Runner::getOutput($updb);
-        if (!empty($updb->getExitCode())) {
-            $this->io->error('Error when running pending Drupal DB updates.');
-            $this->dumpProcess($updb);
-            exit(1);
-        }
-        $this->io->writeln($updb_output);
-        
+        $updb = $this->drushRunner->updateDatabase();
+        Runner::outputOrFail($this->io, $updb, 'Error when running pending Drupal DB updates.');
+    
         $git_pending_output = (new GitStatusShort())->run()->getOutput();
         if (empty($git_pending_output)) {
             $this->io->warning(
@@ -494,26 +485,13 @@ class UpdateApply extends BaseCommand
         
         if ($this->includeConfig) {
             $this->io->section('Clearing Drupal cache for config export');
-            $cc = (new CacheClear())->setup();
-            $cc_output = Runner::getOutput($cc);
-            if (!empty($cc->getExitCode())) {
-                $this->io->error('Error when clearing Drupal cache for config export.');
-                $this->dumpProcess($cc);
-                exit(1);
-            }
-            $this->io->writeln($cc_output);
-            
+            $cc = $this->drushRunner->clearCaches();
+            Runner::outputOrFail($this->io, $cc, 'Error when clearing Drupal cache for config export.');
+    
             $this->io->section('Exporting config changes.');
-            $cex = (new ConfigExport($this->configKey))->setup();
-            $cex_output = Runner::getOutput($cex);
-            if (!empty($cex->getExitCode())) {
-                $this->io->error('Error when exporting config.');
-                $this->dumpProcess($cex);
-                exit(1);
-            }
-            
-            $this->io->writeln($cex_output);
-            
+            $cex = $this->drushRunner->configExport($this->configKey);
+            Runner::outputOrFail($this->io, $cex, 'Error when exporting config.');
+    
             $git_pending_output = (new GitStatusShort())->run()->getOutput();
             if (!$this->skipGit && !empty($git_pending_output)) {
                 // @todo: refactor this repeated code for git add/commit into something reusable
@@ -521,7 +499,7 @@ class UpdateApply extends BaseCommand
                 $git_add = (new GitAddAll())->setup();
                 Runner::failIfError($this->io, $git_add, 'Error when adding pending changes to git index.');
                 $this->io->writeln(Runner::getOutput($git_add));
-    
+        
                 $this->io->section('Committing changes to git.');
                 $message =
                     "{$this->gitPrefix}Export config changes from update of {$name}" .
