@@ -50,9 +50,52 @@ class DrushCommandRunner
     }
 
     /**
+     * Resets the local database.
+     *
+     * @return Process
+     */
+    private function resetDatabase() {
+        $db_reset = new DrushCommand(['sql-create', '-y']);
+        return $db_reset->run();
+    }
+
+    /**
+     * Gets a database dump from the provided alias.
+     *
+     * @return Process
+     */
+    private function getDatabaseDump($alias) {
+        $db_export =  new DrushCommand([$alias, 'sql-dump']);
+        return $db_export->run();
+    }
+
+    /**
+     * Imports dumped sql into the database.
+     *
+     * @return Process
+     */
+    private function importDatabase($sql) {
+        $db_import = new DrushCommand(['sql-cli']);
+        return $db_import->run($sql);
+    }
+
+    /**
+     * Syncs the database from the remote alias to local.
+     *
+     * @return Process
+     */
+    public function syncDatabase($alias) {
+        $this->resetDatabase();
+        $dump = $this->getDatabaseDump($alias);
+        $sql = $dump->getOutput();
+        $this->importDatabase($sql);
+        $this->clearCaches();
+    }
+
+    /**
      * Clears caches for Drupal sites.
      *
-     * @return void
+     * @return Process
      */
     public function clearCaches() {
         $cc = [];

@@ -23,8 +23,8 @@ class DrushSiteSync implements SiteSyncInterface
     /**
      * {@inheritdoc}
      */
-    public function syncDatabase() {
-
+    public function syncDatabase($alias) {
+        return $this->drushRunner->syncDatabase($alias);
     }
 
     /**

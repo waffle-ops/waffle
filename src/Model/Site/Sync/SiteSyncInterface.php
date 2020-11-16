@@ -12,7 +12,7 @@ interface SiteSyncInterface
      *
      * @return Process
      */
-    public function syncDatabase();
+    public function syncDatabase($alias);
 
     /**
      * Syncs the database from the remote site to the local site.
