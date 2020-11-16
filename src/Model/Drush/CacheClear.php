@@ -2,14 +2,18 @@
 
 namespace Waffle\Model\Drush;
 
-use Symfony\Component\Process\Process;
-
 class CacheClear extends DrushCommand
 {
 
     public function __construct()
     {
-        // TODO Handle D7 vs D8.
-        parent::__construct(['cr']);
+        parent::__construct();
+    
+        $command = ['cc', 'all'];
+        if ($this->projectConfig['cms'] == 'drupal8') {
+            $command = ['cr'];
+        }
+    
+        $this->setArgs($command);
     }
 }

@@ -5,6 +5,7 @@ namespace Waffle\Model\Config;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Yaml\Yaml;
 use Waffle\Model\Output\Runner;
+use Symfony\Component\Process\Process;
 
 class ProjectConfig
 {
@@ -142,6 +143,14 @@ class ProjectConfig
             }
         }
     
+        if (!isset($this->project_config['drush_patcher_installed'])) {
+            $this->project_config['drush_patcher_installed'] = FALSE;
+            $drush_patcher_installed = Process::fromShellCommandline('drush patch-status');
+            $drush_patcher_installed->run();
+            if (empty($drush_patcher_installed->getExitCode())) {
+                $this->project_config['drush_patcher_installed'] = TRUE;
+            }
+        }
         
         // @todo: define and derive other config defaults based on project files.
     }

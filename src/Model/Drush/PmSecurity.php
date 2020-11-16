@@ -2,9 +2,6 @@
 
 namespace Waffle\Model\Drush;
 
-use Symfony\Component\Process\Process;
-use Symfony\Component\Console\Output\ConsoleOutput;
-
 class PmSecurity extends DrushCommand
 {
     
