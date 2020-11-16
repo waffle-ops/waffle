@@ -59,6 +59,13 @@ class ProjectConfig
     ];
 
     /**
+     * Constants for the 'cms' config key.
+     */
+    public const CMS_DRUPAL_7 = 'drupal7';
+    public const CMS_DRUPAL_8 = 'drupal8';
+    public const CMS_WORDPRESS = 'wordpress';
+
+    /**
      * Constructor
      */
     private function __construct()
