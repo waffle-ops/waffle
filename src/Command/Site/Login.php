@@ -38,6 +38,8 @@ class Login extends BaseCommand
             $process = $sync->postSyncLogin();
             $url = $process->getOutput();
             $this->io->success(sprintf('User Login: %s', $url));
+            // TODO: Attempt to open the url with the browser. Drush has
+            // already solved this problem. Check to see how they solved it.
         } catch (\Exception $e) {
             $this->io->error($e->getMessage());
             return Command::FAILURE;
