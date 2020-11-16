@@ -16,35 +16,40 @@ class DrushSiteSync implements SiteSyncInterface
     /**
      * Constructor
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->drushRunner = new DrushCommandRunner();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function syncDatabase($alias) {
+    public function syncDatabase($alias)
+    {
         return $this->drushRunner->syncDatabase($alias);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function syncFiles($alias) {
+    public function syncFiles($alias)
+    {
         return $this->drushRunner->syncFiles($alias);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function postSyncLogin() {
+    public function postSyncLogin()
+    {
         return $this->drushRunner->userLogin();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function clearCaches() {
+    public function clearCaches()
+    {
         return $this->drushRunner->clearCaches();
     }
 }

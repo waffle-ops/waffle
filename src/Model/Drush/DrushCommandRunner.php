@@ -58,7 +58,8 @@ class DrushCommandRunner
      *
      * @return Process
      */
-    private function resetDatabase() {
+    private function resetDatabase()
+    {
         $db_reset = new DrushCommand(['sql-create', '-y']);
         return $db_reset->run();
     }
@@ -68,7 +69,8 @@ class DrushCommandRunner
      *
      * @return Process
      */
-    private function getDatabaseDump($alias) {
+    private function getDatabaseDump($alias)
+    {
         $db_export =  new DrushCommand([$alias, 'sql-dump']);
         return $db_export->run();
     }
@@ -78,7 +80,8 @@ class DrushCommandRunner
      *
      * @return Process
      */
-    private function importDatabase($sql) {
+    private function importDatabase($sql)
+    {
         $db_import = new DrushCommand(['sql-cli']);
         return $db_import->run($sql);
     }
@@ -88,7 +91,8 @@ class DrushCommandRunner
      *
      * @return Process
      */
-    public function syncDatabase($alias) {
+    public function syncDatabase($alias)
+    {
         $this->resetDatabase();
         $dump = $this->getDatabaseDump($alias);
         $sql = $dump->getOutput();
@@ -101,7 +105,8 @@ class DrushCommandRunner
      *
      * @return Process
      */
-    public function syncFiles($alias) {
+    public function syncFiles($alias)
+    {
         $file_sync = new DrushCommand(['-y', 'core-rsync', $alias, 'sites/default/files']);
         return $file_sync->run();
     }
@@ -111,7 +116,8 @@ class DrushCommandRunner
      *
      * @return Process
      */
-    public function userLogin() {
+    public function userLogin()
+    {
         $uli = new DrushCommand(['uli']);
         return $uli->run();
     }
@@ -121,7 +127,8 @@ class DrushCommandRunner
      *
      * @return Process
      */
-    public function clearCaches() {
+    public function clearCaches()
+    {
         $cc = [];
 
         switch ($this->drupal_major_version) {
@@ -140,5 +147,4 @@ class DrushCommandRunner
         $cache_clear = new DrushCommand($cc);
         return $cache_clear->run();
     }
-
 }
