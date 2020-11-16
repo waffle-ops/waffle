@@ -9,6 +9,6 @@ class GitCommit extends GitCommand
     {
         $message = str_replace("'", "\'", $message);
         $message = str_replace('"', "\"", $message);
-        parent::__construct(['commit', "--message=\"{$message}\""]);
+        parent::__construct(['commit', "--message={$message}"]);
     }
 }

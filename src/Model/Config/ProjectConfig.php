@@ -46,6 +46,7 @@ class ProjectConfig
     public const KEY_COMPOSER_PATH = 'composer_path';
     public const KEY_DRUSH_MAJOR_VERSION = 'drush_major_version';
     public const KEY_SYMFONY_CLI = 'symfony_cli';
+    public const KEY_DRUSH_PATCHER_INSTALLED = 'drush_patcher_installed';
 
     /**
      * @var array
@@ -337,6 +338,16 @@ class ProjectConfig
     public function getSymfonyCli()
     {
         return $this->get(self::KEY_SYMFONY_CLI);
+    }
+    
+    /**
+     * Gets the drush patcher install status as defined in the config file.
+     *
+     * @return string
+     */
+    public function getDrushPatcherInstalled()
+    {
+        return $this->get(self::KEY_DRUSH_PATCHER_INSTALLED);
     }
 
     /**

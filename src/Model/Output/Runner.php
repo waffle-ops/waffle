@@ -129,4 +129,19 @@ class Runner
         $io->writeln($process->getOutput());
         exit(1);
     }
+    
+    /**
+     * Output a process after running or fail if it throws an error.
+     *
+     * @param SymfonyStyle $io
+     * @param $command
+     * @param string $error_message
+     * @return Process|null
+     */
+    public static function outputOrFail(SymfonyStyle $io, $command, $error_message = 'Error when running process.')
+    {
+        $process = Runner::failIfError($io, $command, $error_message);
+        $io->writeln(Runner::getOutput($process));
+        return $process;
+    }
 }
