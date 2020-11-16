@@ -377,7 +377,6 @@ class UpdateApply extends BaseCommand
             $this->io->writeln('Completed update. Review and commit the changes when ready.');
             exit(1);
         }
-        
     }
     
     /**
