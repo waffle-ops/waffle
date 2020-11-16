@@ -6,12 +6,7 @@ use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
-use Waffle\Model\Drush\DrushCommand;
-use Waffle\Model\Drush\PmSecurity;
 use Waffle\Model\Output\Runner;
 
 class UpdateStatus extends BaseCommand
@@ -39,7 +34,7 @@ class UpdateStatus extends BaseCommand
     {
         parent::execute($input, $output);
     
-        switch ($this->config['cms']) {
+        switch ($this->config->getCms()) {
             case "drupal8":
                 $this->generateDrupal8Report();
                 break;
@@ -49,7 +44,6 @@ class UpdateStatus extends BaseCommand
             case "wordpress":
             default:
                 throw new Exception('Platform not implemented yet.');
-                break;
         }
         
         return Command::SUCCESS;
@@ -57,13 +51,15 @@ class UpdateStatus extends BaseCommand
     
     /**
      * Outputs a Drupal 8 update report.
+     *
+     * @throws Exception
      */
     protected function generateDrupal8Report()
     {
         $this->io->title('Generating Drupal 8 Update Reports');
         
         // @todo: refactor this to reduce nesting and be separate functions.
-        if (!isset($this->config['composer_path'])) {
+        if (empty($this->config->getComposerPath())) {
             $this->io->warning('Unable to generate composer reports: Missing composer file.');
         } else {
             // @todo: should we run `composer install` here?
@@ -71,11 +67,11 @@ class UpdateStatus extends BaseCommand
             $this->generateComposerReport();
         }
     
-        if (!isset($this->config['drush_major_version'])) {
+        if (empty($this->config->getDrushMajorVersion())) {
             $this->io->warning('Unable to generate Drush module status: Missing drush install.');
         } else {
-            $pmSecurity = new PmSecurity();
-            Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity->setup());
+            $pmSecurity = $this->drushRunner->pmSecurity();
+            Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity);
         }
     
         // @todo: What other type of reporting should be done here? `npm audit`?
@@ -85,20 +81,22 @@ class UpdateStatus extends BaseCommand
     
     /**
      * Outputs a Drupal 8 update report.
+     *
+     * @throws Exception
      */
     protected function generateDrupal7Report()
     {
         $this->io->title('Generating Drupal 7 Update Reports');
         
-        if (isset($this->config['composer_path'])) {
+        if (!empty($this->config->getComposerPath())) {
             $this->generateComposerReport();
         }
         
-        if (!isset($this->config['drush_major_version'])) {
+        if (empty($this->config->getDrushMajorVersion())) {
             $this->io->warning('Unable to generate Drush module status: Missing drush install.');
         } else {
-            $pmSecurity = new PmSecurity();
-            Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity->setup());
+            $pmSecurity = $this->drushRunner->pmSecurity();
+            Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity);
         }
         
         // @todo: What other type of reporting should be done here? `npm audit`?
@@ -114,23 +112,23 @@ class UpdateStatus extends BaseCommand
         Runner::message(
             $this->io,
             'Checking minor version composer updates',
-            'composer outdated -Dmn --no-ansi --working-dir="' . $this->config['composer_path'] . '" "*/*"'
+            'composer outdated -Dmn --no-ansi --working-dir="' . $this->config->getComposerPath() . '" "*/*"'
         );
         Runner::message(
             $this->io,
             'Checking major version composer updates',
             'composer outdated -Dn --no-ansi --working-dir="' .
-            $this->config['composer_path'] .
+            $this->config->getComposerPath() .
             '" "*/*"  | grep -v "!"'
         );
         
-        if (!isset($this->config['symfony_cli'])) {
+        if (empty($this->config->getSymfonyCli())) {
             $this->io->warning('Unable to generate Symfony security reports: Missing Symfony CLI installation.');
         } else {
             Runner::message(
                 $this->io,
                 'Checking Symfony CLI security',
-                'symfony security:check --dir="' . $this->config['composer_path'] . '"'
+                'symfony security:check --dir="' . $this->config->getComposerPath() . '"'
             );
         }
     }

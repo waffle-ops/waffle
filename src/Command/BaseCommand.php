@@ -7,17 +7,35 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Exception\LogicException;
-use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Process\Process;
+use Waffle\Traits\ConfigTrait;
+use Waffle\Model\Config\ProjectConfig;
+use Waffle\Model\Drush\DrushCommandRunner;
 
 class BaseCommand extends Command
 {
+    use ConfigTrait;
+    
     /**
      * Defines the Input/Output helper object.
      *
      * @var SymfonyStyle
      */
     protected $io;
+    
+    /**
+     * A reference to the project config.
+     *
+     * @var ProjectConfig
+     */
+    protected $config;
+    
+    /**
+     * A reference to the drush command runner.
+     *
+     * @var DrushCommandRunner
+     */
+    protected $drushRunner;
 
     /**
      * @param string|null $name The name of the command; passing null means it must be set in configure()
@@ -27,6 +45,8 @@ class BaseCommand extends Command
     public function __construct(string $name = null)
     {
         parent::__construct($name);
+        $this->config = $this->getConfig();
+        $this->drushRunner = new DrushCommandRunner();
     }
 
     /**

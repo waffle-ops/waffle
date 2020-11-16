@@ -147,4 +147,28 @@ class DrushCommandRunner
         $cache_clear = new DrushCommand($cc);
         return $cache_clear->run();
     }
+    
+    /**
+     * Checks for pending security (Drush 9) and non-security (Drush 8) updates.
+     */
+    public function pmSecurity()
+    {
+        $args = [];
+        switch ($this->drush_major_version) {
+            case '8':
+                $args = ['ups', '--check-disabled'];
+                break;
+            case '9':
+                $args = ['pm:security'];
+                break;
+            default:
+                throw new \Exception(
+                    sprintf('Checking pending updates with Drush for Drush %s not supported.',
+                        $this->drush_major_version)
+                );
+        }
+    
+        $process = new DrushCommand($args);
+        return $process->run();
+    }
 }
