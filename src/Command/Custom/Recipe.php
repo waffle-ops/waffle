@@ -9,9 +9,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
+use Waffle\Traits\ConfigTrait;
 
 class Recipe extends BaseCommand
 {
+    use ConfigTrait;
 
     /**
      * @var string
@@ -42,9 +44,9 @@ class Recipe extends BaseCommand
         // Note: This is not explicitly defined here, but is from the parent
         // class.
         $recipe = $input->getArgument('command');
-        
-        $config = $this->getConfig();
-        $recipe_tasks = isset($config['recipes'][$this->config_key]) ? $config['recipes'][$this->config_key] : [];
+
+        $config_recipes = $this->getConfig()->getRecipes();
+        $recipe_tasks = isset($config_recipes[$this->config_key]) ? $config_recipes[$this->config_key] : [];
 
         $tasks = [];
         $arguments = [];
@@ -58,11 +60,11 @@ class Recipe extends BaseCommand
 
             // This will throw an exception if the task is not found.
             $command = $this->getApplication()->find($task_key);
-            
+
             $arguments = isset($task[$task_key]) ? $task[$task_key] : [];
             $tasks[] = [$task_key => $arguments];
         }
-        
+
         // Runs the tasks for the recipes.
         foreach ($tasks as $task) {
             $output->writeln('<info>Recipe - running <comment>' . $task_key . '</comment></info>');
@@ -74,7 +76,7 @@ class Recipe extends BaseCommand
 
             $task_arguments = $this->prepareTaskArguments($args);
             $return_code = $task_command->run($task_arguments, $output);
-            
+
             if ($return_code !== Command::SUCCESS) {
                 $output->writeln('<error>Recipe ' . $recipe_key . ' failed while running ' . $task_key . '.</error>');
                 $output->writeln('<error>See error output for more details.</error>');
@@ -120,7 +122,7 @@ class Recipe extends BaseCommand
         foreach ($args as $key => $value) {
             $input_args[$key] = $value;
         }
-        
+
         return new ArrayInput($input_args);
     }
 

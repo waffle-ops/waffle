@@ -2,8 +2,10 @@
 
 namespace Waffle\Model\Config;
 
-use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
+use Waffle\Exception\Config\AmbiguousConfigException;
+use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Model\Output\Runner;
 use Symfony\Component\Process\Process;
 
@@ -23,7 +25,47 @@ class ProjectConfig
      * $project_config The project configuration
      */
     private $project_config = [];
-    
+
+    /**
+     * @var string
+     *
+     * Constant for config file name.
+     */
+    public const CONFIG_FILE = '.waffle.yml';
+
+    /**
+     * Constants for referencing keys in the config file.
+     */
+    public const KEY_ALIAS = 'alias';
+    public const KEY_CMS = 'cms';
+    public const KEY_DEFAULT_UPSTREAM = 'default_upstream';
+    public const KEY_HOST = 'host';
+    public const KEY_RECIPES = 'recipes';
+    public const KEY_TASKS = 'tasks';
+    public const KEY_UPSTREAMS = 'upstreams';
+
+    /**
+     * @var array
+     *
+     * $allowed_keys The allowed top level keys of the config file.
+     */
+    private $allowed_keys = [
+        self::KEY_ALIAS,
+        self::KEY_CMS,
+        self::KEY_DEFAULT_UPSTREAM,
+        self::KEY_HOST,
+        self::KEY_RECIPES,
+        self::KEY_TASKS,
+        self::KEY_UPSTREAMS,
+    ];
+
+    /**
+     * Constants for the 'cms' config key.
+     */
+    public const CMS_DRUPAL_7 = 'drupal7';
+    public const CMS_DRUPAL_8 = 'drupal8';
+    public const CMS_WORDPRESS = 'wordpress';
+
     /**
      * Constructor
      */
@@ -31,7 +73,7 @@ class ProjectConfig
     {
         $this->loadProjectConfig();
     }
-    
+
     /**
      * Gets the ProjectConfig singleton.
      *
@@ -42,7 +84,7 @@ class ProjectConfig
         if (self::$instance == null) {
             self::$instance = new ProjectConfig();
         }
-    
+
         return self::$instance;
     }
 
@@ -53,35 +95,34 @@ class ProjectConfig
      */
     public function getProjectConfig()
     {
+        trigger_error('Warning: ProjectConfig::getProjectConfig() is deprecated. Use access methods instead.');
         return $this->project_config;
     }
 
     /**
-     * Loads the $project_config array.
+     * Loads the $project_config array (if possible).
+     *
+     * @throws MissingConfigFileException
+     * @throws AmbiguousConfigException
      *
      * @return void
      */
     private function loadProjectConfig()
     {
         $project_config_file = $this->getProjectConfigPath();
+
         $this->project_config = [];
-        if (!empty($project_config_file)) {
-            $this->project_config = Yaml::parseFile($project_config_file);
-            $this->project_config['config_path'] = str_replace('.waffle.yml', '', $project_config_file);
-        } else {
-            $output = new ConsoleOutput();
-            $output->writeln('<error>Unable to find .waffle.yml - Falling back to derived defaults.</error>');
-        }
-    
-        if (empty($this->project_config['config_path'])) {
-            $this->project_config['config_path'] = getcwd();
-        }
-        
+        $this->project_config = Yaml::parseFile($project_config_file);
+        $this->project_config['config_path'] = str_replace('.waffle.yml', '', $project_config_file);
+
         $this->setProjectConfigDefaults();
     }
 
     /**
      * Gets the project config path.
+     *
+     * @throws MissingConfigFileException
+     * @throws AmbiguousConfigException
      *
      * @return string
      */
@@ -89,23 +130,31 @@ class ProjectConfig
     {
         // For initial launch, we will only check the current directory (assuming
         // docroot) and the immediate parent directory.
-        $cwd = getcwd();
+        $finder = new Finder();
+        $finder->ignoreDotFiles(false);
+        $finder->files();
+        $finder->in([
+            getcwd(),
+            dirname(getcwd() . '..'),
+        ]);
+        $finder->depth('== 0');
+        $finder->name(self::CONFIG_FILE);
 
-        // Current directory.
-        $project_config_file = $cwd . '/.waffle.yml';
-        if (file_exists($project_config_file)) {
-            return $project_config_file;
+        if (!$finder->hasResults()) {
+            throw new MissingConfigFileException();
         }
-    
-        // Parent directory.
-        $project_config_file = $cwd . '/../.waffle.yml';
-        if (file_exists($project_config_file)) {
-            return $project_config_file;
+
+        if ($finder->count() > 1) {
+            throw new AmbiguousConfigException();
         }
-        
-        return false;
+
+        $iterator = $finder->getIterator();
+        $iterator->rewind();
+        $file = $iterator->current();
+
+        return $file->getRealPath();
     }
-    
+
     /**
      * If config is not explicitly set, then define some defaults from info that
      * can be derived from project structure and environment.
@@ -113,29 +162,33 @@ class ProjectConfig
     private function setProjectConfigDefaults()
     {
         // Attempt to derive the composer.json path.
+        // TODO Refactor this unto a SymdonyCommandRunner class.
         if (!isset($this->project_config['composer_path'])) {
             $composer_path = $this->getComposerPath();
             if (!empty($composer_path)) {
                 $this->project_config['composer_path'] = $composer_path;
             }
         }
-        
+
         // Attempt to see if the Symfony CLI is installed.
+        // TODO Refactor this unto a SymdonyCommandRunner class.
         if (!isset($this->project_config['symfony_cli'])) {
             $output = Runner::getOutput('which symfony');
             if (!empty($output)) {
                 $this->project_config['symfony_cli'] = $output;
             }
         }
-        
+
         // Attempt to determine the Drush minor and major versions.
+        // TODO Remove this once we cut over to DrushCommandRunner.
         $drush_version = Runner::getOutput('drush version --format=string');
         if (!isset($this->project_config['drush_version'])) {
             if (!empty($drush_version)) {
                 $this->project_config['drush_version'] = $drush_version;
             }
         }
-    
+
+        // TODO Remove this once we cut over to DrushCommandRunner.
         if (!isset($this->project_config['drush_major_version'])) {
             $drush_major_version = explode('.', $this->project_config['drush_version'])[0];
             if (!empty($drush_major_version)) {
@@ -154,7 +207,7 @@ class ProjectConfig
         
         // @todo: define and derive other config defaults based on project files.
     }
-    
+
     /**
      * Gets the composer.json path.
      *
@@ -163,19 +216,105 @@ class ProjectConfig
     private function getComposerPath()
     {
         $cwd = getcwd();
-        
+
         // Current directory.
         $composer_path = $cwd . '/composer.json';
         if (file_exists($composer_path)) {
             return './';
         }
-        
+
         // Parent directory.
         $composer_path = $cwd . '/../composer.json';
         if (file_exists($composer_path)) {
             return '../';
         }
-        
+
         return false;
+    }
+
+    /**
+     * Gets the the config item for the specified key.
+     *
+     * @return string|array
+     */
+    private function get($key)
+    {
+        if (isset($this->project_config[$key])) {
+            return $this->project_config[$key];
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the site alias as defined in the config file.
+     *
+     * @return string
+     */
+    public function getAlias()
+    {
+        return $this->get(self::KEY_ALIAS);
+    }
+
+    /**
+     * Gets the cms as defined in the config file.
+     *
+     * @return string
+     */
+    public function getCms()
+    {
+        return $this->get(self::KEY_CMS);
+    }
+
+    /**
+     * Gets the default upstream as defined in the config file.
+     *
+     * @return string
+     */
+    public function getDefaultUpstream()
+    {
+        return $this->get(self::KEY_DEFAULT_UPSTREAM);
+    }
+
+    /**
+     * Gets the host value as defined in the config file.
+     *
+     * @return string
+     */
+    public function getHost()
+    {
+        return $this->get(self::KEY_HOST);
+    }
+
+    /**
+     * Gets the recipes as defined in the config file.
+     *
+     * @return string
+     */
+    public function getRecipes()
+    {
+        return $this->get(self::KEY_RECIPES);
+    }
+
+    /**
+     * Gets the task as defined in the config file.
+     *
+     * @return string
+     */
+    public function getTasks()
+    {
+        return $this->get(self::KEY_TASKS);
+    }
+
+    /**
+     * Gets the upstreams value as defined in the config file.
+     *
+     * @return string[]
+     */
+    public function getUpstreams()
+    {
+        $raw_upstreams =  $this->get(self::KEY_UPSTREAMS) ?? '';
+        $allowed_upstreams = explode(',', $raw_upstreams);
+        return $allowed_upstreams;
     }
 }

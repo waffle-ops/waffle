@@ -7,13 +7,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Waffle\Command\BaseCommand;
-use Waffle\Model\Drush\DrushCommand;
-use Waffle\Model\Drush\CacheClear;
+use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\DefaultUpstreamTrait;
+use Waffle\Traits\ConfigTrait;
 
 class Db extends BaseCommand
 {
     use DefaultUpstreamTrait;
+    use ConfigTrait;
 
     public const COMMAND_KEY = 'site:sync:db';
 
@@ -22,7 +23,7 @@ class Db extends BaseCommand
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Pulls the database down from the specified upstream.');
         $this->setHelp('Pulls the database down from the specified upstream.');
-        
+
         // Shortcuts would be nice, but there seems to be an odd bug as of now
         // when using dashes: https://github.com/symfony/symfony/issues/27333
         $this->addOption(
@@ -40,61 +41,37 @@ class Db extends BaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // TODO Load site config and alter behavior depending on the config.
-        // Pantheon, Acquia, WP, Drupal, etc...
-        // Currently assumes Drupal 8, no hosting provider
+        parent::execute($input, $output);
 
         // TODO Need to check that example settings file is present.
         // TOOD Need to check that DB connection is valid.
-        // TODO Add some error handling in general.
-        // TODO Write to the console with general status updates.
 
         $config = $this->getConfig();
-
-        // TODO Validate that drush alias is present / seems to be working with a status call.
         $upstream = $input->getOption('upstream');
-        $drush_alias = sprintf('@%s.%s', $config['drush_alias'], $upstream);
+        $allowed_upstreams = $config->getUpstreams();
+        $remote_alias = sprintf('@%s.%s', $config->getAlias(), $upstream);
 
         // Ensure upstream is valid.
-        $avaliable_upstreams = explode(',', $config['upstreams']);
-        if (!in_array($upstream, $avaliable_upstreams)) {
-            throw new \Exception('Error: Invalid upstream ' . $upstream);
+        if (!in_array($upstream, $allowed_upstreams)) {
+            $this->io->error(
+                sprintf('Invalid upstream: %s. Allowed upstreams: %s', $upstream, implode('|', $allowed_upstreams))
+            );
+            return Command::FAILURE;
         }
 
-        // Creates or clears the DB.
-        $output->writeln('<info>Resetting the local database...</info>');
-        $db_reset = new DrushCommand(['sql-create', '-y']);
-        $db_reset_process = $db_reset->run();
-        $db_reset_output = $db_reset_process->getOutput();
-        
-        // It may be wise to have a flag to try using the below. It is
-        // technically better for larger databases, but is harder to debug when
-        // things go wrong.
-        // $db_sync = Process::fromShellCommandline('drush @local-ci-test.dev sql-dump | drush sql-cli');
-        
-        // Note: Writing the DB to a temporary file and deleting also falls in
-        // category.
-
-        // TODO: We should have a flag to pull from a recent backup instead of
-        // adding more load to the DB server.
-
-        // Pulls down the DB.
-        $output->writeln('<info>Downloading latest database...</info>');
-        $db_export =  new DrushCommand([$drush_alias, 'sql-dump']);
-        // The 'sql-sync' command does not work on all Pantheon sites. See
-        // https://pantheon.io/docs/drush
-        $db_export_process = $db_export->run();
-        $db_export_output = $db_export_process->getOutput();
-
-        // Installs the DB.
-        $output->writeln('<info>Installing latest database...</info>');
-        $db_import = new DrushCommand(['sql-cli']);
-        $db_import->run($db_export_output);
-
-        // Clears the caches.
-        $output->writeln('<info>Clearing caches...</info>');
-        $cache_clear = new CacheClear();
-        $cache_clear->run();
+        try {
+            $factory = new SiteSyncFactory();
+            $sync = $factory->getSiteSyncAdapter($config->getCms());
+            $sync->syncDatabase($remote_alias);
+            $this->io->success('Database Sync');
+            // TODO Write to the console with more general status updates.
+            // Maybe expose the reset, export, import, and cache clear steps?
+            // Holding on this until we jump to Wordpress -- anything common
+            // between the two can be exposed for better output.
+        } catch (\Exception $e) {
+            $this->io->error($e->getMessage());
+            return Command::FAILURE;
+        }
 
         return Command::SUCCESS;
     }

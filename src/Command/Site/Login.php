@@ -7,11 +7,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Waffle\Command\BaseCommand;
-use Waffle\Model\Drush\DrushCommand;
-use Waffle\Model\Drush\CacheClear;
+use Waffle\Model\Site\Sync\SiteSyncFactory;
+use Waffle\Traits\ConfigTrait;
 
 class Login extends BaseCommand
 {
+    use ConfigTrait;
 
     public const COMMAND_KEY = 'site:sync:login';
 
@@ -20,23 +21,29 @@ class Login extends BaseCommand
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Attempts to perform a user login action on the site.');
         $this->setHelp('Attempts to perform a user login action on the site.');
-        
+
         // TODO Add support for arguments: --name, email?, user id?
         // This could be pulled out a level and support dev, stg, prod
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // TODO Load site config and alter behavior depending on the config.
-        // Pantheon, Acquia, WP, Drupal, etc...
-        // Currently assumes Drupal 8, no hosting provider
+        parent::execute($input, $output);
 
-        // Installs the DB.
-        $output->writeln('<info>Attempting user login...</info>');
-        $uli = new DrushCommand(['uli']);
-        $uli_process = $uli->run();
-        $uli_process_output = $uli_process->getOutput();
-        $output->writeln('<info>' . $uli_process_output . '</info>');
+        $config = $this->getConfig();
+
+        try {
+            $factory = new SiteSyncFactory();
+            $sync = $factory->getSiteSyncAdapter($config->getCms());
+            $process = $sync->postSyncLogin();
+            $url = $process->getOutput();
+            $this->io->success(sprintf('User Login: %s', $url));
+            // TODO: Attempt to open the url with the browser. Drush has
+            // already solved this problem. Check to see how they solved it.
+        } catch (\Exception $e) {
+            $this->io->error($e->getMessage());
+            return Command::FAILURE;
+        }
 
         return Command::SUCCESS;
     }

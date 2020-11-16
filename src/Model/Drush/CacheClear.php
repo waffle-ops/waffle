@@ -7,13 +7,7 @@ class CacheClear extends DrushCommand
 
     public function __construct()
     {
-        parent::__construct();
-    
-        $command = ['cc', 'all'];
-        if ($this->projectConfig['cms'] == 'drupal8') {
-            $command = ['cr'];
-        }
-    
-        $this->setArgs($command);
+        trigger_error('Warning: Drush command classes have been deprecated. Use DrushCommandRunner instead.');
+        parent::__construct(['cr']);
     }
 }

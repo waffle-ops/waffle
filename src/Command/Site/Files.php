@@ -7,13 +7,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Waffle\Command\BaseCommand;
-use Waffle\Model\Drush\DrushCommand;
-use Waffle\Model\Drush\CacheClear;
+use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\DefaultUpstreamTrait;
+use Waffle\Traits\ConfigTrait;
 
 class Files extends BaseCommand
 {
     use DefaultUpstreamTrait;
+    use ConfigTrait;
 
     public const COMMAND_KEY = 'site:sync:files';
 
@@ -22,7 +23,7 @@ class Files extends BaseCommand
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Pulls the files down from the specified upstream.');
         $this->setHelp('Pulls the files down from the specified upstream.');
-        
+
         // Shortcuts would be nice, but there seems to be an odd bug as of now
         // when using dashes: https://github.com/symfony/symfony/issues/27333
         $this->addOption(
@@ -40,12 +41,31 @@ class Files extends BaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // TODO Load site config and alter behavior depending on the config.
-        // Pantheon, Acquia, WP, Drupal, etc...
-        // Currently assumes Drupal 8, no hosting provider
+        parent::execute($input, $output);
 
-        // TODO -- Download the files.
-        $output->writeln('<info>Downloading files...</info>');
+        $config = $this->getConfig();
+        $upstream = $input->getOption('upstream');
+        $allowed_upstreams = $config->getUpstreams();
+
+        // Ensure upstream is valid.
+        if (!in_array($upstream, $allowed_upstreams)) {
+            $this->io->error(
+                sprintf('Invalid upstream: %s. Allowed upstreams: %s', $upstream, implode('|', $allowed_upstreams))
+            );
+            return Command::FAILURE;
+        }
+
+        $remote_alias = sprintf('@%s.%s:%%files/', $config->getAlias(), $upstream);
+
+        try {
+            $factory = new SiteSyncFactory();
+            $sync = $factory->getSiteSyncAdapter($config->getCms());
+            $sync->syncFiles($remote_alias);
+            $this->io->success('Files Sync');
+        } catch (\Exception $e) {
+            $this->io->error($e->getMessage());
+            return Command::FAILURE;
+        }
 
         return Command::SUCCESS;
     }

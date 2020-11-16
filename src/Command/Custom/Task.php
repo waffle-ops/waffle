@@ -9,9 +9,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
+use Waffle\Traits\ConfigTrait;
 
 class Task extends BaseCommand
 {
+    use ConfigTrait;
 
     protected function configure()
     {
@@ -25,9 +27,9 @@ class Task extends BaseCommand
         $task_key = $input->getArgument('command');
 
         $output->writeln('<info>Running task <comment>' . $task_key . '</comment></info>');
-        
-        $config = $this->getConfig();
-        $task = isset($config['tasks'][$task_key]) ? $config['tasks'][$task_key] : '';
+
+        $config_tasks = $this->getConfig()->getTasks() ?? [];
+        $task = isset($config_tasks[$task_key]) ? $config_tasks[$task_key] : '';
 
         // TODO: Would be wise to add some sort of validation here.
 
@@ -35,18 +37,18 @@ class Task extends BaseCommand
         // Would be better id this used an input array.
         $process = Process::fromShellCommandline($task);
         $process->run();
-                
+
         // TODO Handle output. Can it be streamed? Or do we actually have to
         // wait until process completes? What happens in the case of something
         // like 'drush pmu' where the '-y' is ommitted?
 
         if ($process->isSuccessful()) {
             $output->writeln('<info>Task <comment>' . $task_key . '</comment> ran sucessfully</info>');
-            
+
             if (!empty($process->getOutput())) {
                 $output->writeln('<info>' . $process->getOutput() . '</info>');
             }
-            
+
             return Command::SUCCESS;
         } else {
             $output->writeln('<error>Task ' . $task_key . ' returned with an error.</error>');
@@ -54,10 +56,5 @@ class Task extends BaseCommand
             $output->writeln('<error>' . $process->getErrorOutput() . '</error>');
             return Command::FAILURE;
         }
-    }
-
-    private function getTaskKey($config_key)
-    {
-        return 'task:' . $config_key;
     }
 }

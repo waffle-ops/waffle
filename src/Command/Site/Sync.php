@@ -9,11 +9,14 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
+use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\DefaultUpstreamTrait;
+use Waffle\Traits\ConfigTrait;
 
 class Sync extends BaseCommand
 {
     use DefaultUpstreamTrait;
+    use ConfigTrait;
 
     public const COMMAND_KEY = 'site:sync';
 
@@ -44,20 +47,24 @@ class Sync extends BaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // TODO Load site config and alter behavior depending on the config.
-        // Pantheon, Acquia, WP, Drupal, etc...
-        // Currently assumes Drupal 8
+        parent::execute($input, $output);
 
-        // TODO Need to check that example settings file is present.
-        // TODO Add error handling in general.
-
+        $config = $this->getConfig();
         $upstream = $input->getOption('upstream');
-        $this->validateUpstream($upstream);
+        $allowed_upstreams = $config->getUpstreams();
+
+        // Ensure upstream is valid.
+        if (!in_array($upstream, $allowed_upstreams)) {
+            $this->io->error(
+                sprintf('Invalid upstream: %s. Allowed upstreams: %s', $upstream, implode('|', $allowed_upstreams))
+            );
+            return Command::FAILURE;
+        }
 
         $skip_db = $input->getOption('skip-db');
         if (!$skip_db) {
             $command = $this->getApplication()->find(Db::COMMAND_KEY);
-            $args = new ArrayInput([]);
+            $args = new ArrayInput(['--upstream' => $upstream]);
             $return_code = $command->run($args, $output);
             // TODO Handle return code issues.
         }
@@ -65,7 +72,7 @@ class Sync extends BaseCommand
         $skip_files = $input->getOption('skip-files');
         if (!$skip_files) {
             $command = $this->getApplication()->find(Files::COMMAND_KEY);
-            $args = new ArrayInput([]);
+            $args = new ArrayInput(['--upstream' => $upstream]);
             $return_code = $command->run($args, $output);
             // TODO Handle return code issues.
         }
@@ -87,19 +94,5 @@ class Sync extends BaseCommand
         }
 
         return Command::SUCCESS;
-    }
-
-    private function validateUpstream($upstream)
-    {
-        $config = $this->getConfig();
-
-        $allowed_upstreams = explode(',', $config['upstreams']);
-
-        if (in_array($upstream, $allowed_upstreams)) {
-            return;
-        }
-        
-        // TODO Better exceptions.
-        throw new \Exception('Invalid upstream...');
     }
 }

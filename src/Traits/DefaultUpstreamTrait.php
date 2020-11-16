@@ -4,7 +4,7 @@ namespace Waffle\Traits;
 
 trait DefaultUpstreamTrait
 {
-    
+
     /**
      * getDefaultUpstream
      *
@@ -14,14 +14,16 @@ trait DefaultUpstreamTrait
      */
     private function getDefaultUpstream()
     {
-        $config = $this->getConfig();
+        $config =  $this->getConfig();
+        $default_upstream = $config->getDefaultUpstream();
 
-        if (isset($config['default_upstream'])) {
-            return $config['default_upstream'];
+        if (!empty($default_upstream)) {
+            return $default_upstream;
         }
 
         // If we know this is a Pantheon site, let's use live.
-        if ($config['host'] === 'pantheon') {
+        $host = $config->getHost();
+        if (!empty($host) && ($host === 'pantheon')) {
             return 'live';
         }
 
