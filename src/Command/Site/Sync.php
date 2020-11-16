@@ -9,6 +9,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
+use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\DefaultUpstreamTrait;
 use Waffle\Traits\ConfigTrait;
 
@@ -66,34 +67,34 @@ class Sync extends BaseCommand
         $skip_db = $input->getOption('skip-db');
         if (!$skip_db) {
             $command = $this->getApplication()->find(Db::COMMAND_KEY);
-            $args = new ArrayInput([]);
+            $args = new ArrayInput(['--upstream' => $upstream]);
             $return_code = $command->run($args, $output);
             // TODO Handle return code issues.
         }
 
-        $skip_files = $input->getOption('skip-files');
-        if (!$skip_files) {
-            $command = $this->getApplication()->find(Files::COMMAND_KEY);
-            $args = new ArrayInput([]);
-            $return_code = $command->run($args, $output);
-            // TODO Handle return code issues.
-        }
+        // $skip_files = $input->getOption('skip-files');
+        // if (!$skip_files) {
+        //     $command = $this->getApplication()->find(Files::COMMAND_KEY);
+        //     $args = new ArrayInput([]);
+        //     $return_code = $command->run($args, $output);
+        //     // TODO Handle return code issues.
+        // }
 
-        $skip_release = $input->getOption('skip-release');
-        if (!$skip_release) {
-            $command = $this->getApplication()->find(Release::COMMAND_KEY);
-            $args = new ArrayInput([]);
-            $return_code = $command->run($args, $output);
-            // TODO Handle return code issues.
-        }
+        // $skip_release = $input->getOption('skip-release');
+        // if (!$skip_release) {
+        //     $command = $this->getApplication()->find(Release::COMMAND_KEY);
+        //     $args = new ArrayInput([]);
+        //     $return_code = $command->run($args, $output);
+        //     // TODO Handle return code issues.
+        // }
 
-        $skip_login = $input->getOption('skip-login');
-        if (!$skip_login) {
-            $command = $this->getApplication()->find(Login::COMMAND_KEY);
-            $args = new ArrayInput([]);
-            $return_code = $command->run($args, $output);
-            // TODO Handle return code issues.
-        }
+        // $skip_login = $input->getOption('skip-login');
+        // if (!$skip_login) {
+        //     $command = $this->getApplication()->find(Login::COMMAND_KEY);
+        //     $args = new ArrayInput([]);
+        //     $return_code = $command->run($args, $output);
+        //     // TODO Handle return code issues.
+        // }
 
         return Command::SUCCESS;
     }
