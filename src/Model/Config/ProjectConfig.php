@@ -160,12 +160,8 @@ class ProjectConfig
      */
     private function setProjectConfigDefaults()
     {
-        // TODO: Create a new a ConfigDeriver class to handle this sort of
-        // thing. We will also need decide / track which keys can be entered by
-        // users and which keys are derived. Many of the items here would be a
-        // good fit to live in a ~/.waffle.yml file.
-
         // Attempt to derive the composer.json path.
+        // TODO Refactor this unto a SymdonyCommandRunner class.
         if (!isset($this->project_config['composer_path'])) {
             $composer_path = $this->getComposerPath();
             if (!empty($composer_path)) {
@@ -174,6 +170,7 @@ class ProjectConfig
         }
 
         // Attempt to see if the Symfony CLI is installed.
+        // TODO Refactor this unto a SymdonyCommandRunner class.
         if (!isset($this->project_config['symfony_cli'])) {
             $output = Runner::getOutput('which symfony');
             if (!empty($output)) {
@@ -182,6 +179,7 @@ class ProjectConfig
         }
 
         // Attempt to determine the Drush minor and major versions.
+        // TODO Remove this once we cut over to DrushCommandRunner.
         $drush_version = Runner::getOutput('drush version --format=string');
         if (!isset($this->project_config['drush_version'])) {
             if (!empty($drush_version)) {
@@ -189,6 +187,7 @@ class ProjectConfig
             }
         }
 
+        // TODO Remove this once we cut over to DrushCommandRunner.
         if (!isset($this->project_config['drush_major_version'])) {
             $drush_major_version = explode('.', $this->project_config['drush_version'])[0];
             if (!empty($drush_major_version)) {
