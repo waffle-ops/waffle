@@ -2,14 +2,18 @@
 
 namespace Waffle\Model\Drush;
 
-use Symfony\Component\Process\Process;
-
 class CacheClear extends DrushCommand
 {
 
     public function __construct()
     {
         trigger_error('Warning: Drush command classes have been deprecated. Use DrushCommandRunner instead.');
-        parent::__construct(['cr']);
+
+        $command = ['cc', 'all'];
+        if ($this->projectConfig['cms'] == 'drupal8') {
+            $command = ['cr'];
+        }
+
+        $this->setArgs($command);
     }
 }

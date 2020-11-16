@@ -79,6 +79,8 @@ class UpdateStatus extends BaseCommand
         }
     
         // @todo: What other type of reporting should be done here? `npm audit`?
+        // @todo: Run an ADA compliance audit/tester?
+        // @todo: Run Lighthouse Audit?
     }
     
     /**
@@ -100,6 +102,8 @@ class UpdateStatus extends BaseCommand
         }
         
         // @todo: What other type of reporting should be done here? `npm audit`?
+        // @todo: Run an ADA compliance audit/tester?
+        // @todo: Run Lighthouse Audit?
     }
     
     /**

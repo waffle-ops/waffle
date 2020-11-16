@@ -94,7 +94,39 @@ class Runner
                 $process = $command;
             }
         }
-        
+    
         return $process;
+    }
+    
+    /**
+     * Exits the process if a command returns a non-zero exit code and dumps debug information.
+     *
+     * @param SymfonyStyle $io
+     * @param $command
+     * @param string $error_message
+     * @return Process|null
+     */
+    public static function failIfError(SymfonyStyle $io, $command, $error_message = 'Error when running process.')
+    {
+        $process = Runner::setup($command);
+        
+        if (!$process->isStarted() && !$process->isRunning()) {
+            $process->run();
+        }
+        
+        if (empty($process->getExitCode())) {
+            return $process;
+        }
+        
+        $io->error($error_message);
+        $io->writeln('Command:');
+        $io->writeln($process->getCommandLine());
+        $io->writeln('Exit Code:');
+        $io->writeln($process->getExitCode());
+        $io->writeln('Error Output:');
+        $io->writeln($process->getErrorOutput());
+        $io->writeln('Standard Output:');
+        $io->writeln($process->getOutput());
+        exit(1);
     }
 }
