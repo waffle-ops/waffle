@@ -7,8 +7,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Waffle\Command\BaseCommand;
-use Waffle\Model\Drush\DrushCommand;
-use Waffle\Model\Drush\CacheClear;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\DefaultUpstreamTrait;
 use Waffle\Traits\ConfigTrait;
@@ -64,6 +62,7 @@ class Db extends BaseCommand
         try {
             $factory = new SiteSyncFactory();
             $sync = $factory->getSiteSyncAdapter($config->getCms());
+            $sync->syncDatabase($remote_alias);
             $this->io->success('Database Sync');
             // TODO Write to the console with more general status updates.
             // Maybe expose the reset, export, import, and cache clear steps?

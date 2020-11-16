@@ -30,24 +30,15 @@ class DrushSiteSync implements SiteSyncInterface
     /**
      * {@inheritdoc}
      */
-    public function syncFiles() {
-
-
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function postSyncRelease() {
-
-
+    public function syncFiles($alias) {
+        return $this->drushRunner->syncFiles($alias);
     }
 
     /**
      * {@inheritdoc}
      */
     public function postSyncLogin() {
-
+        return $this->drushRunner->userLogin();
     }
 
     /**

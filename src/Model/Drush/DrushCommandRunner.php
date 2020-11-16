@@ -47,6 +47,10 @@ class DrushCommandRunner
         } else {
             // TODO: Throw and handle an exception for this.
         }
+
+        // TODO: Store status JSON. Would be useful for 'uli' calls to check
+        // for the baseurl. Would also be useful for any instances with an
+        // alias. We could try to verify the alias is working.
     }
 
     /**
@@ -90,6 +94,26 @@ class DrushCommandRunner
         $sql = $dump->getOutput();
         $this->importDatabase($sql);
         $this->clearCaches();
+    }
+
+    /**
+     * Downloads the files for Drupal sites.
+     *
+     * @return Process
+     */
+    public function syncFiles($alias) {
+        $file_sync = new DrushCommand(['-y', 'core-rsync', $alias, 'sites/default/files']);
+        return $file_sync->run();
+    }
+
+    /**
+     * Attempts to log user into the local site.
+     *
+     * @return Process
+     */
+    public function userLogin() {
+        $uli = new DrushCommand(['uli']);
+        return $uli->run();
     }
 
     /**
