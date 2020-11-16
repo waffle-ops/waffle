@@ -43,6 +43,9 @@ class ProjectConfig
     public const KEY_RECIPES = 'recipes';
     public const KEY_TASKS = 'tasks';
     public const KEY_UPSTREAMS = 'upstreams';
+    public const KEY_COMPOSER_PATH = 'composer_path';
+    public const KEY_DRUSH_MAJOR_VERSION = 'drush_major_version';
+    public const KEY_SYMFONY_CLI = 'symfony_cli';
 
     /**
      * @var array
@@ -164,7 +167,7 @@ class ProjectConfig
         // Attempt to derive the composer.json path.
         // TODO Refactor this unto a SymdonyCommandRunner class.
         if (!isset($this->project_config['composer_path'])) {
-            $composer_path = $this->getComposerPath();
+            $composer_path = $this->determineComposerPath();
             if (!empty($composer_path)) {
                 $this->project_config['composer_path'] = $composer_path;
             }
@@ -213,7 +216,7 @@ class ProjectConfig
      *
      * @return string
      */
-    private function getComposerPath()
+    private function determineComposerPath()
     {
         $cwd = getcwd();
 
@@ -304,6 +307,36 @@ class ProjectConfig
     public function getTasks()
     {
         return $this->get(self::KEY_TASKS);
+    }
+    
+    /**
+     * Gets the composer path as defined in the config file.
+     *
+     * @return string
+     */
+    public function getComposerPath()
+    {
+        return $this->get(self::KEY_COMPOSER_PATH);
+    }
+    
+    /**
+     * Gets the drush major version as defined in the config file.
+     *
+     * @return string
+     */
+    public function getDrushMajorVersion()
+    {
+        return $this->get(self::KEY_DRUSH_MAJOR_VERSION);
+    }
+    
+    /**
+     * Gets the Symfony CLI install status as defined in the config file.
+     *
+     * @return string
+     */
+    public function getSymfonyCli()
+    {
+        return $this->get(self::KEY_SYMFONY_CLI);
     }
 
     /**
