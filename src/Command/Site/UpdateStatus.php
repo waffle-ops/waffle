@@ -112,7 +112,7 @@ class UpdateStatus extends BaseCommand
         Runner::message(
             $this->io,
             'Checking minor version composer updates',
-            'composer outdated -Dmn --no-ansi --working-dir="' . $this->config->getComposerPath() . '" "*/*"'
+            'composer outdated -Dmn --strict --no-ansi --working-dir="' . $this->config->getComposerPath() . '" "*/*"'
         );
         Runner::message(
             $this->io,
