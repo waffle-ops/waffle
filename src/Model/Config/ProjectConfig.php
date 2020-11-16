@@ -201,11 +201,11 @@ class ProjectConfig
         }
     
         if (!isset($this->project_config['drush_patcher_installed'])) {
-            $this->project_config['drush_patcher_installed'] = FALSE;
+            $this->project_config['drush_patcher_installed'] = false;
             $drush_patcher_installed = Process::fromShellCommandline('drush patch-status');
             $drush_patcher_installed->run();
             if (empty($drush_patcher_installed->getExitCode())) {
-                $this->project_config['drush_patcher_installed'] = TRUE;
+                $this->project_config['drush_patcher_installed'] = true;
             }
         }
         
