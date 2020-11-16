@@ -2,10 +2,29 @@
 
 namespace Waffle\Model\Site\Sync;
 
+use Waffle\Model\Config\ProjectConfig;
+use Waffle\Model\Site\Sync\DrushSiteSync;
+use Waffle\Model\Site\Sync\SiteSyncInterface;
+
+
 class SiteSyncFactory
 {
-    
-    public function getDatabaseSyncInterface($cms, $host)
+
+    /**
+     * Gets the site sync adapter.
+     *
+     * @return SiteSyncInterface
+     */
+    public function getSiteSyncAdapter($cms)
     {
+        switch ($cms) {
+            case ProjectConfig::CMS_DRUPAL_7:
+            case ProjectConfig::CMS_DRUPAL_8:
+                return new DrushSiteSync();
+
+            default:
+                throw new \Exception(sprintf('Site sync adapter for %s not supported.', $cms));
+        }
     }
 }
+
