@@ -71,7 +71,7 @@ class UpdateApply extends BaseCommand
     /**
      * A list of packages/modules to ignore.
      *
-     * @var string
+     * @var array
      */
     protected $ignore = [];
     
@@ -81,6 +81,13 @@ class UpdateApply extends BaseCommand
      * @var int
      */
     protected $timeout = 300;
+    
+    /**
+     * A specific package to update.
+     *
+     * @var string
+     */
+    protected $package = '';
     
     /**
      * A list of composer packages that should be updated before others.
@@ -149,7 +156,7 @@ class UpdateApply extends BaseCommand
             'Drupal 8 only: The config key to export against.',
             'sync'
         );
-        
+    
         $this->addOption(
             'timeout',
             null,
@@ -163,10 +170,18 @@ class UpdateApply extends BaseCommand
             null,
             InputOption::VALUE_OPTIONAL,
             'A list of comma-separated packages/modules to ignore.',
-            'sync'
+            ''
         );
-        
-        
+    
+        $this->addOption(
+            'package',
+            null,
+            InputOption::VALUE_OPTIONAL,
+            'A specific package to update.',
+            ''
+        );
+    
+    
         // @todo: add an option to set the git commit message format template
     }
     
@@ -189,6 +204,7 @@ class UpdateApply extends BaseCommand
         $this->includeConfig = $input->getOption('include-config');
         $this->forceYes = $input->getOption('yes');
         $this->timeout = $input->getOption('timeout');
+        $this->package = $input->getOption('package');
         $ignore = $input->getOption('ignore');
         // @todo: convert ignore CSV to array
         
@@ -372,17 +388,30 @@ class UpdateApply extends BaseCommand
     protected function updateMinorComposerDependencies()
     {
         $pending_updates = Runner::getOutput(
-            'composer outdated -Dmn --no-ansi --format="json" --working-dir="' .
+            'composer outdated -Dmn --strict --no-ansi --format="json" --working-dir="' .
             $this->config->getComposerPath() .
             '" "*/*"'
         );
         $pending_updates = json_decode($pending_updates, true);
-        
+    
         if (empty($pending_updates['installed'])) {
             $this->io->section('No pending updates found.');
             return;
         }
-        
+    
+        // If updating a specific package, then search for it in the pending list.
+        // @todo: Should we refactor this to allow non-pending items?
+        if (!empty($this->package)) {
+            $key = array_search($this->package, array_column($pending_updates['installed'], 'name'));
+            if ($key === false) {
+                $this->io->warning("Package {$this->package} not found in list of pending updates.");
+                return;
+            }
+            $package = $pending_updates['installed'][$key];
+            $this->updateMinorComposerDependency($package);
+            return;
+        }
+    
         // Filter the list to be separated by priority and non-priority.
         $priority = array_filter(
             $pending_updates['installed'],
@@ -390,7 +419,7 @@ class UpdateApply extends BaseCommand
                 return in_array($package['name'], $this->priorityPackages);
             }
         );
-        
+    
         $non_priority = array_filter(
             $pending_updates['installed'],
             function ($package) {
