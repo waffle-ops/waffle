@@ -47,20 +47,17 @@ class Sync extends BaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // TODO Load site config and alter behavior depending on the config.
-        // Pantheon, Acquia, WP, Drupal, etc...
-        // Currently assumes Drupal 8
-
-        // TODO Need to check that example settings file is present.
-        // TODO Add error handling in general.
+        parent::execute($input, $output);
 
         $config = $this->getConfig();
         $upstream = $input->getOption('upstream');
         $allowed_upstreams = $config->getUpstreams();
 
+        // Ensure upstream is valid.
         if (!in_array($upstream, $allowed_upstreams)) {
-            $output->writeln('<error>Invalid upstream: ' . $upstream . '</error>');
-            $output->writeln('<error>Allowed upstreams: ' . implode('|', $allowed_upstreams) . '</error>');
+            $this->io->error(
+                sprintf('Invalid upstream: %s. Allowed upstreams: %s', $upstream, implode('|', $allowed_upstreams))
+            );
             return Command::FAILURE;
         }
 
@@ -72,29 +69,29 @@ class Sync extends BaseCommand
             // TODO Handle return code issues.
         }
 
-        // $skip_files = $input->getOption('skip-files');
-        // if (!$skip_files) {
-        //     $command = $this->getApplication()->find(Files::COMMAND_KEY);
-        //     $args = new ArrayInput([]);
-        //     $return_code = $command->run($args, $output);
-        //     // TODO Handle return code issues.
-        // }
+        $skip_files = $input->getOption('skip-files');
+        if (!$skip_files) {
+            $command = $this->getApplication()->find(Files::COMMAND_KEY);
+            $args = new ArrayInput(['--upstream' => $upstream]);
+            $return_code = $command->run($args, $output);
+            // TODO Handle return code issues.
+        }
 
-        // $skip_release = $input->getOption('skip-release');
-        // if (!$skip_release) {
-        //     $command = $this->getApplication()->find(Release::COMMAND_KEY);
-        //     $args = new ArrayInput([]);
-        //     $return_code = $command->run($args, $output);
-        //     // TODO Handle return code issues.
-        // }
+        $skip_release = $input->getOption('skip-release');
+        if (!$skip_release) {
+            $command = $this->getApplication()->find(Release::COMMAND_KEY);
+            $args = new ArrayInput([]);
+            $return_code = $command->run($args, $output);
+            // TODO Handle return code issues.
+        }
 
-        // $skip_login = $input->getOption('skip-login');
-        // if (!$skip_login) {
-        //     $command = $this->getApplication()->find(Login::COMMAND_KEY);
-        //     $args = new ArrayInput([]);
-        //     $return_code = $command->run($args, $output);
-        //     // TODO Handle return code issues.
-        // }
+        $skip_login = $input->getOption('skip-login');
+        if (!$skip_login) {
+            $command = $this->getApplication()->find(Login::COMMAND_KEY);
+            $args = new ArrayInput([]);
+            $return_code = $command->run($args, $output);
+            // TODO Handle return code issues.
+        }
 
         return Command::SUCCESS;
     }

@@ -19,14 +19,7 @@ interface SiteSyncInterface
      *
      * @return Process
      */
-    public function syncFiles();
-
-    /**
-     * Runs local release script after a database sync.
-     *
-     * @return Process
-     */
-    public function postSyncRelease();
+    public function syncFiles($alias);
 
     /**
      * Automatically logs the user into the site after a database sync.
