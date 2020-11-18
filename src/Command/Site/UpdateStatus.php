@@ -64,6 +64,8 @@ class UpdateStatus extends BaseCommand
         } else {
             // @todo: should we run `composer install` here?
     
+            // @todo: Add a report on what packages are required by composer but not currently installed by Drupal
+    
             $this->generateComposerReport();
         }
     
@@ -72,7 +74,13 @@ class UpdateStatus extends BaseCommand
         } else {
             $pmSecurity = $this->drushRunner->pmSecurity();
             Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity);
+            // @todo: get non-composer-tracked pending updates for drush 9+ via
+            // @todo: `drush eval "var_export(update_get_available(TRUE));"`
+            // @todo: see docroot/core/modules/update/src/Controller/UpdateController.php::updateStatus()
         }
+        
+        
+        
     
         // @todo: What other type of reporting should be done here? `npm audit`?
         // @todo: Run an ADA compliance audit/tester?

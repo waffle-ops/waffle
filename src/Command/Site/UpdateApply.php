@@ -205,8 +205,7 @@ class UpdateApply extends BaseCommand
         $this->forceYes = $input->getOption('yes');
         $this->timeout = $input->getOption('timeout');
         $this->package = $input->getOption('package');
-        $ignore = $input->getOption('ignore');
-        // @todo: convert ignore CSV to array
+        $this->ignore = str_getcsv(str_replace(' ', '', $input->getOption('ignore')));
         
         // Warn user that this will be applying git commits to the local repo.
         if (!$this->skipGit && !$this->forceYes) {
@@ -258,6 +257,9 @@ class UpdateApply extends BaseCommand
         } else {
             $this->updateMinorComposerDependencies();
         }
+        
+        // @todo: Get list of pending updates not tracked in composer
+        // @todo: How does `/admin/reports/updates` do it? Possibly recreate it.
     }
     
     /**
@@ -273,7 +275,6 @@ class UpdateApply extends BaseCommand
             $this->updateMinorComposerDependencies();
         }
     
-        // @todo: Abstract this into a command class?
         $ups = $this->drushRunner->pmSecurity('json');
     
         // @todo: check for errors before continuing.
@@ -286,6 +287,10 @@ class UpdateApply extends BaseCommand
         }
     
         foreach ($updates as $module => $update) {
+            if (in_array($update['name'], $this->ignore)) {
+                $this->io->warning("Skipping ignored package: {$update['name']}");
+                continue;
+            }
             $this->updateDrupal7Item($update);
         }
     }
@@ -426,11 +431,21 @@ class UpdateApply extends BaseCommand
             }
         );
         
+        // @todo: combine priority/non-priority into a single array and foreach on that instead.
+        
         foreach ($priority as $package) {
+            if (in_array($package['name'], $this->ignore)) {
+                $this->io->warning("Skipping ignored package: {$package['name']}");
+                continue;
+            }
             $this->updateMinorComposerDependency($package);
         }
         
         foreach ($non_priority as $package) {
+            if (in_array($package['name'], $this->ignore)) {
+                $this->io->warning("Skipping ignored package: {$package['name']}");
+                continue;
+            }
             $this->updateMinorComposerDependency($package);
         }
     }
