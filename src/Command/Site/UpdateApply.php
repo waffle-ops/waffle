@@ -83,11 +83,11 @@ class UpdateApply extends BaseCommand
     protected $timeout = 300;
     
     /**
-     * A specific package to update.
+     * A specific list of packages/modules to update. Overrides --ignore.
      *
-     * @var string
+     * @var array
      */
-    protected $package = '';
+    protected $packages = [];
     
     /**
      * A list of composer packages that should be updated before others.
@@ -104,7 +104,9 @@ class UpdateApply extends BaseCommand
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Applies any pending site updates.');
         $this->setHelp('Applies any pending site updates.');
-        
+    
+        // @todo: have these configurable at the .waffle.yml level (and test)
+    
         $this->addOption(
             'git-prefix',
             null,
@@ -112,7 +114,7 @@ class UpdateApply extends BaseCommand
             'A short string to prefix git commits with.',
             ''
         );
-        
+    
         $this->addOption(
             'git-postfix',
             null,
@@ -174,10 +176,10 @@ class UpdateApply extends BaseCommand
         );
     
         $this->addOption(
-            'package',
+            'packages',
             null,
             InputOption::VALUE_OPTIONAL,
-            'A specific package to update.',
+            'A list of specific comma-separated packages to update. Overrides --ignore.',
             ''
         );
     
@@ -204,7 +206,7 @@ class UpdateApply extends BaseCommand
         $this->includeConfig = $input->getOption('include-config');
         $this->forceYes = $input->getOption('yes');
         $this->timeout = $input->getOption('timeout');
-        $this->package = $input->getOption('package');
+        $this->packages = str_getcsv(str_replace(' ', '', $input->getOption('packages')));
         $this->ignore = str_getcsv(str_replace(' ', '', $input->getOption('ignore')));
         
         // Warn user that this will be applying git commits to the local repo.
@@ -405,14 +407,16 @@ class UpdateApply extends BaseCommand
     
         // If updating a specific package, then search for it in the pending list.
         // @todo: Should we refactor this to allow non-pending items?
-        if (!empty($this->package)) {
-            $key = array_search($this->package, array_column($pending_updates['installed'], 'name'));
-            if ($key === false) {
-                $this->io->warning("Package {$this->package} not found in list of pending updates.");
-                return;
+        if (!empty($this->packages)) {
+            foreach ($this->packages as $specific_package) {
+                $key = array_search($specific_package, array_column($pending_updates['installed'], 'name'));
+                if ($key === false) {
+                    $this->io->warning("Package {$specific_package} not found in list of pending updates.");
+                    continue;
+                }
+                $package = $pending_updates['installed'][$key];
+                $this->updateMinorComposerDependency($package);
             }
-            $package = $pending_updates['installed'][$key];
-            $this->updateMinorComposerDependency($package);
             return;
         }
     

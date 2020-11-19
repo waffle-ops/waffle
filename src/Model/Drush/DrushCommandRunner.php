@@ -204,7 +204,7 @@ class DrushCommandRunner
             );
         }
         
-        $process = new DrushCommand(['cex', '--no-ansi', '-y', $config_key]);
+        $process = new DrushCommand(['cex', '-y', $config_key]);
         return $process->run();
     }
 }
