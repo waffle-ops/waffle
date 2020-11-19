@@ -396,7 +396,7 @@ class UpdateApply extends BaseCommand
         $pending_updates = Runner::getOutput(
             'composer outdated -Dmn --strict --no-ansi --format="json" --working-dir="' .
             $this->config->getComposerPath() .
-            '" "*/*"'
+            '" "*/*" 2>/dev/null'
         );
         $pending_updates = json_decode($pending_updates, true);
     
