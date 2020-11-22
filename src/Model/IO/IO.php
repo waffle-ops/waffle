@@ -86,7 +86,7 @@ class IO
      *
      * @return IOStyle
      */
-    public function io()
+    public function getIO()
     {
         return $this->io;
     }
