@@ -3,9 +3,9 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Waffle\Application;
-use Symfony\Component\Console\Output\ConsoleOutput;
+use Waffle\Model\IO\IO;
 
-$output = new ConsoleOutput();
+$io = IO::getInstance();
 
 $app = new Application();
-$app->run(null, $output);
+$app->run($io->getInput(), $io->getOutput());
