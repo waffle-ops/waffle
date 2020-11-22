@@ -31,7 +31,7 @@ class IO
     private $output;
 
     /**
-     * @var SymfonyStyle
+     * @var IOStyle
      *
      * $io Helper object for easier IO operations.
      */
