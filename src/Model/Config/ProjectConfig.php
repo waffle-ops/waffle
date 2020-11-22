@@ -7,6 +7,7 @@ use Symfony\Component\Yaml\Yaml;
 use Waffle\Exception\Config\AmbiguousConfigException;
 use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Model\Output\Runner;
+use Symfony\Component\Process\Process;
 
 class ProjectConfig
 {
@@ -42,6 +43,10 @@ class ProjectConfig
     public const KEY_RECIPES = 'recipes';
     public const KEY_TASKS = 'tasks';
     public const KEY_UPSTREAMS = 'upstreams';
+    public const KEY_COMPOSER_PATH = 'composer_path';
+    public const KEY_DRUSH_MAJOR_VERSION = 'drush_major_version';
+    public const KEY_SYMFONY_CLI = 'symfony_cli';
+    public const KEY_DRUSH_PATCHER_INSTALLED = 'drush_patcher_installed';
 
     /**
      * @var array
@@ -163,7 +168,7 @@ class ProjectConfig
         // Attempt to derive the composer.json path.
         // TODO Refactor this unto a SymdonyCommandRunner class.
         if (!isset($this->project_config['composer_path'])) {
-            $composer_path = $this->getComposerPath();
+            $composer_path = $this->determineComposerPath();
             if (!empty($composer_path)) {
                 $this->project_config['composer_path'] = $composer_path;
             }
@@ -195,6 +200,14 @@ class ProjectConfig
             }
         }
 
+        if (!isset($this->project_config['drush_patcher_installed'])) {
+            $this->project_config['drush_patcher_installed'] = false;
+            $drush_patcher_installed = Process::fromShellCommandline('drush patch-status');
+            $drush_patcher_installed->run();
+            if (empty($drush_patcher_installed->getExitCode())) {
+                $this->project_config['drush_patcher_installed'] = true;
+            }
+        }
 
         // @todo: define and derive other config defaults based on project files.
     }
@@ -204,7 +217,7 @@ class ProjectConfig
      *
      * @return string
      */
-    private function getComposerPath()
+    private function determineComposerPath()
     {
         $cwd = getcwd();
 
@@ -295,6 +308,46 @@ class ProjectConfig
     public function getTasks()
     {
         return $this->get(self::KEY_TASKS);
+    }
+    
+    /**
+     * Gets the composer path as defined in the config file.
+     *
+     * @return string
+     */
+    public function getComposerPath()
+    {
+        return $this->get(self::KEY_COMPOSER_PATH);
+    }
+    
+    /**
+     * Gets the drush major version as defined in the config file.
+     *
+     * @return string
+     */
+    public function getDrushMajorVersion()
+    {
+        return $this->get(self::KEY_DRUSH_MAJOR_VERSION);
+    }
+    
+    /**
+     * Gets the Symfony CLI install status as defined in the config file.
+     *
+     * @return string
+     */
+    public function getSymfonyCli()
+    {
+        return $this->get(self::KEY_SYMFONY_CLI);
+    }
+    
+    /**
+     * Gets the drush patcher install status as defined in the config file.
+     *
+     * @return string
+     */
+    public function getDrushPatcherInstalled()
+    {
+        return $this->get(self::KEY_DRUSH_PATCHER_INSTALLED);
     }
 
     /**

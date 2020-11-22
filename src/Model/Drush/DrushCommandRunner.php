@@ -3,7 +3,7 @@
 namespace Waffle\Model\Drush;
 
 use Symfony\Component\Process\Process;
-use Waffle\Model\Drush\DrushCommand;
+use Exception;
 
 class DrushCommandRunner
 {
@@ -139,12 +139,72 @@ class DrushCommandRunner
                 $cc = ['cr'];
                 break;
             default:
-                throw new \Exception(
+                throw new Exception(
                     sprintf('Clearing caches with Drush for Drupal %s not supported.', $this->drupal_major_version)
                 );
         }
 
         $cache_clear = new DrushCommand($cc);
         return $cache_clear->run();
+    }
+    
+    /**
+     * Checks for pending security (Drush 9) and non-security (Drush 8) updates.
+     *
+     * @param string $format
+     * @return Process
+     * @throws Exception
+     */
+    public function pmSecurity($format = 'table')
+    {
+        $args = [];
+        switch ($this->drush_major_version) {
+            case '8':
+                $args = ['ups', '--check-disabled', "--format={$format}"];
+                break;
+            case '9':
+                $args = ['pm:security', "--format={$format}"];
+                break;
+            default:
+                throw new Exception(
+                    sprintf(
+                        'Checking pending updates with Drush for Drush %s not supported.',
+                        $this->drush_major_version
+                    )
+                );
+        }
+        
+        $process = new DrushCommand($args);
+        return $process->run();
+    }
+    
+    /**
+     * Runs any pending database updates.
+     *
+     * @return Process
+     */
+    public function updateDatabase()
+    {
+        $process = new DrushCommand(['updb', '-y']);
+        return $process->run();
+    }
+    
+    /**
+     * Exports any changed config back to the filesystem.
+     *
+     * @param string $config_key
+     * @return Process
+     * @throws Exception
+     */
+    public function configExport($config_key = 'sync')
+    {
+        if ($this->drupal_major_version <= 7) {
+            throw new Exception(
+                sprintf('Exporting config with Drush for Drupal %s not supported.', $this->drupal_major_version)
+            );
+        }
+        
+        $process = new DrushCommand(['cex', '-y', $config_key]);
+        return $process->run();
     }
 }
