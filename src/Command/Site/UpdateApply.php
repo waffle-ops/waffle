@@ -294,6 +294,17 @@ class UpdateApply extends BaseCommand
             exit(0);
         }
     
+        if (!empty($this->packages)) {
+            foreach ($this->packages as $specific_package) {
+                if (!array_key_exists($specific_package, $updates)) {
+                    $this->io->warning("Package {$specific_package} not found in list of pending Drupal updates.");
+                    continue;
+                }
+                $this->updateDrupal7Item($updates[$specific_package]);
+            }
+            return;
+        }
+    
         foreach ($updates as $module => $update) {
             if (in_array($update['name'], $this->ignore)) {
                 $this->io->warning("Skipping ignored package: {$update['name']}");
@@ -418,7 +429,7 @@ class UpdateApply extends BaseCommand
             foreach ($this->packages as $specific_package) {
                 $key = array_search($specific_package, array_column($pending_updates['installed'], 'name'));
                 if ($key === false) {
-                    $this->io->warning("Package {$specific_package} not found in list of pending updates.");
+                    $this->io->warning("Package {$specific_package} not found in list of pending composer updates.");
                     continue;
                 }
                 $package = $pending_updates['installed'][$key];
