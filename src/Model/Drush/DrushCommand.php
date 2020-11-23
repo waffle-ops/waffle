@@ -29,6 +29,7 @@ class DrushCommand
 
     public function setup($input = '')
     {
+        // @todo: Add support to prefix all shell command calls with `command_prefix` in .waffle.yml
         $args = array_unshift($this->args, 'drush');
         $process = new Process($this->args);
 

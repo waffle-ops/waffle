@@ -206,8 +206,14 @@ class UpdateApply extends BaseCommand
         $this->includeConfig = $input->getOption('include-config');
         $this->forceYes = $input->getOption('yes');
         $this->timeout = $input->getOption('timeout');
-        $this->packages = str_getcsv(str_replace(' ', '', $input->getOption('packages')));
-        $this->ignore = str_getcsv(str_replace(' ', '', $input->getOption('ignore')));
+        $packages = str_replace(' ', '', $input->getOption('packages'));
+        if (!empty($packages)) {
+            $this->packages = str_getcsv($packages);
+        }
+        $ignore = str_replace(' ', '', $input->getOption('ignore'));
+        if (!empty($ignore)) {
+            $this->ignore = str_getcsv($ignore);
+        }
         
         // Warn user that this will be applying git commits to the local repo.
         if (!$this->skipGit && !$this->forceYes) {
@@ -314,7 +320,8 @@ class UpdateApply extends BaseCommand
         $upc = Runner::failIfError(
             $this->io,
             "drush upc {$name} --check-disabled -y",
-            "Error updating item {$name} ({$from} => {$to})"
+            "Error updating item {$name} ({$from} => {$to})",
+            $this->timeout
         );
         $this->io->writeln(Runner::getOutput($upc));
     
