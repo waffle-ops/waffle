@@ -5,31 +5,32 @@ namespace Waffle\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Process\Process;
 use Waffle\Traits\ConfigTrait;
 use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\Drush\DrushCommandRunner;
+use Waffle\Model\IO\IO;
+use Waffle\Model\IO\IOStyle;
 
 class BaseCommand extends Command
 {
     use ConfigTrait;
-    
+
     /**
      * Defines the Input/Output helper object.
      *
-     * @var SymfonyStyle
+     * @var IOStyle
      */
     protected $io;
-    
+
     /**
      * A reference to the project config.
      *
      * @var ProjectConfig
      */
     protected $config;
-    
+
     /**
      * A reference to the drush command runner.
      *
@@ -47,6 +48,7 @@ class BaseCommand extends Command
         parent::__construct($name);
         $this->config = $this->getConfig();
         $this->drushRunner = new DrushCommandRunner();
+        $this->io = IO::getInstance()->getIO();
     }
 
     /**
@@ -58,7 +60,6 @@ class BaseCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->io = new SymfonyStyle($input, $output);
     }
 
     /**

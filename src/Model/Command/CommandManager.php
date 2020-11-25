@@ -120,7 +120,6 @@ class CommandManager
             $user_recipes[] = new \Waffle\Command\Custom\Recipe($recipe);
         }
 
-        // echo json_encode($config['tasks']) . PHP_EOL;
         return $user_recipes;
     }
 }
