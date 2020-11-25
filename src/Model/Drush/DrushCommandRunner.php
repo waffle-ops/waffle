@@ -2,8 +2,10 @@
 
 namespace Waffle\Model\Drush;
 
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Exception;
+use Waffle\Model\IO\IO;
 
 class DrushCommandRunner
 {
@@ -23,6 +25,8 @@ class DrushCommandRunner
      */
     public function __construct()
     {
+        $this->io = IO::getInstance()->getIO();
+
         // Calling 'drush status --format=json' will give us a json blob that
         // we can parse to get info about the site.
         $status = new DrushCommand(['status', '--format=json']);
@@ -51,6 +55,10 @@ class DrushCommandRunner
         // TODO: Store status JSON. Would be useful for 'uli' calls to check
         // for the baseurl. Would also be useful for any instances with an
         // alias. We could try to verify the alias is working.
+
+        // Attempt a DB connection / verify that local settings are present.
+        $this->ensureLocalSettings();
+        $this->validateDbAccess();
     }
 
     /**
@@ -147,7 +155,7 @@ class DrushCommandRunner
         $cache_clear = new DrushCommand($cc);
         return $cache_clear->run();
     }
-    
+
     /**
      * Checks for pending security (Drush 9) and non-security (Drush 8) updates.
      *
@@ -173,11 +181,11 @@ class DrushCommandRunner
                     )
                 );
         }
-        
+
         $process = new DrushCommand($args);
         return $process->run();
     }
-    
+
     /**
      * Runs any pending database updates.
      *
@@ -188,7 +196,7 @@ class DrushCommandRunner
         $process = new DrushCommand(['updb', '-y']);
         return $process->run();
     }
-    
+
     /**
      * Exports any changed config back to the filesystem.
      *
@@ -203,8 +211,70 @@ class DrushCommandRunner
                 sprintf('Exporting config with Drush for Drupal %s not supported.', $this->drupal_major_version)
             );
         }
-        
+
         $process = new DrushCommand(['cex', '-y', $config_key]);
         return $process->run();
+    }
+
+    /**
+     * Validates database access.
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function validateDbAccess()
+    {
+        $status = new DrushCommand(['sql:query', 'select 1']);
+        $process = $status->run();
+        $output = $process->getOutput();
+
+        // The sql:query command returns a 1 even if unsuccessful. Explicitly
+        // checking the output.
+        if (trim($output) !== '1') {
+            $error = 'Unable to connect to database. Make sure that your local ';
+            $error .= 'settings file is present and has valid database connection details.';
+            throw new Exception($error);
+        }
+    }
+
+    /**
+     * Checks for the local settings file. Will attempt to create it if needed.
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function ensureLocalSettings()
+    {
+        // Look for local settings file.
+        $finder = new Finder();
+        $finder->files();
+        $finder->in(getcwd());
+        $finder->name('settings.local.php');
+
+        if ($finder->hasResults()) {
+            return;
+        }
+
+        $this->io->warning('Local settings not found, copying from example.settings.local.php');
+
+        // Attempt to add local settings file from example.
+        $finder = new Finder();
+        $finder->files();
+        $finder->in(getcwd());
+        $finder->name('example.settings.local.php');
+
+        if (!$finder->hasResults()) {
+            throw new Exception('Unable to find example.settings.local.php file.');
+        }
+
+        $iterator = $finder->getIterator();
+        $iterator->rewind();
+        $file = $iterator->current();
+        $example_settings = $file->getRealPath();
+        $local_settings = $file->getPath() . '/default/settings.local.php';
+
+        if (!copy($example_settings, $local_settings)) {
+            throw new Exception('Unable to create settings.local.php');
+        }
     }
 }

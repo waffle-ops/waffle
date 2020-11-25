@@ -9,7 +9,6 @@ use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Process\Process;
 use Waffle\Traits\ConfigTrait;
 use Waffle\Model\Config\ProjectConfig;
-use Waffle\Model\Drush\DrushCommandRunner;
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
 
@@ -32,13 +31,6 @@ class BaseCommand extends Command
     protected $config;
 
     /**
-     * A reference to the drush command runner.
-     *
-     * @var DrushCommandRunner
-     */
-    protected $drushRunner;
-
-    /**
      * @param string|null $name The name of the command; passing null means it must be set in configure()
      *
      * @throws LogicException When the command name is empty
@@ -47,7 +39,6 @@ class BaseCommand extends Command
     {
         parent::__construct($name);
         $this->config = $this->getConfig();
-        $this->drushRunner = new DrushCommandRunner();
         $this->io = IO::getInstance()->getIO();
     }
 
