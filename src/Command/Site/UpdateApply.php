@@ -14,7 +14,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Process\Process;
 use Waffle\Model\Git\GitAddAll;
 use Waffle\Model\Git\GitCommit;
-use Waffle\Model\Drush\DrushCommandRunner;
+use Waffle\Model\Cli\Drush\DrushCommandRunner;
 
 class UpdateApply extends BaseCommand
 {

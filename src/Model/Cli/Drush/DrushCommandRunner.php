@@ -1,11 +1,12 @@
 <?php
 
-namespace Waffle\Model\Drush;
+namespace Waffle\Model\Cli\Drush;
 
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Exception;
 use Waffle\Model\IO\IO;
+use Waffle\Model\Cli\DrushCommand;
 
 class DrushCommandRunner
 {

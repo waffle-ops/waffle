@@ -2,7 +2,7 @@
 
 namespace Waffle\Model\Site\Sync;
 
-use Waffle\Model\Drush\DrushCommandRunner;
+use Waffle\Model\Cli\Drush\DrushCommandRunner;
 use Waffle\Model\Site\Sync\SiteSyncInterface;
 
 class DrushSiteSync implements SiteSyncInterface

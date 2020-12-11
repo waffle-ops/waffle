@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffle\Model\Drush;
+namespace Waffle\Model\Cli;
 
 use Waffle\Model\Cli\BaseCliCommand;
 

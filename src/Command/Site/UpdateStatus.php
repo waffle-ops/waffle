@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Model\Output\Runner;
-use Waffle\Model\Drush\DrushCommandRunner;
+use Waffle\Model\Cli\Drush\DrushCommandRunner;
 
 class UpdateStatus extends BaseCommand
 {
