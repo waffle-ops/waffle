@@ -19,6 +19,8 @@ class GitCommand
      */
     public function __construct(array $args)
     {
+        trigger_error(sprintf('Class %s is deprecated and will be removed in the next release. ', __CLASS__));
+
         $this->args = $args;
     }
 

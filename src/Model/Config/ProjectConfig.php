@@ -164,6 +164,12 @@ class ProjectConfig
      */
     private function setProjectConfigDefaults()
     {
+        trigger_error(sprintf(
+            'Function %s::%s() is deprecated and will be removed in the next release.',
+            __CLASS__,
+            __FUNCTION__
+        ));
+
         // Attempt to derive the composer.json path.
         // TODO Refactor this unto a SymdonyCommandRunner class.
         if (!isset($this->project_config['composer_path'])) {
@@ -182,6 +188,7 @@ class ProjectConfig
             }
         }
 
+        // TODO Pull this out of config and handle in Waffle\Model\Cli\Runner\Drush.
         if (!isset($this->project_config['drush_patcher_installed'])) {
             $this->project_config['drush_patcher_installed'] = false;
             $drush_patcher_installed = Process::fromShellCommandline('drush patch-status');
@@ -299,6 +306,12 @@ class ProjectConfig
      */
     public function getComposerPath()
     {
+        trigger_error(sprintf(
+            'Function %s::%s() is deprecated and will be removed in the next release.',
+            __CLASS__,
+            __FUNCTION__
+        ));
+
         return $this->get(self::KEY_COMPOSER_PATH);
     }
 
@@ -309,6 +322,12 @@ class ProjectConfig
      */
     public function getSymfonyCli()
     {
+        trigger_error(sprintf(
+            'Function %s::%s() is deprecated and will be removed in the next release.',
+            __CLASS__,
+            __FUNCTION__
+        ));
+
         return $this->get(self::KEY_SYMFONY_CLI);
     }
 
@@ -319,6 +338,12 @@ class ProjectConfig
      */
     public function getDrushPatcherInstalled()
     {
+        trigger_error(sprintf(
+            'Function %s::%s() is deprecated and will be removed in the next release.',
+            __CLASS__,
+            __FUNCTION__
+        ));
+
         return $this->get(self::KEY_DRUSH_PATCHER_INSTALLED);
     }
 
