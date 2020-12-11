@@ -8,7 +8,7 @@ use Exception;
 use Waffle\Model\IO\IO;
 use Waffle\Model\Cli\DrushCommand;
 
-class DrushCommandRunner
+class Drush
 {
 
     /**

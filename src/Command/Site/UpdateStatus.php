@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Model\Output\Runner;
-use Waffle\Model\Cli\Drush\DrushCommandRunner;
+use Waffle\Model\Cli\Runner\Drush;
 
 class UpdateStatus extends BaseCommand
 {
@@ -73,8 +73,8 @@ class UpdateStatus extends BaseCommand
         if (empty($this->config->getDrushMajorVersion())) {
             $this->io->warning('Unable to generate Drush module status: Missing drush install.');
         } else {
-            $drushRunner = new DrushCommandRunner();
-            $pmSecurity = $drushRunner->pmSecurity();
+            $drush = new Drush();
+            $pmSecurity = $drush->pmSecurity();
             Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity);
             // @todo: get non-composer-tracked pending updates for drush 9+ via
             // @todo: `drush eval "var_export(update_get_available(TRUE));"`
@@ -105,8 +105,8 @@ class UpdateStatus extends BaseCommand
         if (empty($this->config->getDrushMajorVersion())) {
             $this->io->warning('Unable to generate Drush module status: Missing drush install.');
         } else {
-            $drushRunner = new DrushCommandRunner();
-            $pmSecurity = $drushRunner->pmSecurity();
+            $drush = new Drush();
+            $pmSecurity = $drush->pmSecurity();
             Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity);
         }
 

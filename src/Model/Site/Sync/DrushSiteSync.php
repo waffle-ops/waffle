@@ -2,23 +2,23 @@
 
 namespace Waffle\Model\Site\Sync;
 
-use Waffle\Model\Cli\Drush\DrushCommandRunner;
+use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Site\Sync\SiteSyncInterface;
 
 class DrushSiteSync implements SiteSyncInterface
 {
 
     /**
-     * @var DrushCommandRunner
+     * @var Drush
      */
-    private $drushRunner;
+    private $drush;
 
     /**
      * Constructor
      */
     public function __construct()
     {
-        $this->drushRunner = new DrushCommandRunner();
+        $this->drush = new Drush();
     }
 
     /**
@@ -26,7 +26,7 @@ class DrushSiteSync implements SiteSyncInterface
      */
     public function syncDatabase($alias)
     {
-        return $this->drushRunner->syncDatabase($alias);
+        return $this->drush->syncDatabase($alias);
     }
 
     /**
@@ -34,7 +34,7 @@ class DrushSiteSync implements SiteSyncInterface
      */
     public function syncFiles($alias)
     {
-        return $this->drushRunner->syncFiles($alias);
+        return $this->drush->syncFiles($alias);
     }
 
     /**
@@ -42,7 +42,7 @@ class DrushSiteSync implements SiteSyncInterface
      */
     public function postSyncLogin()
     {
-        return $this->drushRunner->userLogin();
+        return $this->drush->userLogin();
     }
 
     /**
@@ -50,6 +50,6 @@ class DrushSiteSync implements SiteSyncInterface
      */
     public function clearCaches()
     {
-        return $this->drushRunner->clearCaches();
+        return $this->drush->clearCaches();
     }
 }
