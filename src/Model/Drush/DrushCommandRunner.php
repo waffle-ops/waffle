@@ -30,7 +30,8 @@ class DrushCommandRunner
         // Calling 'drush status --format=json' will give us a json blob that
         // we can parse to get info about the site.
         $status = new DrushCommand(['status', '--format=json']);
-        $process = $status->run();
+        $process = $status->getProcess();
+        $process->run();
         $json = $process->getOutput();
 
         $drush_status_data = json_decode($json, true);
@@ -69,7 +70,9 @@ class DrushCommandRunner
     private function resetDatabase()
     {
         $db_reset = new DrushCommand(['sql-create', '-y']);
-        return $db_reset->run();
+        $process = $db_reset->getProcess();
+        $process->run();
+        return $process;
     }
 
     /**
@@ -80,7 +83,9 @@ class DrushCommandRunner
     private function getDatabaseDump($alias)
     {
         $db_export =  new DrushCommand([$alias, 'sql-dump']);
-        return $db_export->run();
+        $process = $db_export->getProcess();
+        $process->run();
+        return $process;
     }
 
     /**
@@ -91,7 +96,10 @@ class DrushCommandRunner
     private function importDatabase($sql)
     {
         $db_import = new DrushCommand(['sql-cli']);
-        return $db_import->run($sql);
+        $process = $db_import->getProcess();
+        $process->setInput($sql);
+        $process->run();
+        return $process;
     }
 
     /**
@@ -116,7 +124,9 @@ class DrushCommandRunner
     public function syncFiles($alias)
     {
         $file_sync = new DrushCommand(['-y', 'core-rsync', $alias, 'sites/default/files']);
-        return $file_sync->run();
+        $process = $file_sync->getProcess();
+        $process->run();
+        return $process;
     }
 
     /**
@@ -127,7 +137,9 @@ class DrushCommandRunner
     public function userLogin()
     {
         $uli = new DrushCommand(['uli']);
-        return $uli->run();
+        $process = $uli->getProcess();
+        $process->run();
+        return $process;
     }
 
     /**
@@ -153,7 +165,9 @@ class DrushCommandRunner
         }
 
         $cache_clear = new DrushCommand($cc);
-        return $cache_clear->run();
+        $process = $cache_clear->getProcess();
+        $process->run();
+        return $process;
     }
 
     /**
@@ -182,8 +196,10 @@ class DrushCommandRunner
                 );
         }
 
-        $process = new DrushCommand($args);
-        return $process->run();
+        $pm_security = new DrushCommand($args);
+        $process = $pm_security->getProcess();
+        $process->run();
+        return $process;
     }
 
     /**
@@ -193,8 +209,10 @@ class DrushCommandRunner
      */
     public function updateDatabase()
     {
-        $process = new DrushCommand(['updb', '-y']);
-        return $process->run();
+        $updb = new DrushCommand(['updb', '-y']);
+        $process = $updb->getProcess();
+        $process->run();
+        return $process;
     }
 
     /**
@@ -212,8 +230,10 @@ class DrushCommandRunner
             );
         }
 
-        $process = new DrushCommand(['cex', '-y', $config_key]);
-        return $process->run();
+        $cex = new DrushCommand(['cex', '-y', $config_key]);
+        $process = $cex->getProcess();
+        $process->run();
+        return $process;
     }
 
     /**
@@ -225,7 +245,8 @@ class DrushCommandRunner
     private function validateDbAccess()
     {
         $status = new DrushCommand(['sql:query', 'select 1']);
-        $process = $status->run();
+        $process = $status->getProcess();
+        $process->run();
         $output = $process->getOutput();
 
         // The sql:query command returns a 1 even if unsuccessful. Explicitly
