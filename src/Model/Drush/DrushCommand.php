@@ -2,52 +2,17 @@
 
 namespace Waffle\Model\Drush;
 
-use Symfony\Component\Process\Process;
+use Waffle\Model\Cli\BaseCliCommand;
 
-class DrushCommand
+class DrushCommand extends BaseCliCommand
 {
 
     /**
-     * @var string[]
+     * {@inheritdoc}
      */
-    private $args = [];
-
-    /**
-     *
-     */
-    public function __construct(array $args = null)
+    public function __construct(array $args)
     {
-        if (!empty($args)) {
-            $this->args = $args;
-        }
-    }
-
-    protected function setArgs(array $args)
-    {
-        $this->args = $args;
-    }
-
-    public function setup($input = '')
-    {
-        $args = array_unshift($this->args, 'drush');
-        $process = new Process($this->args);
-
-        if (!empty($input)) {
-            $process->setInput($input);
-        }
-
-        // TODO Check for error codes / standard errors.
-
-        return $process;
-    }
-
-    public function run($input = '')
-    {
-        $process = $this->setup($input);
-        $process->run();
-
-        // TODO Check for error codes / standard errors.
-
-        return $process;
+        array_unshift($args, 'drush');
+        parent::__construct($args);
     }
 }
