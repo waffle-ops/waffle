@@ -348,7 +348,7 @@ class UpdateApply extends BaseCommand
             $this->io->writeln(Runner::getOutput($git_commit));
         }
 
-        if (!$this->config->getDrushPatcherInstalled()) {
+        if (!$drush->getDrushPatchingEnabled()) {
             $this->io->warning(
                 "Unable to automatically reapply patches due to missing dependency: Drush Patcher"
             );

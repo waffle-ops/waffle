@@ -45,7 +45,6 @@ class ProjectConfig
     public const KEY_UPSTREAMS = 'upstreams';
     public const KEY_COMPOSER_PATH = 'composer_path';
     public const KEY_SYMFONY_CLI = 'symfony_cli';
-    public const KEY_DRUSH_PATCHER_INSTALLED = 'drush_patcher_installed';
 
     /**
      * @var array
@@ -188,16 +187,6 @@ class ProjectConfig
             }
         }
 
-        // TODO Pull this out of config and handle in Waffle\Model\Cli\Runner\Drush.
-        if (!isset($this->project_config['drush_patcher_installed'])) {
-            $this->project_config['drush_patcher_installed'] = false;
-            $drush_patcher_installed = Process::fromShellCommandline('drush patch-status');
-            $drush_patcher_installed->run();
-            if (empty($drush_patcher_installed->getExitCode())) {
-                $this->project_config['drush_patcher_installed'] = true;
-            }
-        }
-
         // @todo: define and derive other config defaults based on project files.
     }
 
@@ -329,22 +318,6 @@ class ProjectConfig
         ));
 
         return $this->get(self::KEY_SYMFONY_CLI);
-    }
-
-    /**
-     * Gets the drush patcher install status as defined in the config file.
-     *
-     * @return string
-     */
-    public function getDrushPatcherInstalled()
-    {
-        trigger_error(sprintf(
-            'Function %s::%s() is deprecated and will be removed in the next release.',
-            __CLASS__,
-            __FUNCTION__
-        ));
-
-        return $this->get(self::KEY_DRUSH_PATCHER_INSTALLED);
     }
 
     /**
