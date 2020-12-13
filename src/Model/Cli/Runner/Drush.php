@@ -22,6 +22,11 @@ class Drush
     private $drupal_major_version;
 
     /**
+     * @var array
+     */
+    private $drush_status_data;
+
+    /**
      *  Constructor
      */
     public function __construct()
@@ -35,32 +40,57 @@ class Drush
         $process->run();
         $json = $process->getOutput();
 
-        $drush_status_data = json_decode($json, true);
+        $this->drush_status_data = json_decode($json, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            // TODO: Throw and handle an exception for this.
+            throw new \Exception('Unable to derive Drush and Drupal details from output of `drush status`.');
         }
 
-        if (isset($drush_status_data['drush-version'])) {
-            $parts = explode('.', $drush_status_data['drush-version']);
+        if (isset($this->drush_status_data['drush-version'])) {
+            $parts = explode('.', $this->drush_status_data['drush-version']);
             $this->drush_major_version = $parts[0];
         } else {
-            // TODO: Throw and handle an exception for this.
+            throw new \Exception('Unable to derive Drush version.');
         }
 
-        if (isset($drush_status_data['drupal-version'])) {
-            $parts = explode('.', $drush_status_data['drupal-version']);
+        if (isset($this->drush_status_data['drupal-version'])) {
+            $parts = explode('.', $this->drush_status_data['drupal-version']);
             $this->drupal_major_version = $parts[0];
         } else {
-            // TODO: Throw and handle an exception for this.
+            throw new \Exception('Unable to derive Drupal version.');
         }
 
-        // TODO: Store status JSON. Would be useful for 'uli' calls to check
-        // for the baseurl. Would also be useful for any instances with an
-        // alias. We could try to verify the alias is working.
-
         // Attempt a DB connection / verify that local settings are present.
-        $this->ensureLocalSettings();
-        $this->validateDbAccess();
+        $this->validate();
+    }
+
+    /**
+     * Gets the major version of Drush in use.
+     *
+     * @return string
+     */
+    public function getDrushMajorVersion()
+    {
+        return $this->drush_major_version;
+    }
+
+    /**
+     * Gets the major version of Drupal in use.
+     *
+     * @return string
+     */
+    public function getDrupalMajorVersion()
+    {
+        return $this->drupal_major_version;
+    }
+
+    /**
+     * Gets the major version of Drupal in use.
+     *
+     * @return array
+     */
+    public function getDrushStatusData()
+    {
+        return $this->drush_status_data;
     }
 
     /**
@@ -238,6 +268,21 @@ class Drush
     }
 
     /**
+     * Validates Drush configuration.
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function validate()
+    {
+        // Tries to ensure that local settins is present.
+        $this->ensureLocalSettings();
+
+        // Attempts a DB connection.
+        $this->validateDbAccess();
+    }
+
+    /**
      * Validates database access.
      *
      * @return void
@@ -274,6 +319,8 @@ class Drush
         $finder->name('settings.local.php');
 
         if ($finder->hasResults()) {
+            // TODO: Consider hashing the contents of the example file and the
+            // present file. If different, emit a warning.
             return;
         }
 
