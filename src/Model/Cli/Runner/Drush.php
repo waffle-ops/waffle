@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffle\Model\Cli\Drush;
+namespace Waffle\Model\Cli\Runner;
 
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
@@ -25,6 +25,11 @@ class Drush
      * @var array
      */
     private $drush_status_data;
+
+    /**
+     * @var boolean
+     */
+    private $drush_patching_enabled = false;
 
     /**
      *  Constructor
@@ -59,6 +64,9 @@ class Drush
             throw new \Exception('Unable to derive Drupal version.');
         }
 
+        // For D7, checks if Drush patching is enabled.
+        $this->drush_patching_enabled = $this->checkDrushPatchingEnabled();
+
         // Attempt a DB connection / verify that local settings are present.
         $this->validate();
     }
@@ -84,13 +92,23 @@ class Drush
     }
 
     /**
-     * Gets the major version of Drupal in use.
+     * Gets the Drush status data.
      *
      * @return array
      */
     public function getDrushStatusData()
     {
         return $this->drush_status_data;
+    }
+
+    /**
+     * Returns boolean for Drush patching.
+     *
+     * @return boolean
+     */
+    public function getDrushPatchingEnabled()
+    {
+        return $this->drush_patching_enabled;
     }
 
     /**
@@ -345,5 +363,31 @@ class Drush
         if (!copy($example_settings, $local_settings)) {
             throw new Exception('Unable to create settings.local.php');
         }
+    }
+
+    /**
+     * Checks if Drush patching is avaliable.
+     *
+     * @return boolean
+     */
+    private function checkDrushPatchingEnabled()
+    {
+        if ($this->drupal_major_version !== '7') {
+            return false;
+        }
+
+        $status = new DrushCommand(['help patch-status']);
+        $process = $status->getProcess();
+        $process->run();
+
+        $patching_enabled = $process->isSuccessful();
+
+        if (!$patching_enabled) {
+            $msg = 'Drush patching is not enabled. Consider settting up the project with a patches.make file. ';
+            $msg .= 'More details here: https://github.com/davereid/drush-patchfile';
+            $this->io->warning($msg);
+        }
+
+        return $patching_enabled;
     }
 }
