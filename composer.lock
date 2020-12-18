@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "421ed58f7cf093775306e21087aa0a9e",
+    "content-hash": "61d634943ac99617f89b809835473108",
     "packages": [
         {
             "name": "psr/container",
@@ -54,6 +54,67 @@
                 "psr"
             ],
             "time": "2017-02-14T16:28:37+00:00"
+        },
+        {
+            "name": "symfony/config",
+            "version": "v5.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/config.git",
+                "reference": "fa1219ecbf96bb5db59f2599cba0960a0d9c3aea"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/config/zipball/fa1219ecbf96bb5db59f2599cba0960a0d9c3aea",
+                "reference": "fa1219ecbf96bb5db59f2599cba0960a0d9c3aea",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.5",
+                "symfony/deprecation-contracts": "^2.1",
+                "symfony/filesystem": "^4.4|^5.0",
+                "symfony/polyfill-ctype": "~1.8",
+                "symfony/polyfill-php80": "^1.15"
+            },
+            "conflict": {
+                "symfony/finder": "<4.4"
+            },
+            "require-dev": {
+                "symfony/event-dispatcher": "^4.4|^5.0",
+                "symfony/finder": "^4.4|^5.0",
+                "symfony/messenger": "^4.4|^5.0",
+                "symfony/service-contracts": "^1.1|^2",
+                "symfony/yaml": "^4.4|^5.0"
+            },
+            "suggest": {
+                "symfony/yaml": "To use the yaml reference dumper"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Config\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Config Component",
+            "homepage": "https://symfony.com",
+            "time": "2020-11-16T18:02:40+00:00"
         },
         {
             "name": "symfony/console",
@@ -135,6 +196,76 @@
             "time": "2020-10-07T15:23:00+00:00"
         },
         {
+            "name": "symfony/dependency-injection",
+            "version": "v5.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/dependency-injection.git",
+                "reference": "98cec9b9f410a4832e239949a41d47182862c3a4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/dependency-injection/zipball/98cec9b9f410a4832e239949a41d47182862c3a4",
+                "reference": "98cec9b9f410a4832e239949a41d47182862c3a4",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.5",
+                "psr/container": "^1.0",
+                "symfony/deprecation-contracts": "^2.1",
+                "symfony/polyfill-php80": "^1.15",
+                "symfony/service-contracts": "^1.1.6|^2"
+            },
+            "conflict": {
+                "symfony/config": "<5.1",
+                "symfony/finder": "<4.4",
+                "symfony/proxy-manager-bridge": "<4.4",
+                "symfony/yaml": "<4.4"
+            },
+            "provide": {
+                "psr/container-implementation": "1.0",
+                "symfony/service-implementation": "1.0"
+            },
+            "require-dev": {
+                "symfony/config": "^5.1",
+                "symfony/expression-language": "^4.4|^5.0",
+                "symfony/yaml": "^4.4|^5.0"
+            },
+            "suggest": {
+                "symfony/config": "",
+                "symfony/expression-language": "For using expressions in service container configuration",
+                "symfony/finder": "For using double-star glob patterns or when GLOB_BRACE portability is required",
+                "symfony/proxy-manager-bridge": "Generate service proxies to lazy load them",
+                "symfony/yaml": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\DependencyInjection\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony DependencyInjection Component",
+            "homepage": "https://symfony.com",
+            "time": "2020-11-28T11:24:18+00:00"
+        },
+        {
             "name": "symfony/deprecation-contracts",
             "version": "v2.2.0",
             "source": {
@@ -183,6 +314,51 @@
             "description": "A generic function and convention to trigger deprecation notices",
             "homepage": "https://symfony.com",
             "time": "2020-09-07T11:33:47+00:00"
+        },
+        {
+            "name": "symfony/filesystem",
+            "version": "v5.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/filesystem.git",
+                "reference": "bb92ba7f38b037e531908590a858a04d85c0e238"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/bb92ba7f38b037e531908590a858a04d85c0e238",
+                "reference": "bb92ba7f38b037e531908590a858a04d85c0e238",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.5",
+                "symfony/polyfill-ctype": "~1.8"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Filesystem\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Filesystem Component",
+            "homepage": "https://symfony.com",
+            "time": "2020-11-12T09:58:18+00:00"
         },
         {
             "name": "symfony/finder",
