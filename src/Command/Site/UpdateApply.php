@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Waffle\Command\BaseCommand;
+use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Model\Output\Runner;
 use Waffle\Model\Git\GitStatusShort;
 use Symfony\Component\Console\Input\InputOption;
@@ -16,7 +17,7 @@ use Waffle\Model\Git\GitAddAll;
 use Waffle\Model\Git\GitCommit;
 use Waffle\Model\Drush\DrushCommandRunner;
 
-class UpdateApply extends BaseCommand
+class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
 {
     public const COMMAND_KEY = 'site:update:apply';
 

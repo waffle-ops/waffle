@@ -7,10 +7,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Waffle\Command\BaseCommand;
+use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\ConfigTrait;
 
-class Login extends BaseCommand
+class Login extends BaseCommand implements DiscoverableCommandInterface
 {
     use ConfigTrait;
 
