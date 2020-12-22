@@ -7,8 +7,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Waffle\Command\BaseCommand;
+use Waffle\Command\DiscoverableCommandInterface;
 
-class Release extends BaseCommand
+class Release extends BaseCommand implements DiscoverableCommandInterface
 {
 
     public const COMMAND_KEY = 'site:sync:release';

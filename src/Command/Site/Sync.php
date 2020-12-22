@@ -9,11 +9,12 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
+use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\DefaultUpstreamTrait;
 use Waffle\Traits\ConfigTrait;
 
-class Sync extends BaseCommand
+class Sync extends BaseCommand implements DiscoverableCommandInterface
 {
     use DefaultUpstreamTrait;
     use ConfigTrait;

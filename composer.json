@@ -14,7 +14,9 @@
         "symfony/yaml": "^5.1",
         "symfony/process": "^5.1",
         "ext-json": "*",
-        "symfony/finder": "^5.1"
+        "symfony/finder": "^5.1",
+        "symfony/dependency-injection": "^5.2",
+        "symfony/config": "^5.2"
     },
     "bin": [
         "bin/waffle",

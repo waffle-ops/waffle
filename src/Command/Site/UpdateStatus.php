@@ -7,10 +7,11 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
+use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Model\Output\Runner;
 use Waffle\Model\Drush\DrushCommandRunner;
 
-class UpdateStatus extends BaseCommand
+class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
 {
     public const COMMAND_KEY = 'site:update:status';
 

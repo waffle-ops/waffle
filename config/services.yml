@@ -1,0 +1,19 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  _instanceof:
+    Waffle\Command\DiscoverableCommandInterface:
+      tags: ['command']
+
+  Waffle\:
+    lazy: true
+    resource: '../src'
+
+  Waffle\Model\Command\CommandManager:
+    public: true
+    arguments:
+      - !tagged command
+
+
