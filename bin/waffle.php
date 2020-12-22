@@ -6,6 +6,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Waffle\Application;
+use Waffle\Model\Command\CommandManager;
 
 // Load and compile the DI container.
 $container = new ContainerBuilder();
@@ -15,5 +16,7 @@ $container->compile();
 
 // Loading the application from the container to take advantage of the ability
 // to inject the commands in the DI layer.
-$application = $container->get(Application::class);
+// $application = $container->get(Application::class);
+$commandManager = $container->get(CommandManager::class);
+$application = new Application($commandManager);
 $application->run();

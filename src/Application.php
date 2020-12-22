@@ -28,12 +28,21 @@ class Application extends SymfonyApplication
         // "\u{1F9C8}", // Butter
     ];
 
-    public function __construct()
+    /**
+     * @var CommandManager
+     *
+     * Command manager for the Waffle application.
+     */
+    private $commandManager;
+
+    public function __construct(CommandManager $commandManager)
     {
         // Adding some emoji flair for fun.
         $emoji = array_rand(array_flip(self::EMOJI_POOL), 1);
         $name = sprintf('%s %s', $emoji, self::NAME);
         parent::__construct($name, self::VERSION);
+
+        $this->commandManager = $commandManager;
     }
 
     public function run(InputInterface $input = null, OutputInterface $output = null)
@@ -53,8 +62,7 @@ class Application extends SymfonyApplication
 
         // Most exceptions should prevent Waffle commands from loading.
         if ($passed_preflight_checks) {
-            $command_manager = new CommandManager();
-            $this->addCommands($command_manager->getCommands());
+            $this->addCommands($this->commandManager->getCommands());
         }
 
         if ($missing_config) {
