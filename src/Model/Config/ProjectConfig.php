@@ -44,9 +44,7 @@ class ProjectConfig
     public const KEY_TASKS = 'tasks';
     public const KEY_UPSTREAMS = 'upstreams';
     public const KEY_COMPOSER_PATH = 'composer_path';
-    public const KEY_DRUSH_MAJOR_VERSION = 'drush_major_version';
     public const KEY_SYMFONY_CLI = 'symfony_cli';
-    public const KEY_DRUSH_PATCHER_INSTALLED = 'drush_patcher_installed';
 
     /**
      * @var array
@@ -165,6 +163,12 @@ class ProjectConfig
      */
     private function setProjectConfigDefaults()
     {
+        trigger_error(sprintf(
+            'Function %s::%s() is deprecated and will be removed in the next release.',
+            __CLASS__,
+            __FUNCTION__
+        ));
+
         // Attempt to derive the composer.json path.
         // TODO Refactor this unto a SymdonyCommandRunner class.
         if (!isset($this->project_config['composer_path'])) {
@@ -180,32 +184,6 @@ class ProjectConfig
             $output = Runner::getOutput('which symfony');
             if (!empty($output)) {
                 $this->project_config['symfony_cli'] = $output;
-            }
-        }
-
-        // Attempt to determine the Drush minor and major versions.
-        // TODO Remove this once we cut over to DrushCommandRunner.
-        $drush_version = Runner::getOutput('drush version --format=string');
-        if (!isset($this->project_config['drush_version'])) {
-            if (!empty($drush_version)) {
-                $this->project_config['drush_version'] = $drush_version;
-            }
-        }
-
-        // TODO Remove this once we cut over to DrushCommandRunner.
-        if (!isset($this->project_config['drush_major_version'])) {
-            $drush_major_version = explode('.', $this->project_config['drush_version'])[0];
-            if (!empty($drush_major_version)) {
-                $this->project_config['drush_major_version'] = $drush_major_version;
-            }
-        }
-
-        if (!isset($this->project_config['drush_patcher_installed'])) {
-            $this->project_config['drush_patcher_installed'] = false;
-            $drush_patcher_installed = Process::fromShellCommandline('drush patch-status');
-            $drush_patcher_installed->run();
-            if (empty($drush_patcher_installed->getExitCode())) {
-                $this->project_config['drush_patcher_installed'] = true;
             }
         }
 
@@ -309,7 +287,7 @@ class ProjectConfig
     {
         return $this->get(self::KEY_TASKS);
     }
-    
+
     /**
      * Gets the composer path as defined in the config file.
      *
@@ -317,19 +295,15 @@ class ProjectConfig
      */
     public function getComposerPath()
     {
+        trigger_error(sprintf(
+            'Function %s::%s() is deprecated and will be removed in the next release.',
+            __CLASS__,
+            __FUNCTION__
+        ));
+
         return $this->get(self::KEY_COMPOSER_PATH);
     }
-    
-    /**
-     * Gets the drush major version as defined in the config file.
-     *
-     * @return string
-     */
-    public function getDrushMajorVersion()
-    {
-        return $this->get(self::KEY_DRUSH_MAJOR_VERSION);
-    }
-    
+
     /**
      * Gets the Symfony CLI install status as defined in the config file.
      *
@@ -337,17 +311,13 @@ class ProjectConfig
      */
     public function getSymfonyCli()
     {
+        trigger_error(sprintf(
+            'Function %s::%s() is deprecated and will be removed in the next release.',
+            __CLASS__,
+            __FUNCTION__
+        ));
+
         return $this->get(self::KEY_SYMFONY_CLI);
-    }
-    
-    /**
-     * Gets the drush patcher install status as defined in the config file.
-     *
-     * @return string
-     */
-    public function getDrushPatcherInstalled()
-    {
-        return $this->get(self::KEY_DRUSH_PATCHER_INSTALLED);
     }
 
     /**

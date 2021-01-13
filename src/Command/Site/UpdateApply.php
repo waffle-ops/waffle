@@ -15,7 +15,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Process\Process;
 use Waffle\Model\Git\GitAddAll;
 use Waffle\Model\Git\GitCommit;
-use Waffle\Model\Drush\DrushCommandRunner;
+use Waffle\Model\Cli\Runner\Drush;
 
 class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
 {
@@ -279,8 +279,8 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             $this->updateMinorComposerDependencies();
         }
 
-        $drushRunner = new DrushCommandRunner();
-        $ups = $drushRunner->pmSecurity('json');
+        $drush = new Drush();
+        $ups = $drush->pmSecurity('json');
 
         // @todo: check for errors before continuing.
         $ups_output = $ups->getOutput();
@@ -312,10 +312,10 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $from = $package['existing_version'];
         $to = $package['latest_version'];
 
-        $drushRunner = new DrushCommandRunner();
+        $drush = new Drush();
 
         $this->io->section("Updating {$name} from {$from} to {$to} ...");
-        // @todo: use $drushRunner for upc call
+        // @todo: use $drush for upc call
         $upc = Runner::failIfError(
             $this->io,
             "drush upc {$name} --check-disabled -y",
@@ -324,11 +324,11 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $this->io->writeln(Runner::getOutput($upc));
 
         $this->io->section('Clearing Drupal cache');
-        $cc = $drushRunner->clearCaches();
+        $cc = $drush->clearCaches();
         Runner::outputOrFail($this->io, $cc, 'Error when clearing Drupal cache.');
 
         $this->io->section('Running any pending Drupal DB updates');
-        $updb = $drushRunner->updateDatabase();
+        $updb = $drush->updateDatabase();
         Runner::outputOrFail($this->io, $updb, 'Error when running pending Drupal DB updates.');
 
         $git_pending_output = (new GitStatusShort())->run()->getOutput();
@@ -349,7 +349,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             $this->io->writeln(Runner::getOutput($git_commit));
         }
 
-        if (!$this->config->getDrushPatcherInstalled()) {
+        if (!$drush->getDrushPatchingEnabled()) {
             $this->io->warning(
                 "Unable to automatically reapply patches due to missing dependency: Drush Patcher"
             );
@@ -471,7 +471,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $from = $package['version'];
         $to = $package['latest'];
 
-        $drushRunner = new DrushCommandRunner();
+        $drush = new Drush();
 
         if ($from == $to) {
             $this->io->warning("Skipping {$name} because old and new version are the same. ({$from})");
@@ -508,13 +508,13 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
 
         // Clear the Drupal cache.
         $this->io->section('Clearing Drupal cache');
-        $cc = $drushRunner->clearCaches();
+        $cc = $drush->clearCaches();
         // @todo: This isn't detecting php error output for some reason.
         Runner::outputOrFail($this->io, $cc, 'Error when clearing Drupal cache.');
 
         // Run any pending Drupal database updates.
         $this->io->section('Running any pending Drupal DB updates');
-        $updb = $drushRunner->updateDatabase();
+        $updb = $drush->updateDatabase();
         Runner::outputOrFail($this->io, $updb, 'Error when running pending Drupal DB updates.');
 
         $git_pending_output = (new GitStatusShort())->run()->getOutput();
@@ -539,11 +539,11 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
 
         if ($this->includeConfig) {
             $this->io->section('Clearing Drupal cache for config export');
-            $cc = $drushRunner->clearCaches();
+            $cc = $drush->clearCaches();
             Runner::outputOrFail($this->io, $cc, 'Error when clearing Drupal cache for config export.');
 
             $this->io->section('Exporting config changes.');
-            $cex = $drushRunner->configExport($this->configKey);
+            $cex = $drush->configExport($this->configKey);
             Runner::outputOrFail($this->io, $cex, 'Error when exporting config.');
 
             $git_pending_output = (new GitStatusShort())->run()->getOutput();

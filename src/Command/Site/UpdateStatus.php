@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Model\Output\Runner;
-use Waffle\Model\Drush\DrushCommandRunner;
+use Waffle\Model\Cli\Runner\Drush;
 
 class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
 {
@@ -71,19 +71,13 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
             $this->generateComposerReport();
         }
 
-        if (empty($this->config->getDrushMajorVersion())) {
-            $this->io->warning('Unable to generate Drush module status: Missing drush install.');
-        } else {
-            $drushRunner = new DrushCommandRunner();
-            $pmSecurity = $drushRunner->pmSecurity();
-            Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity);
-            // @todo: get non-composer-tracked pending updates for drush 9+ via
-            // @todo: `drush eval "var_export(update_get_available(TRUE));"`
-            // @todo: see docroot/core/modules/update/src/Controller/UpdateController.php::updateStatus()
-        }
 
-
-
+        $drush = new Drush();
+        $pmSecurity = $drush->pmSecurity();
+        Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity);
+        // @todo: get non-composer-tracked pending updates for drush 9+ via
+        // @todo: `drush eval "var_export(update_get_available(TRUE));"`
+        // @todo: see docroot/core/modules/update/src/Controller/UpdateController.php::updateStatus()
 
         // @todo: What other type of reporting should be done here? `npm audit`?
         // @todo: Run an ADA compliance audit/tester?
@@ -103,13 +97,9 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
             $this->generateComposerReport();
         }
 
-        if (empty($this->config->getDrushMajorVersion())) {
-            $this->io->warning('Unable to generate Drush module status: Missing drush install.');
-        } else {
-            $drushRunner = new DrushCommandRunner();
-            $pmSecurity = $drushRunner->pmSecurity();
-            Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity);
-        }
+        $drush = new Drush();
+        $pmSecurity = $drush->pmSecurity();
+        Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity);
 
         // @todo: What other type of reporting should be done here? `npm audit`?
         // @todo: Run an ADA compliance audit/tester?
