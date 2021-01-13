@@ -208,9 +208,15 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $this->includeConfig = $input->getOption('include-config');
         $this->forceYes = $input->getOption('yes');
         $this->timeout = $input->getOption('timeout');
-        $this->packages = str_getcsv(str_replace(' ', '', $input->getOption('packages')));
-        $this->ignore = str_getcsv(str_replace(' ', '', $input->getOption('ignore')));
-
+        $packages = str_replace(' ', '', $input->getOption('packages'));
+        if (!empty($packages)) {
+            $this->packages = str_getcsv($packages);
+        }
+        $ignore = str_replace(' ', '', $input->getOption('ignore'));
+        if (!empty($ignore)) {
+            $this->ignore = str_getcsv($ignore);
+        }
+        
         // Warn user that this will be applying git commits to the local repo.
         if (!$this->skipGit && !$this->forceYes) {
             $confirmation = $this->io->confirm(
@@ -290,7 +296,18 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             $this->io->writeln('No pending updates found.');
             exit(0);
         }
-
+    
+        if (!empty($this->packages)) {
+            foreach ($this->packages as $specific_package) {
+                if (!array_key_exists($specific_package, $updates)) {
+                    $this->io->warning("Package {$specific_package} not found in list of pending Drupal updates.");
+                    continue;
+                }
+                $this->updateDrupal7Item($updates[$specific_package]);
+            }
+            return;
+        }
+    
         foreach ($updates as $module => $update) {
             if (in_array($update['name'], $this->ignore)) {
                 $this->io->warning("Skipping ignored package: {$update['name']}");
@@ -319,7 +336,8 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $upc = Runner::failIfError(
             $this->io,
             "drush upc {$name} --check-disabled -y",
-            "Error updating item {$name} ({$from} => {$to})"
+            "Error updating item {$name} ({$from} => {$to})",
+            $this->timeout
         );
         $this->io->writeln(Runner::getOutput($upc));
 
@@ -416,7 +434,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             foreach ($this->packages as $specific_package) {
                 $key = array_search($specific_package, array_column($pending_updates['installed'], 'name'));
                 if ($key === false) {
-                    $this->io->warning("Package {$specific_package} not found in list of pending updates.");
+                    $this->io->warning("Package {$specific_package} not found in list of pending composer updates.");
                     continue;
                 }
                 $package = $pending_updates['installed'][$key];

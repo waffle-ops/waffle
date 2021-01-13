@@ -2,7 +2,6 @@
 
 namespace Waffle\Model\Output;
 
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
 
@@ -123,9 +122,16 @@ class Runner
      * @param SymfonyStyle $io
      * @param $command
      * @param string $error_message
+     * @param int $timeout
+     *
      * @return Process|null
      */
-    public static function failIfError(SymfonyStyle $io, $command, $error_message = 'Error when running process.')
+    public static function failIfError(
+        SymfonyStyle $io,
+        $command,
+        $error_message = 'Error when running process.',
+        $timeout = 60
+    )
     {
         trigger_error(sprintf(
             'Function %s::%s() is deprecated and will be removed in the next release.',
@@ -136,6 +142,7 @@ class Runner
         $process = Runner::setup($command);
 
         if (!$process->isStarted() && !$process->isRunning()) {
+            $process->setTimeout($timeout);
             $process->run();
         }
 
