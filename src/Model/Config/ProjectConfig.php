@@ -7,7 +7,6 @@ use Symfony\Component\Yaml\Yaml;
 use Waffle\Exception\Config\AmbiguousConfigException;
 use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Model\Output\Runner;
-use Symfony\Component\Process\Process;
 
 class ProjectConfig
 {
@@ -44,7 +43,7 @@ class ProjectConfig
     public const KEY_TASKS = 'tasks';
     public const KEY_UPSTREAMS = 'upstreams';
     public const KEY_COMPOSER_PATH = 'composer_path';
-    public const KEY_SYMFONY_CLI = 'symfony_cli';
+    public const KEY_COMMAND_PREFIX = 'command_prefix';
 
     /**
      * @var array
@@ -116,8 +115,6 @@ class ProjectConfig
         $this->project_config = [];
         $this->project_config = Yaml::parseFile($project_config_file);
         $this->project_config['config_path'] = str_replace('.waffle.yml', '', $project_config_file);
-
-        $this->setProjectConfigDefaults();
     }
 
     /**
@@ -155,39 +152,6 @@ class ProjectConfig
         $file = $iterator->current();
 
         return $file->getRealPath();
-    }
-
-    /**
-     * If config is not explicitly set, then define some defaults from info that
-     * can be derived from project structure and environment.
-     */
-    private function setProjectConfigDefaults()
-    {
-        trigger_error(sprintf(
-            'Function %s::%s() is deprecated and will be removed in the next release.',
-            __CLASS__,
-            __FUNCTION__
-        ));
-
-        // Attempt to derive the composer.json path.
-        // TODO Refactor this unto a SymdonyCommandRunner class.
-        if (!isset($this->project_config['composer_path'])) {
-            $composer_path = $this->determineComposerPath();
-            if (!empty($composer_path)) {
-                $this->project_config['composer_path'] = $composer_path;
-            }
-        }
-
-        // Attempt to see if the Symfony CLI is installed.
-        // TODO Refactor this unto a SymdonyCommandRunner class.
-        if (!isset($this->project_config['symfony_cli'])) {
-            $output = Runner::getOutput('which symfony');
-            if (!empty($output)) {
-                $this->project_config['symfony_cli'] = $output;
-            }
-        }
-
-        // @todo: define and derive other config defaults based on project files.
     }
 
     /**
@@ -295,29 +259,16 @@ class ProjectConfig
      */
     public function getComposerPath()
     {
-        trigger_error(sprintf(
-            'Function %s::%s() is deprecated and will be removed in the next release.',
-            __CLASS__,
-            __FUNCTION__
-        ));
-
+        // Look at `project_config` directly instead of `get` so we don't attempt
+        // to derive value automatically multiple times per run.
+        if (isset($this->project_config[self::KEY_COMPOSER_PATH])) {
+            return $this->get(self::KEY_COMPOSER_PATH);
+        }
+    
+        // Attempt to derive the composer.json path.
+        $composer_path = $this->determineComposerPath();
+        $this->project_config[self::KEY_COMPOSER_PATH] = $composer_path;
         return $this->get(self::KEY_COMPOSER_PATH);
-    }
-
-    /**
-     * Gets the Symfony CLI install status as defined in the config file.
-     *
-     * @return string
-     */
-    public function getSymfonyCli()
-    {
-        trigger_error(sprintf(
-            'Function %s::%s() is deprecated and will be removed in the next release.',
-            __CLASS__,
-            __FUNCTION__
-        ));
-
-        return $this->get(self::KEY_SYMFONY_CLI);
     }
 
     /**
@@ -330,5 +281,15 @@ class ProjectConfig
         $raw_upstreams =  $this->get(self::KEY_UPSTREAMS) ?? '';
         $allowed_upstreams = explode(',', $raw_upstreams);
         return $allowed_upstreams;
+    }
+    
+    /**
+     * Gets the command prefix.
+     *
+     * @return array|string|null
+     */
+    public function getCommandPrefix()
+    {
+        return $this->get(self::KEY_COMMAND_PREFIX);
     }
 }

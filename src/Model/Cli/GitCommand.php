@@ -2,8 +2,6 @@
 
 namespace Waffle\Model\Cli;
 
-use Waffle\Model\Cli\BaseCliCommand;
-
 class GitCommand extends BaseCliCommand
 {
 

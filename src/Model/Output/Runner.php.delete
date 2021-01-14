@@ -33,6 +33,7 @@ class Runner
      */
     public static function message(SymfonyStyle $io, $message, $command)
     {
+        
         trigger_error(sprintf(
             'Function %s::%s() is deprecated and will be removed in the next release.',
             __CLASS__,

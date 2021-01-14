@@ -5,17 +5,16 @@ namespace Waffle\Model\Cli\Runner;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Exception;
-use Waffle\Model\IO\IO;
 use Waffle\Model\Cli\DrushCommand;
 
-class Drush
+class Drush extends BaseRunner
 {
-
+    
     /**
      * @var string
      */
     private $drush_major_version;
-
+    
     /**
      * @var string
      */
@@ -36,7 +35,7 @@ class Drush
      */
     public function __construct()
     {
-        $this->io = IO::getInstance()->getIO();
+        parent::__construct();
 
         // Calling 'drush status --format=json' will give us a json blob that
         // we can parse to get info about the site.
@@ -250,11 +249,12 @@ class Drush
         $process->run();
         return $process;
     }
-
+    
     /**
      * Runs any pending database updates.
      *
      * @return Process
+     * @throws Exception
      */
     public function updateDatabase()
     {

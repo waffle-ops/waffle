@@ -8,19 +8,41 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
-use Waffle\Model\Output\Runner;
 use Waffle\Model\Cli\Runner\Drush;
+use Waffle\Model\Cli\Runner\SymfonyCli;
+use Waffle\Model\Cli\Runner\Composer;
 
 class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
 {
     public const COMMAND_KEY = 'site:update:status';
-
+    
+    /**
+     * @var Drush
+     */
+    protected $drush;
+    
+    /**
+     * @var SymfonyCli
+     */
+    protected $symfonyCli;
+    
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        
+        $this->drush = new Drush();
+        $this->symfonyCli = new SymfonyCli();
+    }
+    
     protected function configure()
     {
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Checks the project for any pending updates and generates reports.');
         $this->setHelp('Checks the project for any pending updates and generates reports.');
-
+        
         // @todo Add support for arguments: --format, ...?
     }
 
@@ -60,21 +82,15 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
     {
         $this->io->title('Generating Drupal 8 Update Reports');
 
-        // @todo: refactor this to reduce nesting and be separate functions.
         if (empty($this->config->getComposerPath())) {
             $this->io->warning('Unable to generate composer reports: Missing composer file.');
         } else {
-            // @todo: should we run `composer install` here?
-
             // @todo: Add a report on what packages are required by composer but not currently installed by Drupal
 
             $this->generateComposerReport();
         }
-
-
-        $drush = new Drush();
-        $pmSecurity = $drush->pmSecurity();
-        Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity);
+    
+        $this->io->message('Checking Drupal core and contrib via drush', $this->drush->pmSecurity());
         // @todo: get non-composer-tracked pending updates for drush 9+ via
         // @todo: `drush eval "var_export(update_get_available(TRUE));"`
         // @todo: see docroot/core/modules/update/src/Controller/UpdateController.php::updateStatus()
@@ -96,41 +112,39 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
         if (!empty($this->config->getComposerPath())) {
             $this->generateComposerReport();
         }
-
-        $drush = new Drush();
-        $pmSecurity = $drush->pmSecurity();
-        Runner::message($this->io, 'Checking Drupal core and contrib via drush', $pmSecurity);
+    
+        $this->io->message('Checking Drupal core and contrib via drush', $this->drush->pmSecurity());
 
         // @todo: What other type of reporting should be done here? `npm audit`?
         // @todo: Run an ADA compliance audit/tester?
         // @todo: Run Lighthouse Audit?
     }
-
+    
     /**
      * Runs composer-related update reporting.
+     *
+     * @throws Exception
      */
     protected function generateComposerReport()
     {
-        Runner::message(
-            $this->io,
+        $composer = new Composer();
+        $this->io->message(
             'Checking minor version composer updates',
-            'composer outdated -Dmn --strict --no-ansi --working-dir="' . $this->config->getComposerPath() . '" "*/*"'
+            $composer->getMinorVersionUpdates()
         );
-        Runner::message(
-            $this->io,
+    
+        // @todo: low priority: this is only showing the 2nd grep command in output b/c of the grep filtering.
+        $this->io->message(
             'Checking major version composer updates',
-            'composer outdated -Dn --no-ansi --working-dir="' .
-            $this->config->getComposerPath() .
-            '" "*/*"  | grep -v "!"'
+            $composer->getMajorVersionUpdates()
         );
-
-        if (empty($this->config->getSymfonyCli())) {
+    
+        if (!$this->symfonyCli->isInstalled()) {
             $this->io->warning('Unable to generate Symfony security reports: Missing Symfony CLI installation.');
         } else {
-            Runner::message(
-                $this->io,
+            $this->io->message(
                 'Checking Symfony CLI security',
-                'symfony security:check --dir="' . $this->config->getComposerPath() . '"'
+                $this->symfonyCli->securityCheck()
             );
         }
     }

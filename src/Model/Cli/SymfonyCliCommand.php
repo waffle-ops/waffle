@@ -2,15 +2,18 @@
 
 namespace Waffle\Model\Cli;
 
-class DrushCommand extends BaseCliCommand
-{
+use Exception;
 
+class SymfonyCliCommand extends BaseCliCommand
+{
+    
     /**
      * {@inheritdoc}
+     * @throws Exception
      */
     public function __construct(array $args)
     {
-        array_unshift($args, 'drush');
+        array_unshift($args, 'symfony');
         parent::__construct($args);
     }
 }
