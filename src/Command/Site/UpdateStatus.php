@@ -26,17 +26,6 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
      */
     protected $symfonyCli;
     
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        
-        $this->drush = new Drush();
-        $this->symfonyCli = new SymfonyCli();
-    }
-    
     protected function configure()
     {
         $this->setName(self::COMMAND_KEY);
@@ -57,6 +46,9 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         parent::execute($input, $output);
+    
+        $this->drush = new Drush();
+        $this->symfonyCli = new SymfonyCli();
 
         switch ($this->config->getCms()) {
             case "drupal8":

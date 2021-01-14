@@ -112,18 +112,6 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
     protected $composer;
     
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        
-        $this->git = new Git();
-        $this->drush = new Drush();
-        $this->composer = new Composer();
-    }
-    
-    /**
      * @inheritDoc
      */
     protected function configure()
@@ -225,6 +213,10 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         parent::execute($input, $output);
+    
+        $this->git = new Git();
+        $this->drush = new Drush();
+        $this->composer = new Composer();
         
         $this->gitPrefix = $input->getOption('git-prefix');
         $this->gitPostfix = $input->getOption('git-postfix');
