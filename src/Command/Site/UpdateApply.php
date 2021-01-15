@@ -76,7 +76,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
     protected $ignore = [];
 
     /**
-     * The amount of time in seconds to wait for the install command to finish.
+     * The amount of time in seconds to wait for the command to finish.
      *
      * @var int
      */
@@ -345,31 +345,25 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $to = $package['latest_version'];
     
         $this->io->section("Updating {$name} from {$from} to {$to} ...");
-        // @todo: use $drush for upc call
-        $this->io->failIfErrorAndOutput(
-            "drush upc {$name} --check-disabled -y",
+        $this->io->outputOrFail(
+            $this->drush->updateCode($name),
             "Error updating item {$name} ({$from} => {$to})"
         );
     
         $this->io->section('Clearing Drupal cache');
-        $cc = $this->drush->clearCaches();
-        $this->io->outputOrFail($cc, 'Error when clearing Drupal cache.');
+        $this->io->outputOrFail($this->drush->clearCaches(), 'Error when clearing Drupal cache.');
     
         $this->io->section('Running any pending Drupal DB updates');
-        $updb = $this->drush->updateDatabase();
-        $this->io->outputOrFail($updb, 'Error when running pending Drupal DB updates.');
+        $this->io->outputOrFail($this->drush->updateDatabase(), 'Error when running pending Drupal DB updates.');
     
-        if ($this->git->hasPendingChanges()) {
+        if (!$this->git->hasPendingChanges()) {
             $this->io->warning("No git changes found for: {$name} ({$from} => {$to})");
+            // No need to attempt to commit or export config if there are no changes.
+            return;
         }
         if (!$this->skipGit && $this->git->hasPendingChanges()) {
-            // @todo: refactor this repeated code for git add/commit into something reusable
-            $this->io->section('Adding pending changes to git index.');
-            $this->io->failIfErrorAndOutput($this->git->addAll(), 'Error when adding pending changes to git index.');
-        
-            $this->io->section('Committing changes to git.');
             $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
-            $this->io->failIfErrorAndOutput($this->git->commit($message), 'Error when committing to git.');
+            $this->gitCommitChanges($message);
         }
     
         if (!$this->drush->getDrushPatchingEnabled()) {
@@ -379,8 +373,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         } else {
             $this->io->section("Reapplying any found patches for {$name}");
             // The patcher will throw an error if no patches are defined for the module so we need to check for that.
-            $pp = Process::fromShellCommandline("drush pp {$name} -y");
-            $pp->run();
+            $pp = $this->drush->patchApply($name);
             if (!empty($pp->getExitCode())) {
                 $pp_output = $this->io->getOutput($pp);
                 if (strpos($pp_output, 'There are no patches') === false) {
@@ -392,16 +385,8 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             $this->io->writeln($this->io->getOutput($pp));
         
             if (!$this->skipGit && $this->git->hasPendingChanges()) {
-                // @todo: refactor this repeated code for git add/commit into something reusable
-                $this->io->section('Adding pending changes to git index.');
-                $this->io->failIfErrorAndOutput(
-                    $this->git->addAll(),
-                    'Error when adding pending changes to git index.'
-                );
-            
-                $this->io->section('Committing changes to git.');
                 $message = "{$this->gitPrefix}Reapplied patches for {$name} " . "({$from} => {$to}){$this->gitPostfix}";
-                $this->io->failIfErrorAndOutput($this->git->commit($message), 'Error when committing to git.');
+                $this->gitCommitChanges($message);
             }
         }
 
@@ -527,9 +512,9 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $this->io->outputOrFail($updb, 'Error when running pending Drupal DB updates.');
     
         if (!$this->git->hasPendingChanges()) {
-            $this->io->warning(
-                "No git changes found for: {$package['name']} ({$package['version']} => {$package['latest']})"
-            );
+            $this->io->warning("No git changes found for: {$name} ({$from} => {$to})");
+            // No need to attempt to commit or export config if there are no changes.
+            return;
         }
     
         $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
@@ -573,11 +558,11 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         if ($this->skipGit || !$this->git->hasPendingChanges()) {
             return;
         }
-        
+    
         $this->io->section('Adding pending changes to git index.');
-        $this->io->failIfErrorAndOutput($this->git->addAll(), 'Error when adding pending changes to git index.');
-        
+        $this->io->outputOrFail($this->git->addAll(), 'Error when adding pending changes to git index.');
+    
         $this->io->section('Committing changes to git.');
-        $this->io->failIfErrorAndOutput($this->git->commit($message), 'Error when committing to git.');
+        $this->io->outputOrFail($this->git->commit($message), 'Error when committing to git.');
     }
 }

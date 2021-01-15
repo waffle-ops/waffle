@@ -44,6 +44,8 @@ class ProjectConfig
     public const KEY_UPSTREAMS = 'upstreams';
     public const KEY_COMPOSER_PATH = 'composer_path';
     public const KEY_COMMAND_PREFIX = 'command_prefix';
+    public const KEY_LOCAL_SETTINGS_FILENAME = 'local_settings_filename';
+    public const KEY_TIMEOUT = 'timeout';
 
     /**
      * @var array
@@ -161,6 +163,7 @@ class ProjectConfig
      */
     private function determineComposerPath()
     {
+        // @todo: use Finder here instead.
         $cwd = getcwd();
 
         // Current directory.
@@ -190,6 +193,31 @@ class ProjectConfig
         }
 
         return null;
+    }
+    
+    /**
+     * Checks if a config key/value is set at all.
+     *
+     * Used to determine if a default value should be set when lazy loading.
+     *
+     * @param $key
+     *
+     * @return bool
+     */
+    private function keyExists($key)
+    {
+        return isset($this->project_config[$key]);
+    }
+    
+    /**
+     * Sets a project config key to a value.
+     *
+     * @param $key
+     * @param $value
+     */
+    private function set($key, $value)
+    {
+        $this->project_config[$key] = $value;
     }
 
     /**
@@ -259,15 +287,11 @@ class ProjectConfig
      */
     public function getComposerPath()
     {
-        // Look at `project_config` directly instead of `get` so we don't attempt
-        // to derive value automatically multiple times per run.
-        if (isset($this->project_config[self::KEY_COMPOSER_PATH])) {
-            return $this->get(self::KEY_COMPOSER_PATH);
+        if (!$this->keyExists(self::KEY_COMPOSER_PATH)) {
+            // Attempt to derive the composer.json path.
+            $this->set(self::KEY_COMPOSER_PATH, $this->determineComposerPath());
         }
-    
-        // Attempt to derive the composer.json path.
-        $composer_path = $this->determineComposerPath();
-        $this->project_config[self::KEY_COMPOSER_PATH] = $composer_path;
+        
         return $this->get(self::KEY_COMPOSER_PATH);
     }
 
@@ -291,5 +315,37 @@ class ProjectConfig
     public function getCommandPrefix()
     {
         return $this->get(self::KEY_COMMAND_PREFIX);
+    }
+    
+    /**
+     * Gets the local settings filename.
+     *
+     * Default value: settings.local.php
+     *
+     * @return array|string|null
+     */
+    public function getLocalSettingsFilename()
+    {
+        if (!$this->keyExists(self::KEY_LOCAL_SETTINGS_FILENAME)) {
+            $this->set(self::KEY_LOCAL_SETTINGS_FILENAME, 'settings.local.php');
+        }
+    
+        return $this->get(self::KEY_LOCAL_SETTINGS_FILENAME);
+    }
+    
+    /**
+     * Gets the timeout time (in milliseconds) for commands.
+     *
+     * Default value: 300
+     *
+     * @return array|string|null
+     */
+    public function getTimeout()
+    {
+        if (!$this->keyExists(self::KEY_TIMEOUT)) {
+            $this->set(self::KEY_TIMEOUT, 300);
+        }
+        
+        return $this->get(self::KEY_TIMEOUT);
     }
 }

@@ -49,6 +49,7 @@ class BaseCliCommand
         }
         
         $this->process = new Process($args);
+        $this->process->setTimeout($this->config->getTimeout());
     }
 
     /**

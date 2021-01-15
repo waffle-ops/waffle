@@ -113,7 +113,6 @@ class IOStyle extends SymfonyStyle implements StyleInterface
         $process = $this->setup($command);
         
         if (!$process->isStarted() && !$process->isRunning()) {
-            // @todo: use global level timeout value
             $process->run();
         }
         
@@ -134,23 +133,6 @@ class IOStyle extends SymfonyStyle implements StyleInterface
     }
     
     /**
-     * Run a command and fail on error. Otherwise output it to screen.
-     *
-     * @param $command
-     * @param string $error_message
-     *
-     * @return Process
-     */
-    public function failIfErrorAndOutput(
-        $command,
-        $error_message = 'Error when running process.'
-    ): Process {
-        $process = $this->failIfError($command, $error_message);
-        $this->writeln($this->getOutput($process));
-        return $process;
-    }
-    
-    /**
      * Output a process after running or fail if it throws an error.
      *
      * @param $command
@@ -158,7 +140,7 @@ class IOStyle extends SymfonyStyle implements StyleInterface
      *
      * @return Process|null
      */
-    public function outputOrFail($command, $error_message = 'Error when running process.')
+    public function outputOrFail($command, $error_message = 'Error when running process.'): ?Process
     {
         $process = $this->failIfError($command, $error_message);
         $this->writeln($this->getOutput($process));

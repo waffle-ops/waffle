@@ -29,9 +29,11 @@ class Drush extends BaseRunner
      * @var boolean
      */
     private $drush_patching_enabled = false;
-
+    
     /**
      *  Constructor
+     *
+     * @throws Exception
      */
     public function __construct()
     {
@@ -46,21 +48,21 @@ class Drush extends BaseRunner
 
         $this->drush_status_data = json_decode($json, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \Exception('Unable to derive Drush and Drupal details from output of `drush status`.');
+            throw new Exception('Unable to derive Drush and Drupal details from output of `drush status`.');
         }
 
         if (isset($this->drush_status_data['drush-version'])) {
             $parts = explode('.', $this->drush_status_data['drush-version']);
             $this->drush_major_version = $parts[0];
         } else {
-            throw new \Exception('Unable to derive Drush version.');
+            throw new Exception('Unable to derive Drush version.');
         }
 
         if (isset($this->drush_status_data['drupal-version'])) {
             $parts = explode('.', $this->drush_status_data['drupal-version']);
             $this->drupal_major_version = $parts[0];
         } else {
-            throw new \Exception('Unable to derive Drupal version.');
+            throw new Exception('Unable to derive Drupal version.');
         }
 
         // For D7, checks if Drush patching is enabled.
@@ -227,12 +229,12 @@ class Drush extends BaseRunner
      */
     public function pmSecurity($format = 'table')
     {
-        $args = [];
         switch ($this->drush_major_version) {
             case '8':
                 $args = ['ups', '--check-disabled', "--format={$format}"];
                 break;
             case '9':
+            case '10':
                 $args = ['pm:security', "--format={$format}"];
                 break;
             default:
@@ -246,6 +248,31 @@ class Drush extends BaseRunner
 
         $pm_security = new DrushCommand($args);
         $process = $pm_security->getProcess();
+        $process->run();
+        return $process;
+    }
+    
+    /**
+     * Runs drush update-code for a module.
+     *
+     * @param $module
+     *
+     * @return Process
+     * @throws Exception
+     */
+    public function updateCode($module): Process
+    {
+        if ($this->drupal_major_version !== '7') {
+            throw new Exception(
+                sprintf(
+                    'Drush update-code is not supported for Drupal %s.',
+                    $this->drupal_major_version
+                )
+            );
+        }
+        
+        $command = new DrushCommand(['upc', $module, '--check-disabled', '-y']);
+        $process = $command->getProcess();
         $process->run();
         return $process;
     }
@@ -284,6 +311,25 @@ class Drush extends BaseRunner
         $process->run();
         return $process;
     }
+    
+    /**
+     *
+     * @param $module
+     *
+     * @return false|Process
+     * @throws Exception
+     */
+    public function patchApply($module)
+    {
+        if (!$this->getDrushPatchingEnabled()) {
+            return false;
+        }
+        
+        $command = new DrushCommand(['pp', $module, '-y']);
+        $process = $command->getProcess();
+        $process->run();
+        return $process;
+    }
 
     /**
      * Validates Drush configuration.
@@ -293,7 +339,7 @@ class Drush extends BaseRunner
      */
     private function validate()
     {
-        // Tries to ensure that local settins is present.
+        // Tries to ensure that local settings is present.
         $this->ensureLocalSettings();
 
         // Attempts a DB connection.
@@ -334,7 +380,8 @@ class Drush extends BaseRunner
         $finder = new Finder();
         $finder->files();
         $finder->in(getcwd());
-        $finder->name('settings.local.php');
+        $filename = $this->config->getLocalSettingsFilename();
+        $finder->name($filename);
 
         if ($finder->hasResults()) {
             // TODO: Consider hashing the contents of the example file and the
@@ -364,19 +411,20 @@ class Drush extends BaseRunner
             throw new Exception('Unable to create settings.local.php');
         }
     }
-
+    
     /**
-     * Checks if Drush patching is avaliable.
+     * Checks if Drush patching is available.
      *
      * @return boolean
+     * @throws Exception
      */
-    private function checkDrushPatchingEnabled()
+    private function checkDrushPatchingEnabled(): bool
     {
         if ($this->drupal_major_version !== '7') {
             return false;
         }
 
-        $status = new DrushCommand(['help patch-status']);
+        $status = new DrushCommand(['help', 'patch-status']);
         $process = $status->getProcess();
         $process->run();
 

@@ -33,6 +33,8 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
         $this->setHelp('Checks the project for any pending updates and generates reports.');
         
         // @todo Add support for arguments: --format, ...?
+        
+        // @todo: Add parameter to output full report to file instead of screen
     }
 
     /**
