@@ -62,8 +62,12 @@ class Git extends BaseRunner
      * @return Process
      * @throws Exception
      */
-    public function commit($message = 'Committing changes.'): Process
+    public function commit(string $message): Process
     {
+        if (empty($message)) {
+            throw new Exception('Git commit message is required.');
+        }
+        
         $command = new GitCommand(['commit', "--message={$message}"]);
         return $command->getProcess();
     }
