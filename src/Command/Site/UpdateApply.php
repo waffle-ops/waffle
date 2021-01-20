@@ -10,7 +10,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Process\Process;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\Git;
 use Waffle\Model\Cli\Runner\Composer;
@@ -248,7 +247,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         
         // Fail if there are any pending git changes before starting.
         if ($this->git->hasPendingChanges() && !$this->skipGit) {
-            $this->io->caution($this->io->getOutput($this->git->statusShort()));
+            $this->io->caution($this->cliHelper->getOutput($this->git->statusShort()));
             throw new Exception(
                 'You have pending changes in your git repo. Resolve these before attempting to run this command.'
             );
@@ -345,16 +344,18 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $to = $package['latest_version'];
     
         $this->io->section("Updating {$name} from {$from} to {$to} ...");
-        $this->io->outputOrFail(
+        $this->cliHelper->outputOrFail(
             $this->drush->updateCode($name),
             "Error updating item {$name} ({$from} => {$to})"
         );
+        
+        // @todo: If htaccess was updated, output a warning.
     
         $this->io->section('Clearing Drupal cache');
-        $this->io->outputOrFail($this->drush->clearCaches(), 'Error when clearing Drupal cache.');
+        $this->cliHelper->outputOrFail($this->drush->clearCaches(), 'Error when clearing Drupal cache.');
     
         $this->io->section('Running any pending Drupal DB updates');
-        $this->io->outputOrFail($this->drush->updateDatabase(), 'Error when running pending Drupal DB updates.');
+        $this->cliHelper->outputOrFail($this->drush->updateDatabase(), 'Error when running pending Drupal DB updates.');
     
         if (!$this->git->hasPendingChanges()) {
             $this->io->warning("No git changes found for: {$name} ({$from} => {$to})");
@@ -375,14 +376,14 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             // The patcher will throw an error if no patches are defined for the module so we need to check for that.
             $pp = $this->drush->patchApply($name);
             if (!empty($pp->getExitCode())) {
-                $pp_output = $this->io->getOutput($pp);
+                $pp_output = $this->cliHelper->getOutput($pp);
                 if (strpos($pp_output, 'There are no patches') === false) {
                     $this->io->error('Unable to reapply patch.');
                     $this->dumpProcess($pp);
                     exit(1);
                 }
             }
-            $this->io->writeln($this->io->getOutput($pp));
+            $this->io->writeln($this->cliHelper->getOutput($pp));
         
             if (!$this->skipGit && $this->git->hasPendingChanges()) {
                 $message = "{$this->gitPrefix}Reapplied patches for {$name} " . "({$from} => {$to}){$this->gitPostfix}";
@@ -404,7 +405,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
      */
     protected function updateMinorComposerDependencies()
     {
-        $pending_updates = $this->io->getOutput($this->composer->getMinorVersionUpdates('', 'json'), true, false);
+        $pending_updates = $this->cliHelper->getOutput($this->composer->getMinorVersionUpdates('', 'json'), true, false);
         $pending_updates = json_decode($pending_updates, true);
         if (empty($pending_updates['installed'])) {
             $this->io->section('No pending updates found.');
@@ -480,7 +481,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $this->io->section("Updating {$package['name']} from {$package['version']} to {$package['latest']} ...");
     
         $update_process = $this->composer->updatePackage($package['name'], $this->timeout);
-        $update_output = $this->io->getOutput($update_process);
+        $update_output = $this->cliHelper->getOutput($update_process);
     
         // We use the exit code for Composer since it outputs to both normal & error channels.
         if (!empty($update_process->getExitCode())) {
@@ -504,12 +505,12 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $this->io->section('Clearing Drupal cache');
         $cc = $this->drush->clearCaches();
         // @todo: This isn't detecting php error output for some reason.
-        $this->io->outputOrFail($cc, 'Error when clearing Drupal cache.');
+        $this->cliHelper->outputOrFail($cc, 'Error when clearing Drupal cache.');
     
         // Run any pending Drupal database updates.
         $this->io->section('Running any pending Drupal DB updates');
         $updb = $this->drush->updateDatabase();
-        $this->io->outputOrFail($updb, 'Error when running pending Drupal DB updates.');
+        $this->cliHelper->outputOrFail($updb, 'Error when running pending Drupal DB updates.');
     
         if (!$this->git->hasPendingChanges()) {
             $this->io->warning("No git changes found for: {$name} ({$from} => {$to})");
@@ -523,11 +524,11 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         if ($this->includeConfig) {
             $this->io->section('Clearing Drupal cache for config export');
             $cc = $this->drush->clearCaches();
-            $this->io->outputOrFail($cc, 'Error when clearing Drupal cache for config export.');
+            $this->cliHelper->outputOrFail($cc, 'Error when clearing Drupal cache for config export.');
         
             $this->io->section('Exporting config changes.');
             $cex = $this->drush->configExport($this->configKey);
-            $this->io->outputOrFail($cex, 'Error when exporting config.');
+            $this->cliHelper->outputOrFail($cex, 'Error when exporting config.');
         
             $message =
                 "{$this->gitPrefix}Export config changes from update of {$name}" .
@@ -560,9 +561,9 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         }
     
         $this->io->section('Adding pending changes to git index.');
-        $this->io->outputOrFail($this->git->addAll(), 'Error when adding pending changes to git index.');
+        $this->cliHelper->outputOrFail($this->git->addAll(), 'Error when adding pending changes to git index.');
     
         $this->io->section('Committing changes to git.');
-        $this->io->outputOrFail($this->git->commit($message), 'Error when committing to git.');
+        $this->cliHelper->outputOrFail($this->git->commit($message), 'Error when committing to git.');
     }
 }

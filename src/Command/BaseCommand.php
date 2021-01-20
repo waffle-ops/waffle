@@ -11,6 +11,7 @@ use Waffle\Traits\ConfigTrait;
 use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
+use Waffle\Helper\CliHelper;
 
 class BaseCommand extends Command
 {
@@ -22,14 +23,21 @@ class BaseCommand extends Command
      * @var IOStyle
      */
     protected $io;
-
+    
     /**
      * A reference to the project config.
      *
      * @var ProjectConfig
      */
     protected $config;
-
+    
+    /**
+     * A reference to the project config.
+     *
+     * @var CliHelper
+     */
+    protected $cliHelper;
+    
     /**
      * @param string|null $name The name of the command; passing null means it must be set in configure()
      *
@@ -40,6 +48,7 @@ class BaseCommand extends Command
         parent::__construct($name);
         $this->config = $this->getConfig();
         $this->io = IO::getInstance()->getIO();
+        $this->cliHelper = new CliHelper($this->io);
     }
 
     /**
@@ -60,13 +69,6 @@ class BaseCommand extends Command
      */
     protected function dumpProcess(Process $process)
     {
-        $this->io->writeln('Command:');
-        $this->io->writeln($process->getCommandLine());
-        $this->io->writeln('Exit Code:');
-        $this->io->writeln($process->getExitCode());
-        $this->io->writeln('Error Output:');
-        $this->io->writeln($process->getErrorOutput());
-        $this->io->writeln('Standard Output:');
-        $this->io->writeln($process->getOutput());
+        $this->cliHelper->dumpProcess($process);
     }
 }

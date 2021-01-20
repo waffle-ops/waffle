@@ -6,6 +6,7 @@ use Symfony\Component\Process\Process;
 use Waffle\Model\Cli\BaseCliCommand;
 use Exception;
 use Waffle\Model\Cli\SymfonyCliCommand;
+use Waffle\Helper\CliHelper;
 
 class SymfonyCli extends BaseRunner
 {
@@ -18,7 +19,7 @@ class SymfonyCli extends BaseRunner
     }
     
     /**
-     * Resets the local database.
+     * Checks if symfony CLI is installed.
      *
      * @return bool
      * @throws Exception
@@ -29,11 +30,10 @@ class SymfonyCli extends BaseRunner
         
         $command = new BaseCliCommand(['which', 'symfony']);
         $process = $command->getProcess();
-        $output = $this->io->getOutput($process);
+        $cliHelper = new CliHelper();
+        $output = $cliHelper->getOutput($process);
         return !empty($output);
     }
-    
-    //'symfony security:check --dir="' . $this->config->getComposerPath() . '"'
     
     /**
      * Runs security:check for a composer.lock.

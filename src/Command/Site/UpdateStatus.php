@@ -45,7 +45,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
      * @return int
      * @throws Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         parent::execute($input, $output);
     
@@ -84,7 +84,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
             $this->generateComposerReport();
         }
     
-        $this->io->message('Checking Drupal core and contrib via drush', $this->drush->pmSecurity());
+        $this->cliHelper->message('Checking Drupal core and contrib via drush', $this->drush->pmSecurity());
         // @todo: get non-composer-tracked pending updates for drush 9+ via
         // @todo: `drush eval "var_export(update_get_available(TRUE));"`
         // @todo: see docroot/core/modules/update/src/Controller/UpdateController.php::updateStatus()
@@ -107,7 +107,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
             $this->generateComposerReport();
         }
     
-        $this->io->message('Checking Drupal core and contrib via drush', $this->drush->pmSecurity());
+        $this->cliHelper->message('Checking Drupal core and contrib via drush', $this->drush->pmSecurity());
 
         // @todo: What other type of reporting should be done here? `npm audit`?
         // @todo: Run an ADA compliance audit/tester?
@@ -122,13 +122,13 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
     protected function generateComposerReport()
     {
         $composer = new Composer();
-        $this->io->message(
+        $this->cliHelper->message(
             'Checking minor version composer updates',
             $composer->getMinorVersionUpdates()
         );
     
         // @todo: low priority: this is only showing the 2nd grep command in output b/c of the grep filtering.
-        $this->io->message(
+        $this->cliHelper->message(
             'Checking major version composer updates',
             $composer->getMajorVersionUpdates()
         );
@@ -136,7 +136,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
         if (!$this->symfonyCli->isInstalled()) {
             $this->io->warning('Unable to generate Symfony security reports: Missing Symfony CLI installation.');
         } else {
-            $this->io->message(
+            $this->cliHelper->message(
                 'Checking Symfony CLI security',
                 $this->symfonyCli->securityCheck()
             );
