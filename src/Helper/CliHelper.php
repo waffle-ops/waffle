@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Waffle\Helper;
-
 
 use Symfony\Component\Process\Process;
 use Waffle\Model\IO\IO;

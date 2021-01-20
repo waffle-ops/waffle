@@ -10,6 +10,4 @@ use Waffle\Model\Output\Runner;
 class IOStyle extends SymfonyStyle implements StyleInterface
 {
     // See https://github.com/symfony/console/blob/5.x/Style/SymfonyStyle.php.
-    
-    
 }
