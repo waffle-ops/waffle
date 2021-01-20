@@ -405,7 +405,8 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
      */
     protected function updateMinorComposerDependencies()
     {
-        $pending_updates = $this->cliHelper->getOutput($this->composer->getMinorVersionUpdates('', 'json'), true, false);
+        $pending_updates =
+            $this->cliHelper->getOutput($this->composer->getMinorVersionUpdates('', 'json'), true, false);
         $pending_updates = json_decode($pending_updates, true);
         if (empty($pending_updates['installed'])) {
             $this->io->section('No pending updates found.');
