@@ -7,7 +7,6 @@ use Symfony\Component\Yaml\Yaml;
 use Waffle\Exception\Config\AmbiguousConfigException;
 use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Model\Output\Runner;
-use Symfony\Component\Process\Process;
 
 class ProjectConfig
 {
@@ -44,9 +43,9 @@ class ProjectConfig
     public const KEY_TASKS = 'tasks';
     public const KEY_UPSTREAMS = 'upstreams';
     public const KEY_COMPOSER_PATH = 'composer_path';
-    public const KEY_DRUSH_MAJOR_VERSION = 'drush_major_version';
-    public const KEY_SYMFONY_CLI = 'symfony_cli';
-    public const KEY_DRUSH_PATCHER_INSTALLED = 'drush_patcher_installed';
+    public const KEY_COMMAND_PREFIX = 'command_prefix';
+    public const KEY_LOCAL_SETTINGS_FILENAME = 'local_settings_filename';
+    public const KEY_TIMEOUT = 'timeout';
 
     /**
      * @var array
@@ -118,8 +117,6 @@ class ProjectConfig
         $this->project_config = [];
         $this->project_config = Yaml::parseFile($project_config_file);
         $this->project_config['config_path'] = str_replace('.waffle.yml', '', $project_config_file);
-
-        $this->setProjectConfigDefaults();
     }
 
     /**
@@ -160,65 +157,13 @@ class ProjectConfig
     }
 
     /**
-     * If config is not explicitly set, then define some defaults from info that
-     * can be derived from project structure and environment.
-     */
-    private function setProjectConfigDefaults()
-    {
-        // Attempt to derive the composer.json path.
-        // TODO Refactor this unto a SymdonyCommandRunner class.
-        if (!isset($this->project_config['composer_path'])) {
-            $composer_path = $this->determineComposerPath();
-            if (!empty($composer_path)) {
-                $this->project_config['composer_path'] = $composer_path;
-            }
-        }
-
-        // Attempt to see if the Symfony CLI is installed.
-        // TODO Refactor this unto a SymdonyCommandRunner class.
-        if (!isset($this->project_config['symfony_cli'])) {
-            $output = Runner::getOutput('which symfony');
-            if (!empty($output)) {
-                $this->project_config['symfony_cli'] = $output;
-            }
-        }
-
-        // Attempt to determine the Drush minor and major versions.
-        // TODO Remove this once we cut over to DrushCommandRunner.
-        $drush_version = Runner::getOutput('drush version --format=string');
-        if (!isset($this->project_config['drush_version'])) {
-            if (!empty($drush_version)) {
-                $this->project_config['drush_version'] = $drush_version;
-            }
-        }
-
-        // TODO Remove this once we cut over to DrushCommandRunner.
-        if (!isset($this->project_config['drush_major_version'])) {
-            $drush_major_version = explode('.', $this->project_config['drush_version'])[0];
-            if (!empty($drush_major_version)) {
-                $this->project_config['drush_major_version'] = $drush_major_version;
-            }
-        }
-
-        if (!isset($this->project_config['drush_patcher_installed'])) {
-            $this->project_config['drush_patcher_installed'] = false;
-            $drush_patcher_installed = Process::fromShellCommandline('drush patch-status');
-            $drush_patcher_installed->run();
-            if (empty($drush_patcher_installed->getExitCode())) {
-                $this->project_config['drush_patcher_installed'] = true;
-            }
-        }
-
-        // @todo: define and derive other config defaults based on project files.
-    }
-
-    /**
      * Gets the composer.json path.
      *
      * @return string
      */
     private function determineComposerPath()
     {
+        // @todo: use Finder here instead.
         $cwd = getcwd();
 
         // Current directory.
@@ -248,6 +193,31 @@ class ProjectConfig
         }
 
         return null;
+    }
+    
+    /**
+     * Checks if a config key/value is set at all.
+     *
+     * Used to determine if a default value should be set when lazy loading.
+     *
+     * @param $key
+     *
+     * @return bool
+     */
+    private function keyExists($key)
+    {
+        return isset($this->project_config[$key]);
+    }
+    
+    /**
+     * Sets a project config key to a value.
+     *
+     * @param $key
+     * @param $value
+     */
+    private function set($key, $value)
+    {
+        $this->project_config[$key] = $value;
     }
 
     /**
@@ -309,7 +279,7 @@ class ProjectConfig
     {
         return $this->get(self::KEY_TASKS);
     }
-    
+
     /**
      * Gets the composer path as defined in the config file.
      *
@@ -317,37 +287,12 @@ class ProjectConfig
      */
     public function getComposerPath()
     {
+        if (!$this->keyExists(self::KEY_COMPOSER_PATH)) {
+            // Attempt to derive the composer.json path.
+            $this->set(self::KEY_COMPOSER_PATH, $this->determineComposerPath());
+        }
+        
         return $this->get(self::KEY_COMPOSER_PATH);
-    }
-    
-    /**
-     * Gets the drush major version as defined in the config file.
-     *
-     * @return string
-     */
-    public function getDrushMajorVersion()
-    {
-        return $this->get(self::KEY_DRUSH_MAJOR_VERSION);
-    }
-    
-    /**
-     * Gets the Symfony CLI install status as defined in the config file.
-     *
-     * @return string
-     */
-    public function getSymfonyCli()
-    {
-        return $this->get(self::KEY_SYMFONY_CLI);
-    }
-    
-    /**
-     * Gets the drush patcher install status as defined in the config file.
-     *
-     * @return string
-     */
-    public function getDrushPatcherInstalled()
-    {
-        return $this->get(self::KEY_DRUSH_PATCHER_INSTALLED);
     }
 
     /**
@@ -360,5 +305,47 @@ class ProjectConfig
         $raw_upstreams =  $this->get(self::KEY_UPSTREAMS) ?? '';
         $allowed_upstreams = explode(',', $raw_upstreams);
         return $allowed_upstreams;
+    }
+    
+    /**
+     * Gets the command prefix.
+     *
+     * @return array|string|null
+     */
+    public function getCommandPrefix()
+    {
+        return $this->get(self::KEY_COMMAND_PREFIX);
+    }
+    
+    /**
+     * Gets the local settings filename.
+     *
+     * Default value: settings.local.php
+     *
+     * @return array|string|null
+     */
+    public function getLocalSettingsFilename()
+    {
+        if (!$this->keyExists(self::KEY_LOCAL_SETTINGS_FILENAME)) {
+            $this->set(self::KEY_LOCAL_SETTINGS_FILENAME, 'settings.local.php');
+        }
+    
+        return $this->get(self::KEY_LOCAL_SETTINGS_FILENAME);
+    }
+    
+    /**
+     * Gets the timeout time (in milliseconds) for commands.
+     *
+     * Default value: 300
+     *
+     * @return array|string|null
+     */
+    public function getTimeout()
+    {
+        if (!$this->keyExists(self::KEY_TIMEOUT)) {
+            $this->set(self::KEY_TIMEOUT, 300);
+        }
+        
+        return $this->get(self::KEY_TIMEOUT);
     }
 }
