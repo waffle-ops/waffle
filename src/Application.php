@@ -13,7 +13,9 @@ class Application extends SymfonyApplication
 {
     public const NAME = 'Waffle';
 
-    public const VERSION = '1.0.0-alpha';
+    public const VERSION = '0.0.1-alpha';
+
+    public const REPOSITORY = 'waffle-ops/waffle';
 
     public const EMOJI_POOL = [
         // Older emojis that should be supported everywhere.
