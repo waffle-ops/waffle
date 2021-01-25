@@ -9,11 +9,13 @@ I work on a lot of projects (probably too many). More often than not, something 
 I work full time as a developer, and because of that, I don't have all that much time to devote to side projects outside of work. I want to spend as little time as possible fixing issues that prevent me from getting stuff done for each and every project. Most of my projects have a lot overlap. Waffle is intender to absorb as much of that overlap as possible and create a consistent api across everything that I work on.
 
 ## How it Works
-It doesn't, currently. Check back in a few weeks; maybe you will get lucky.
-
 The goal is to have a globally installed tool that can sync databases and files, update dependencies, run tests, etc -- controllable by a config file for each project. If all of the projects are set up using a common tool to automate the boring stuff. When something breaks, I should only need to fix it once. This tool can also be installed in a CI layer to take advantage of any tasks already automated by Waffle.
 
 Waffle is also flexible and will be providing ways to change its behavior via a configuration file. More details will be provided as decisions have been made and progress has been achieved.
+
+## Install Instructions
+See [INSTALL.md](INSTALL.MD)
+
 ___
 
 ### FAQs

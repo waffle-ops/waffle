@@ -23,9 +23,9 @@ if (ini_get('phar.readonly')) {
     die(1);
 }
 
-// Everything looks good! Let's build the .phar. 
+// Everything looks good! Let's build the .phar.
 $phar_destination = sprintf('%s/%s/%s', $waffle_root, $target_path, $waffle_phar);
 $phar = new Phar($phar_destination, 0, $waffle_phar);
-$include = '/^(?=(.*src|.*bin|.*vendor))(.*)$/i';
+$include = '/^(?=(.*bin|.*config|.*src|.*vendor))(.*)$/i';
 $phar->buildFromDirectory($waffle_root, $include);
 $phar->setStub("#!/usr/bin/env php\n" . $phar->createDefaultStub($waffle_bin));

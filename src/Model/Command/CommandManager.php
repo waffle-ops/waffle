@@ -2,8 +2,11 @@
 
 namespace Waffle\Model\Command;
 
+use SelfUpdate\SelfUpdateCommand;
+use Waffle\Application as Waffle;
 use Waffle\Command\Custom\Recipe;
 use Waffle\Command\Custom\Task;
+use Waffle\Helper\PharHelper;
 use Waffle\Traits\ConfigTrait;
 
 class CommandManager
@@ -48,6 +51,12 @@ class CommandManager
             $command_key = $recipe->getName();
             $this->commands[$command_key] = $recipe;
         }
+
+        // Adds the self:update command.
+        if (PharHelper::isPhar()) {
+            $this->commands['self:update'] = new SelfUpdateCommand(Waffle::NAME, Waffle::VERSION, Waffle::REPOSITORY);
+        }
+
 
         // TODO: Any 'core' commands that should not be able to be overrided
         // should go here.

@@ -6,14 +6,21 @@ use Symfony\Component\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Exception\Config\MissingConfigFileException;
+use Waffle\Exception\UpdateCheckException;
 use Waffle\Model\Command\CommandManager;
 use Waffle\Model\Validate\Preflight\PreflightValidator;
+use Waffle\Model\IO\IO;
+use Waffle\Model\IO\IOStyle;
+use Waffle\Helper\PharHelper;
+use Waffle\Helper\GitHubHelper;
 
 class Application extends SymfonyApplication
 {
     public const NAME = 'Waffle';
 
-    public const VERSION = '1.0.0-alpha';
+    public const VERSION = 'v0.0.1-alpha';
+
+    public const REPOSITORY = 'waffle-ops/waffle';
 
     public const EMOJI_POOL = [
         // Older emojis that should be supported everywhere.
@@ -43,8 +50,14 @@ class Application extends SymfonyApplication
         parent::__construct($name, self::VERSION);
 
         $this->commandManager = $commandManager;
+
+        // Prevent auto exiting (so we can run extra code).
+        $this->setAutoExit(false);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
         $passed_preflight_checks = true;
@@ -72,7 +85,13 @@ class Application extends SymfonyApplication
             $output->writeln('<error>Waffle can\'t do much without knowing more about your project.</error>');
         }
 
-        parent::run();
+        $exitCode = parent::run();
+
+        // Update notices will be after all other output so that they don't get
+        // lost.
+        $this->checkVersion();
+
+        exit($exitCode);
     }
 
     /**
@@ -95,5 +114,65 @@ class Application extends SymfonyApplication
     public function find(string $name)
     {
         return $this->get($name);
+    }
+
+    /**
+     * Checks current version against the latest version of the application.
+     * Emits a notice if a pending upate is found.
+     *
+     * @return void
+     */
+    private function checkVersion()
+    {
+        // TODO: Consider option to suppress update notices.
+
+        // TODO: Consider a temporary file store to cache this in so we don't
+        // have to do this lookup on every run.
+
+        try {
+            $githubHelper = new GitHubHelper();
+            // $release = $githubHelper->getLatestRelease(self::REPOSITORY);
+            $release = $githubHelper->getLatestRelease('daceej/waffle-phar-test');
+            $latest = $release['tag_name'];
+        } catch (UpdateCheckException $e) {
+            // TODO: We should probably have some sort of log file where we can
+            // log this type of failure.
+            return;
+        }
+
+        if (self::VERSION === $latest) {
+            // No reason to continue.
+            return;
+        }
+
+        // TODO: Clean up the IO processing here (for the entire class).
+        $io = IO::getInstance()->getIO();
+
+        $io->title('Update Avaliable!');
+
+        $notice = 'You are using an outdated version of Waffle!';
+        $notice .= str_repeat(PHP_EOL, 2);
+        $notice .= sprintf('You can upgrade to the latest release (%s) by ', $latest);
+
+        if (PharHelper::isPhar()) {
+            $notice .= 'running the \'self:update\' command.';
+        } else {
+            $notice .= 'pulling latest copy of the code and following the install instructions ';
+            $notice .= 'or by installing the .phar file.';
+            $notice .= str_repeat(PHP_EOL, 2);
+
+            $notice .= 'Installing via the .phar file is recommended as you can use the \'self:update\'';
+            $notice .= 'command for future updates.';
+        }
+
+        $io->note($notice);
+
+        // TODO: Running self:update instead of emitting a warning may be wise
+        // in the future (stable release time). I like the idea of the tool
+        // installing an update when found. That would force adoption. Before
+        // going down that road, we should define api versions or something so
+        // that we don't do any major harm. For now, it needs to be manual
+        // since there is no defined api and we may be releasing breaking
+        // changes until things are settled.
     }
 }
