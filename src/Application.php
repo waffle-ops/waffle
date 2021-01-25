@@ -9,7 +9,6 @@ use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Exception\UpdateCheckException;
 use Waffle\Model\Command\CommandManager;
 use Waffle\Model\Validate\Preflight\PreflightValidator;
-
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
 use Waffle\Helper\PharHelper;
@@ -123,7 +122,8 @@ class Application extends SymfonyApplication
      *
      * @return void
      */
-    private function checkVersion() {
+    private function checkVersion()
+    {
         // TODO: Consider option to suppress update notices.
 
         // TODO: Consider a temporary file store to cache this in so we don't
@@ -131,7 +131,8 @@ class Application extends SymfonyApplication
 
         try {
             $githubHelper = new GitHubHelper();
-            $release = $githubHelper->getLatestRelease(self::REPOSITORY);
+            // $release = $githubHelper->getLatestRelease(self::REPOSITORY);
+            $release = $githubHelper->getLatestRelease('daceej/waffle-phar-test');
             $latest = $release['tag_name'];
         } catch (UpdateCheckException $e) {
             // TODO: We should probably have some sort of log file where we can
@@ -147,16 +148,21 @@ class Application extends SymfonyApplication
         // TODO: Clean up the IO processing here (for the entire class).
         $io = IO::getInstance()->getIO();
 
-        $io->section('Update Avaliable!');
+        $io->title('Update Avaliable!');
 
-        $notice = [];
-        $notice[] = 'You are using an outdated release of Waffle!';
+        $notice = 'You are using an outdated version of Waffle!';
+        $notice .= str_repeat(PHP_EOL, 2);
+        $notice .= sprintf('You can upgrade to the latest release (%s) by ', $latest);
 
         if (PharHelper::isPhar()) {
-            $notice[] = 'You can upgrade to the latest release by running the \'self:update\' command';
+            $notice .= 'running the \'self:update\' command.';
         } else {
-            $notice[] = 'You can upgrade to the latest release by pulling latest copy of the code and following the install instructions or by installing the .phar file.';
-            $notice[] = 'Installing via the .phar file is recommended as you can use the \'self:update\' command for future updates.';
+            $notice .= 'pulling latest copy of the code and following the install instructions ';
+            $notice .= 'or by installing the .phar file.';
+            $notice .= str_repeat(PHP_EOL, 2);
+
+            $notice .= 'Installing via the .phar file is recommended as you can use the \'self:update\'';
+            $notice .= 'command for future updates.';
         }
 
         $io->note($notice);
