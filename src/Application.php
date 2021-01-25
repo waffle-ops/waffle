@@ -131,8 +131,7 @@ class Application extends SymfonyApplication
 
         try {
             $githubHelper = new GitHubHelper();
-            // $release = $githubHelper->getLatestRelease(self::REPOSITORY);
-            $release = $githubHelper->getLatestRelease('daceej/waffle-phar-test');
+            $release = $githubHelper->getLatestRelease(self::REPOSITORY);
             $latest = $release['tag_name'];
         } catch (UpdateCheckException $e) {
             // TODO: We should probably have some sort of log file where we can
