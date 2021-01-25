@@ -14,7 +14,7 @@ The goal is to have a globally installed tool that can sync databases and files,
 Waffle is also flexible and will be providing ways to change its behavior via a configuration file. More details will be provided as decisions have been made and progress has been achieved.
 
 ## Install Instructions
-See [INSTALL.md](INSTALL.MD)
+See [INSTALL.md](INSTALL.md)
 
 ___
 
