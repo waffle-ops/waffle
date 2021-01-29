@@ -146,6 +146,11 @@ class CliHelper
         exit(1);
     }
     
+    /**
+     * Gets full process information for debugging.
+     *
+     * @param $process
+     */
     public function dumpProcess($process)
     {
         $this->io->writeln('Command:');

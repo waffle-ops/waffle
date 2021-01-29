@@ -10,6 +10,7 @@ use Waffle\Model\Output\Runner;
 class IOStyle extends SymfonyStyle implements StyleInterface
 {
     // See https://github.com/symfony/console/blob/5.x/Style/SymfonyStyle.php.
+    // @todo: Make some pretty output options: https://symfony.com/doc/current/console/coloring.html
 
     /**
      * {@inheritdoc}
