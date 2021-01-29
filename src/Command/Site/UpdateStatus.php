@@ -11,6 +11,8 @@ use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\SymfonyCli;
 use Waffle\Model\Cli\Runner\Composer;
+use Waffle\Model\Cli\Runner\WpCli;
+use Waffle\Model\Config\ProjectConfig;
 
 class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
 {
@@ -49,19 +51,22 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
     {
         parent::execute($input, $output);
     
-        $this->drush = new Drush();
         $this->symfonyCli = new SymfonyCli();
 
         switch ($this->config->getCms()) {
-            case "drupal8":
+            case ProjectConfig::CMS_DRUPAL_8:
+                $this->drush = new Drush();
                 $this->generateDrupal8Report();
                 break;
-            case "drupal7":
+            case ProjectConfig::CMS_DRUPAL_7:
+                $this->drush = new Drush();
                 $this->generateDrupal7Report();
                 break;
-            case "wordpress":
+            case ProjectConfig::CMS_WORDPRESS:
+                $this->generateWordpressReport();
+                break;
             default:
-                throw new Exception('Platform not implemented yet.');
+                throw new Exception('Platform not implemented yet or missing CMS config.');
         }
 
         return Command::SUCCESS;
@@ -141,5 +146,38 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
                 $this->symfonyCli->securityCheck()
             );
         }
+    }
+    
+    /**
+     * Outputs a Wordpress update report.
+     *
+     * @throws Exception
+     */
+    protected function generateWordpressReport()
+    {
+        $this->io->title('Generating Wordpress Update Reports');
+    
+        if (!empty($this->config->getComposerPath())) {
+            $this->generateComposerReport();
+        }
+        
+        $wp = new WpCli();
+        if (!$wp->isInstalled()) {
+            $this->io->warning('Unable to generate Wordpress update report: Missing WP CLI installation.');
+            return;
+        }
+    
+        $this->cliHelper->message(
+            'Check Wordpress core pending updates',
+            $wp->coreCheckUpdate()
+        );
+    
+        $this->cliHelper->message(
+            'Checking plugin pending updates',
+            $wp->pluginListAvailable()
+        );
+        
+        // @todo: Possibly add WP CLI security scanning
+        // @todo: https://guides.wp-bullet.com/using-wp-cli-to-scan-for-wordpress-security-vulnerabilities/
     }
 }
