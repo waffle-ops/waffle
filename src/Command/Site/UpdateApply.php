@@ -13,6 +13,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\Git;
 use Waffle\Model\Cli\Runner\Composer;
+use Waffle\Model\Config\ProjectConfig;
+use Waffle\Model\Cli\Runner\WpCli;
 
 class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
 {
@@ -109,6 +111,11 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
      * @var Composer
      */
     protected $composer;
+    
+    /**
+     * @var WpCli
+     */
+    protected $wp;
     
     /**
      * @inheritDoc
@@ -214,7 +221,6 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         parent::execute($input, $output);
     
         $this->git = new Git();
-        $this->drush = new Drush();
         $this->composer = new Composer();
         
         $this->gitPrefix = $input->getOption('git-prefix');
@@ -254,13 +260,18 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         }
         
         switch ($this->config->getCms()) {
-            case "drupal8":
+            case ProjectConfig::CMS_DRUPAL_8:
+                $this->drush = new Drush();
                 $this->applyDrupal8Updates();
                 break;
-            case "drupal7":
+            case ProjectConfig::CMS_DRUPAL_7:
+                $this->drush = new Drush();
                 $this->applyDrupal7Updates();
                 break;
-            case "wordpress":
+            case ProjectConfig::CMS_WORDPRESS:
+                $this->wp = new WpCli();
+                $this->applyWordpressUpdates();
+                break;
             default:
                 throw new Exception('Platform not implemented yet.');
         }
@@ -541,6 +552,126 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
     
         // @todo: Take a screenshot somehow of the site (maybe a configurable list of URLs in .waffle.yml?)
     
+        // If we are skipping git commits then don't continue to the next one.
+        if ($this->skipGit) {
+            $this->io->writeln('Completed update. Review and commit the changes when ready.');
+            exit(1);
+        }
+    }
+    
+    /**
+     * Applies Wordpress site and dependency updates.
+     *
+     * @throws Exception
+     */
+    protected function applyWordpressUpdates()
+    {
+        $this->io->title('Applying Wordpress Pending Updates');
+        
+        if (!empty($this->config->getComposerPath())) {
+            $this->updateMinorComposerDependencies();
+        }
+        
+        $core = $this->wp->coreCheckUpdate('json');
+        // @todo: check for errors before continuing.
+        $core = $this->cliHelper->getOutput($core, true, false);
+        $core = json_decode($core, true);
+        
+        $plugins = $this->wp->pluginListAvailable('json');
+        // @todo: check for errors before continuing.
+        $plugins = $this->cliHelper->getOutput($plugins, true, false);
+        $plugins = json_decode($plugins, true);
+        
+        $core_version = $this->wp->coreVersion();
+        
+        $updates = [];
+        foreach ($core as $core_update) {
+            // Default to using the first one.
+            if (!array_key_exists('core', $updates)) {
+                $updates['core'] = [
+                    'name' => 'core',
+                    'version' => $core_version,
+                    'update_version' => $core_update['version']
+                ];
+            }
+            
+            // If there are multiple available, then use the major one.
+            if ($core_update['update_type'] == 'major') {
+                $updates['core'] = [
+                    'name' => 'core',
+                    'version' => $core_version,
+                    'update_version' => $core_update['version']
+                ];
+            }
+        }
+        
+        foreach ($plugins as $plugin) {
+            $updates[$plugin['name']] = $plugin;
+        }
+        
+        if (empty($updates)) {
+            $this->io->writeln('No pending updates found.');
+            exit(0);
+        }
+        
+        if (!empty($this->packages)) {
+            foreach ($this->packages as $specific_package) {
+                if (!array_key_exists($specific_package, $updates)) {
+                    $this->io->warning("Package {$specific_package} not found in list of pending Wordpress updates.");
+                    continue;
+                }
+                $this->updateWordpressItem($updates[$specific_package]);
+            }
+            return;
+        }
+        
+        foreach ($updates as $update) {
+            if (in_array($update['name'], $this->ignore)) {
+                $this->io->warning("Skipping ignored package: {$update['name']}");
+                continue;
+            }
+            $this->updateWordpressItem($update);
+        }
+    }
+    
+    /**
+     * Updates a single Wordpress module/core package.
+     *
+     * @param $package
+     * @throws Exception
+     */
+    protected function updateWordpressItem($package)
+    {
+        $name = $package['name'];
+        $from = $package['version'];
+        $to = $package['update_version'];
+        
+        $this->io->section("Updating {$name} from {$from} to {$to} ...");
+        $this->cliHelper->outputOrFail(
+            $this->wp->updatePackage($name, $to),
+            "Error updating item {$name} ({$from} => {$to})"
+        );
+        
+        // @todo: If htaccess was updated, output a warning.
+        
+        $this->io->section('Clearing Wordpress cache');
+        $this->cliHelper->outputOrFail($this->wp->cacheFlush(), 'Error when clearing Wordpress cache.');
+        
+        $this->io->section('Running any pending Wordpress DB updates');
+        $this->cliHelper->outputOrFail($this->wp->updateDatabase(), 'Error when running pending Wordpress DB updates.');
+        
+        if (!$this->git->hasPendingChanges()) {
+            $this->io->warning("No git changes found for: {$name} ({$from} => {$to})");
+            // No need to attempt to commit or export config if there are no changes.
+            return;
+        }
+        if (!$this->skipGit && $this->git->hasPendingChanges()) {
+            $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
+            $this->gitCommitChanges($message);
+        }
+        
+        // @todo: Add automatic patch reapplication
+        
         // If we are skipping git commits then don't continue to the next one.
         if ($this->skipGit) {
             $this->io->writeln('Completed update. Review and commit the changes when ready.');
