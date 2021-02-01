@@ -14,7 +14,7 @@ class WaffleCommand extends BaseCliCommand
     public function __construct(array $args)
     {
         global $argv;
-        $waffle_bin = $argv[0];
+        $waffle_bin = realpath($argv[0]);
         array_unshift($args, $waffle_bin);
         parent::__construct($args);
     }

@@ -82,10 +82,13 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
                 $projects->getRealPath(),
             ]);
 
+            // TODO -- Add some error handling around this.
+
             // This is super basic and may need to be updated to support
             // aruments and options.
             $wfl_cmd = new \Waffle\Model\Cli\WaffleCommand([$cmd]);
             $process = $wfl_cmd->getProcess();
+            $process->setWorkingDirectory(dirname($project->getRealPath()));
             $process->run();
 
             // TODO -- This will be cumbersome to read. Maybe we should instead
@@ -117,7 +120,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         $finder->ignoreDotFiles(false);
         $finder->files();
         $finder->in($directory);
-        $finder->depth('< ' . $max_depth);
+        $finder->depth('<= ' . $max_depth);
         $finder->name(ProjectConfig::CONFIG_FILE);
 
         return $finder->getIterator();
