@@ -21,6 +21,8 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
 
     public const COMMAND_KEY = 'global:iterate';
 
+    private $processes = [];
+
     protected function configure()
     {
         $this->setName(self::COMMAND_KEY);
@@ -48,11 +50,19 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
             'The maximum depth Waffle should look for other Waffle projects.',
             3
         );
+
+        $this->addOption(
+            'max_threads',
+            null,
+            InputArgument::OPTIONAL,
+            'The maximum number of projects that the command will be running against at any given time.',
+            4
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // Whle testing this, I noticed that Symfony does not behave quite as
+        // While testing this, I noticed that Symfony does not behave quite as
         // expected. For example 'wfl global:iterate "--version"' will never
         // make it to this command code, but will instead print off the version
         // information. However, calling 'wfl global:iterate " --version"' will
@@ -60,6 +70,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         $cmd = trim($input->getArgument('cmd'));
         $dir = $input->getOption('dir');
         $max_depth = $input->getOption('max_depth');
+        $max_threads = $input->getOption('max_threads');
 
         // Let's prevent inception.
         if ($cmd === self::COMMAND_KEY) {
@@ -77,28 +88,22 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         // Run the command over each project sequentially.
         // In the future, it would be nice to run these concurrently.
         foreach($projects as $project) {
-            $this->io->highlightText('Starting %s for %s', [
+            $path = dirname($project->getRealPath());
+            $this->processes[$path] = $this->getWaffleCommand($path, $cmd);
+        }
+
+        // TODO -- Add some error handling around this.
+        $this->runWaffleCommands($max_threads);
+
+        foreach ($this->processes as $path => $process) {
+            $this->io->highlightText('Finished %s for %s', [
                 $cmd,
-                $projects->getRealPath(),
+                $path,
             ]);
-
-            // TODO -- Add some error handling around this.
-
-            // This is super basic and may need to be updated to support
-            // aruments and options.
-            $wfl_cmd = new \Waffle\Model\Cli\WaffleCommand([$cmd]);
-            $process = $wfl_cmd->getProcess();
-            $process->setWorkingDirectory(dirname($project->getRealPath()));
-            $process->run();
 
             // TODO -- This will be cumbersome to read. Maybe we should instead
             // output to a log file in each project directory.
             $this->io->writeln($process->getOutput());
-
-            $this->io->highlightText('Finished %s for %s', [
-                $cmd,
-                $projects->getRealPath(),
-            ]);
         }
 
         return Command::SUCCESS;
@@ -112,7 +117,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
      * @param $max_depth
      *   The maximum depth that we should look for projects.
      *
-     * @return string
+     * @return Iterator
      */
     private function getProjectPaths($directory, $max_depth)
     {
@@ -124,5 +129,99 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         $finder->name(ProjectConfig::CONFIG_FILE);
 
         return $finder->getIterator();
+    }
+
+    /**
+     * Runs a waffle command.
+     *
+     * @param string $path
+     *   The path from which to run the command.
+     * @param string $cmd
+     *   The command to run.
+     *
+     * @return Process
+     */
+    private function getWaffleCommand($path, $cmd) {
+        // This is super basic and may need to be updated to support
+        // aruments and options.
+        $wfl_cmd = new WaffleCommand([$cmd]);
+        $process = $wfl_cmd->getProcess();
+        $process->setWorkingDirectory($path);
+        return $process;
+    }
+
+    /**
+     * Runs the Waffle commands.
+     *
+     * @param int $max_threads
+     *   The maximum number of processes to run concurrently.
+     */
+    private function runWaffleCommands($max_threads) {
+        $total_processes = count($this->processes);
+        $total_finished = 0;
+
+        $this->io->progressStart($total_processes);
+
+        while ($this->waffleProcessesRunning()) {
+            $running = 0;
+            $finished = 0;
+            foreach ($this->processes as $path => $process) {
+                if ($process->isTerminated()) {
+                    $finished++;
+                    continue;
+                }
+
+                if ($process->isRunning()) {
+                    $running++;
+                    continue;
+                }
+
+                // We don't really care if there is no limit.
+                if ($max_threads <= 0) {
+                    $process->start();
+                }
+
+                // No reason to continue.
+                if (($running + 1) > $max_threads) {
+                    break;
+                }
+
+                // Run next process if we have not hit the max_threads limit.
+                if (($running < $max_threads) && !$process->isStarted()) {
+                    $process->start();
+                    $running++;
+                }
+            }
+
+            // Advance the progress bar with a rough guess.
+            if ($total_finished < $finished) {
+                $prev_total_finished = $total_finished;
+                $total_finished = $total_processes - $finished;
+                $ticks = $total_finished - $prev_total_finished;
+                $this->io->progressAdvance($ticks);
+            }
+        }
+
+        $this->io->progressFinish();
+    }
+
+    /**
+     * Checks if Waffle processes are running.
+     *
+     * @return boolean
+     *   True is processes are running, false otherwise.
+     */
+    private function waffleProcessesRunning() {
+        foreach ($this->processes as $path => $process) {
+            if (!$process->isStarted()) {
+                return true;
+            }
+
+            if ($process->isRunning()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
