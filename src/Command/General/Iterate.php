@@ -89,7 +89,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         $projects = $this->getProjectPaths($dir, $max_depth);
 
         // Build the waffle processes to run.
-        foreach($projects as $project) {
+        foreach ($projects as $project) {
             $path = dirname($project->getRealPath());
             $this->io->highlightText('Waffle project discovered at %s', [$path]);
             $this->processes[$path] = $this->getWaffleCommand($path, $cmd);
@@ -141,7 +141,8 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
      *
      * @return Process
      */
-    private function getWaffleCommand($path, $cmd) {
+    private function getWaffleCommand($path, $cmd)
+    {
         // This is super basic and may need to be updated to support
         // aruments and options.
         $wfl_cmd = new WaffleCommand([$cmd]);
@@ -156,7 +157,8 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
      * @param int $max_threads
      *   The maximum number of processes to run concurrently.
      */
-    private function runWaffleCommands($max_threads) {
+    private function runWaffleCommands($max_threads)
+    {
         $total_processes = count($this->processes);
         $total_finished = 0;
 
@@ -213,7 +215,8 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
      * @return boolean
      *   True is processes are running, false otherwise.
      */
-    private function waffleProcessesRunning() {
+    private function waffleProcessesRunning()
+    {
         foreach ($this->processes as $path => $process) {
             if (!$process->isStarted()) {
                 return true;

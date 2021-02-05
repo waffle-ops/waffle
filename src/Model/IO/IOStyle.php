@@ -28,7 +28,8 @@ class IOStyle extends SymfonyStyle implements StyleInterface
      * @param $replacements
      *   The replacement text to be highlighted. Text will be yellow in color.
      */
-    public function highlightText($text, $replacements) {
+    public function highlightText($text, $replacements)
+    {
         $message = '<info>' . $text . '</info>';
         $tokens = [];
 
