@@ -58,6 +58,9 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
             'The maximum number of projects that the command will be running against at any given time.',
             4
         );
+
+        // In the future, consider adding a filter option. Perhaps something
+        // like --filter=cms:drupal8 to only touch Drupal 8 projects.
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
