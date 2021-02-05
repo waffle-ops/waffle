@@ -27,7 +27,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
     {
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Runs a Waffle command for multiple projects.');
-        $this->setHelp('INIT'); // TODO
+        $this->setHelp('Runs a Waffle command for multiple projects.');
 
         $this->addArgument(
             'cmd',
@@ -85,25 +85,22 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
 
         $projects = $this->getProjectPaths($dir, $max_depth);
 
-        // Run the command over each project sequentially.
-        // In the future, it would be nice to run these concurrently.
+        // Build the waffle processes to run.
         foreach($projects as $project) {
             $path = dirname($project->getRealPath());
+            $this->io->highlightText('Waffle project discovered at %s', [$path]);
             $this->processes[$path] = $this->getWaffleCommand($path, $cmd);
         }
 
-        // TODO -- Add some error handling around this.
+        // Run the commands.
         $this->runWaffleCommands($max_threads);
 
         foreach ($this->processes as $path => $process) {
-            $this->io->highlightText('Finished %s for %s', [
-                $cmd,
-                $path,
-            ]);
-
-            // TODO -- This will be cumbersome to read. Maybe we should instead
-            // output to a log file in each project directory.
+            // Consider changing the way this output is displayed. This is
+            // likely already cumbersome to read.
+            $this->io->highlightText('Begin output from running %s on %s', [$cmd, $path]);
             $this->io->writeln($process->getOutput());
+            $this->io->highlightText('End output from running %s on %s', [$cmd, $path]);
         }
 
         return Command::SUCCESS;
@@ -160,6 +157,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         $total_processes = count($this->processes);
         $total_finished = 0;
 
+        $this->io->writeln('Starting...');
         $this->io->progressStart($total_processes);
 
         while ($this->waffleProcessesRunning()) {
@@ -203,6 +201,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         }
 
         $this->io->progressFinish();
+        $this->io->writeln('Finished! See ouput below:');
     }
 
     /**
