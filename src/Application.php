@@ -13,6 +13,7 @@ use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
 use Waffle\Helper\PharHelper;
 use Waffle\Helper\GitHubHelper;
+use Waffle\Helper\WaffleHelper;
 
 class Application extends SymfonyApplication
 {
@@ -125,19 +126,7 @@ class Application extends SymfonyApplication
     private function checkVersion()
     {
         // TODO: Consider option to suppress update notices.
-
-        // TODO: Consider a temporary file store to cache this in so we don't
-        // have to do this lookup on every run.
-
-        try {
-            $githubHelper = new GitHubHelper();
-            $release = $githubHelper->getLatestRelease(self::REPOSITORY);
-            $latest = $release['tag_name'];
-        } catch (UpdateCheckException $e) {
-            // TODO: We should probably have some sort of log file where we can
-            // log this type of failure.
-            return;
-        }
+        $latest = $this->getLatestReleaseVersion();
 
         if (self::VERSION === $latest) {
             // No reason to continue.
@@ -166,6 +155,8 @@ class Application extends SymfonyApplication
 
         $io->note($notice);
 
+        // TODO Add changelogs? It may entice some users to upgrade.
+
         // TODO: Running self:update instead of emitting a warning may be wise
         // in the future (stable release time). I like the idea of the tool
         // installing an update when found. That would force adoption. Before
@@ -173,5 +164,55 @@ class Application extends SymfonyApplication
         // that we don't do any major harm. For now, it needs to be manual
         // since there is no defined api and we may be releasing breaking
         // changes until things are settled.
+    }
+
+    /**
+     * Gets the latest release version of Waffle. Will call out to GitHub for
+     * the latest tag if not cached.
+     *
+     * @throws UpdateCheckException
+     *
+     * @return string
+     */
+    private function getLatestReleaseVersion()
+    {
+        // There is really no need to call out to GitHub for this update check
+        // on every command run. So, we are caching the details we need and
+        // will call out to GitHub at most three times per day (unless the
+        // cache is cleared).
+        $helper = new WaffleHelper();
+        $data = $helper->getCacheData('update_check');
+
+        if (!empty($data['last_check']) && !empty($data['latest_release'])) {
+            $time_diff = time() - $data['last_check'];
+
+            // If less than 8 hours, we can skip.
+            if ($time_diff < 28800) {
+                return $data['latest_release'];
+            }
+        }
+
+        // It has been a while since we last checked, so calling out to GitHub.
+        try {
+            $githubHelper = new GitHubHelper();
+            $release = $githubHelper->getLatestRelease(self::REPOSITORY);
+            $latest = $release['tag_name'];
+
+            // Store the latest version so we can limit how often we reach out
+            // to GitHub.
+            $data = [
+                'last_check' => time(),
+                'latest_release' => $latest,
+            ];
+
+            $helper->setCacheData('update_check', $data);
+        } catch (UpdateCheckException $e) {
+            // TODO: We should probably have some sort of log file where we can
+            // log this type of failure.
+            // return;
+            throw $e;
+        }
+
+        return $latest;
     }
 }
