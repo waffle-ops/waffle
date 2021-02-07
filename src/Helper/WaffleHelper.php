@@ -2,6 +2,8 @@
 
 namespace Waffle\Helper;
 
+use Symfony\Component\Yaml\Yaml;
+
 class WaffleHelper
 {
 
@@ -37,7 +39,7 @@ class WaffleHelper
      *
      * @throws Exception
      */
-    private static function ensureDirectory($path)
+    private function ensureDirectory($path)
     {
         if (is_dir($path)) {
             return;
@@ -49,5 +51,71 @@ class WaffleHelper
 
         // TODO - Throw a custom exception.
         throw new \Exception('Unable to create directory %s', $path);
+    }
+
+    /**
+     * Gets the cache directory location.
+     *
+     * @return string
+     */
+    private function getCacheDirectory()
+    {
+        $cache = $this->getWaffleHomeDirectory() . '/cache';
+        $this->ensureDirectory($cache);
+        return $cache;
+    }
+
+    /**
+     * Gets the cache file for the provided key.
+     *
+     * @param string $key
+     *   The name of the desired cache file.
+     */
+    private function getCacheFile(string $key)
+    {
+        return sprintf(
+            '%s/%s',
+            $this->getCacheDirectory(),
+            $key
+        );
+    }
+
+    /**
+     * Gets fata from cache directory.
+     *
+     * @param string $key
+     *   Name of the cache bin that is to be loaded.
+     *
+     * @throws \Symfony\Component\Yaml\Exception\ParseException
+     *
+     * @return array
+     */
+    public function getCacheData(string $key)
+    {
+        $cache = $this->getCacheFile($key);
+
+        if (!file_exists($cache)) {
+            // Throw exception?
+            return [];
+        }
+
+        $data = Yaml::parseFile($cache);
+
+        return $data;
+    }
+
+    /**
+     * Writes data to cache directory.
+     *
+     * @param string $key
+     *   Name of cache bin where $value will be stored.
+     * @param array $value
+     *   Array of data that is stored as a Yaml file for future use.
+     */
+    public function setCacheData(string $key, array $value)
+    {
+        $cache = $this->getCacheFile($key);
+        $yaml = Yaml::dump($value);
+        file_put_contents($cache, $yaml);
     }
 }
