@@ -11,6 +11,9 @@ services:
     lazy: true
     resource: '../src'
 
+  Waffle\Application:
+    public: true
+
   Waffle\Model\Command\CommandManager:
     public: true
     arguments:

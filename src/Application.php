@@ -43,14 +43,21 @@ class Application extends SymfonyApplication
      */
     private $commandManager;
 
-    public function __construct(CommandManager $commandManager)
+    /**
+     * Defines the Input/Output helper object.
+     *
+     * @var IOStyle
+     */
+    protected $io;
+
+    public function __construct()
     {
         // Adding some emoji flair for fun.
         $emoji = array_rand(array_flip(self::EMOJI_POOL), 1);
         $name = sprintf('%s %s', $emoji, self::NAME);
         parent::__construct($name, self::VERSION);
 
-        $this->commandManager = $commandManager;
+        $this->io = IO::getInstance()->getIO();
 
         // Prevent auto exiting (so we can run extra code).
         $this->setAutoExit(false);
@@ -75,15 +82,15 @@ class Application extends SymfonyApplication
         }
 
         // Most exceptions should prevent Waffle commands from loading.
-        if ($passed_preflight_checks) {
+        if ($passed_preflight_checks && !empty($this->commandManager)) {
             $this->addCommands($this->commandManager->getCommands());
         }
 
         if ($missing_config) {
             // TODO: Attach some sort of 'init' command that can help guide
             // users in creating a .waffle.yml file.
-            $output->writeln('<error>No .waffle.yml file was found!</error>');
-            $output->writeln('<error>Waffle can\'t do much without knowing more about your project.</error>');
+            $this->io->writeln('<error>No .waffle.yml file was found!</error>');
+            $this->io->writeln('<error>Waffle can\'t do much without knowing more about your project.</error>');
         }
 
         $exitCode = parent::run();
@@ -93,6 +100,19 @@ class Application extends SymfonyApplication
         $this->checkVersion();
 
         exit($exitCode);
+    }
+
+    /**
+     * Sets the command manager for the application.
+     *
+     * @param CommandManager $commandManager
+     *   The command manager for the application.
+     *
+     * @return void
+     */
+    public function setCommandManager(CommandManager $commandManager)
+    {
+        $this->commandManager = $commandManager;
     }
 
     /**
@@ -133,10 +153,7 @@ class Application extends SymfonyApplication
             return;
         }
 
-        // TODO: Clean up the IO processing here (for the entire class).
-        $io = IO::getInstance()->getIO();
-
-        $io->title('Update Avaliable!');
+        $this->io->title('Update Avaliable!');
 
         $notice = 'You are using an outdated version of Waffle!';
         $notice .= str_repeat(PHP_EOL, 2);
@@ -149,11 +166,11 @@ class Application extends SymfonyApplication
             $notice .= 'or by installing the .phar file.';
             $notice .= str_repeat(PHP_EOL, 2);
 
-            $notice .= 'Installing via the .phar file is recommended as you can use the \'self:update\'';
+            $notice .= 'Installing via the .phar file is recommended as you can use the \'self:update\' ';
             $notice .= 'command for future updates.';
         }
 
-        $io->note($notice);
+        $this->io->note($notice);
 
         // TODO Add changelogs? It may entice some users to upgrade.
 
