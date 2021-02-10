@@ -81,7 +81,7 @@ class WaffleHelper
     }
 
     /**
-     * Gets fata from cache directory.
+     * Gets data from cache directory.
      *
      * @param string $key
      *   Name of the cache bin that is to be loaded.
@@ -118,4 +118,32 @@ class WaffleHelper
         $yaml = Yaml::dump($value);
         file_put_contents($cache, $yaml);
     }
+
+    /**
+     * Gets the temporary directory location.
+     *
+     * @return string
+     */
+    private function getTempDirectory()
+    {
+        $file = $this->getWaffleHomeDirectory() . '/tmp';
+        $this->ensureDirectory($file);
+        return $file;
+    }
+
+    /**
+     * Gets the temporary file location for the provided file.
+     *
+     * @param string $file
+     *   The name of the file.
+     */
+    public function getTempFilePath(string $file)
+    {
+        return sprintf(
+            '%s/%s',
+            $this->getTempDirectory(),
+            $file
+        );
+    }
+
 }
