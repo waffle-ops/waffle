@@ -6,15 +6,16 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Exception;
 use Waffle\Model\Cli\DrushCommand;
+use Waffle\Helper\WaffleHelper;
 
 class Drush extends BaseRunner
 {
-    
+
     /**
      * @var string
      */
     private $drush_major_version;
-    
+
     /**
      * @var string
      */
@@ -29,7 +30,12 @@ class Drush extends BaseRunner
      * @var boolean
      */
     private $drush_patching_enabled = false;
-    
+
+    /**
+     * @var WaffleHelper
+     */
+    private $waffleHelper;
+
     /**
      *  Constructor
      *
@@ -38,6 +44,8 @@ class Drush extends BaseRunner
     public function __construct()
     {
         parent::__construct();
+
+        $this->waffleHelper = new WaffleHelper();
 
         // Calling 'drush status --format=json' will give us a json blob that
         // we can parse to get info about the site.
@@ -128,27 +136,49 @@ class Drush extends BaseRunner
     /**
      * Gets a database dump from the provided alias.
      *
-     * @return Process
+     * @return string
      */
     private function getDatabaseDump($alias)
     {
-        $db_export =  new DrushCommand([$alias, 'sql-dump']);
-        $process = $db_export->getProcess();
+        $fname = sprintf('%s.sql', $alias);
+        $dump = $this->waffleHelper->getTempFilePath($fname);
+
+        // Using DrushCommand to build as it will handle prefixes in the future.
+        $drush =  new DrushCommand([$alias, 'sql-dump']);
+        $export = $drush->getProcess()->getCommandLine();
+
+        // This is a hack. The --result-file flag is sent to the upstream, so
+        // we are opting to redirect the ouput.
+        // TODO: Think through other options that are more cross-platform.
+        $process = Process::fromShellCommandline(sprintf('%s > %s', $export, $dump));
         $process->run();
-        return $process;
+
+        if (!file_exists($dump)) {
+            throw new Exception('Database dump failed: ' . $process->getOutput());
+        }
+
+        return $dump;
     }
 
     /**
      * Imports dumped sql into the database.
      *
-     * @return Process
+     * @return string
      */
-    private function importDatabase($sql)
+    private function importDatabase($dump)
     {
-        $db_import = new DrushCommand(['sql-cli']);
-        $process = $db_import->getProcess();
-        $process->setInput($sql);
+        // Using DrushCommand to build as it will handle prefixes in the future.
+        $drush = new DrushCommand(['sql-cli']);
+        $import = $drush->getProcess()->getCommandLine();
+
+        // Feeding the dump file in with <.
+        // TODO: Think through other options that are more cross-platform.
+        $process = Process::fromShellCommandline(sprintf('%s < %s', $import, $dump));
         $process->run();
+
+        // Doing some cleanup.
+        unlink($dump);
+
         return $process;
     }
 
@@ -159,10 +189,10 @@ class Drush extends BaseRunner
      */
     public function syncDatabase($alias)
     {
+        // TODO Add support for sql-sync. Perhaps an $strategy that is passed.
         $this->resetDatabase();
         $dump = $this->getDatabaseDump($alias);
-        $sql = $dump->getOutput();
-        $this->importDatabase($sql);
+        $this->importDatabase($dump);
         $this->clearCaches();
     }
 
@@ -251,7 +281,7 @@ class Drush extends BaseRunner
         $process->run();
         return $process;
     }
-    
+
     /**
      * Runs drush update-code for a module.
      *
@@ -270,13 +300,13 @@ class Drush extends BaseRunner
                 )
             );
         }
-        
+
         $command = new DrushCommand(['upc', $module, '--check-disabled', '-y']);
         $process = $command->getProcess();
         $process->run();
         return $process;
     }
-    
+
     /**
      * Runs any pending database updates.
      *
@@ -311,7 +341,7 @@ class Drush extends BaseRunner
         $process->run();
         return $process;
     }
-    
+
     /**
      *
      * @param $module
@@ -324,7 +354,7 @@ class Drush extends BaseRunner
         if (!$this->getDrushPatchingEnabled()) {
             return false;
         }
-        
+
         $command = new DrushCommand(['pp', $module, '-y']);
         $process = $command->getProcess();
         $process->run();
@@ -411,7 +441,7 @@ class Drush extends BaseRunner
             throw new Exception('Unable to create settings.local.php');
         }
     }
-    
+
     /**
      * Checks if Drush patching is available.
      *
