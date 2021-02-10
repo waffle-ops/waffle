@@ -147,7 +147,9 @@ class Drush extends BaseRunner
         $drush =  new DrushCommand([$alias, 'sql-dump']);
         $export = $drush->getProcess()->getCommandLine();
 
-        // This is a hack. For some reason drush sql-dump --result-file does not work.
+        // This is a hack. The --result-file flag is sent to the upstream, so
+        // we are opting to redirect the ouput.
+        // TODO: Think through other options that are more cross-platform.
         $process = Process::fromShellCommandline(sprintf('%s > %s', $export, $dump));
         $process->run();
 
@@ -169,7 +171,8 @@ class Drush extends BaseRunner
         $drush = new DrushCommand(['sql-cli']);
         $import = $drush->getProcess()->getCommandLine();
 
-        // This is a hack. For some reason drush sql-dump --result-file does not work.
+        // Feeding the dump file in with <.
+        // TODO: Think through other options that are more cross-platform.
         $process = Process::fromShellCommandline(sprintf('%s < %s', $import, $dump));
         $process->run();
 
