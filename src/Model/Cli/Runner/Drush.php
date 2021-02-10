@@ -173,6 +173,9 @@ class Drush extends BaseRunner
         $process = Process::fromShellCommandline(sprintf('%s < %s', $import, $dump));
         $process->run();
 
+        // Doing some cleanup.
+        unlink($dump);
+
         return $process;
     }
 
