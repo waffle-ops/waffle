@@ -67,8 +67,8 @@ class CliHelper
     public function getOutput($command, $withRun = true, $withError = true): string
     {
         $process = $this->setup($command);
-        
-        if ($withRun) {
+    
+        if ($withRun && !$process->isStarted() && !$process->isRunning()) {
             $process->run();
         }
         
