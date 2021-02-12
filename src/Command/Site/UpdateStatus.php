@@ -176,6 +176,11 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
             'Checking plugin pending updates',
             $wp->pluginListAvailable()
         );
+    
+        $this->cliHelper->message(
+            'Checking theme pending updates',
+            $wp->themeListAvailable()
+        );
         
         // @todo: Possibly add WP CLI security scanning
         // @todo: https://guides.wp-bullet.com/using-wp-cli-to-scan-for-wordpress-security-vulnerabilities/

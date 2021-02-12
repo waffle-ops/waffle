@@ -101,7 +101,33 @@ class WpCli extends BaseRunner
     }
     
     /**
-     * Updates core or a plugin.
+     * Gets a list of available theme updates.
+     *
+     * @param string $format
+     *
+     * @return Process
+     * @throws Exception
+     */
+    public function themeListAvailable($format = 'table'): Process
+    {
+        // @todo: table output is not showing table borders.
+        $command = new WpCliCommand(
+            [
+                'theme',
+                'list',
+                '--fields=name,status,version,update_version',
+                '--update=available',
+                "--format={$format}",
+            ]
+        );
+        
+        return $command->getProcess();
+    }
+    
+    //wp theme list --fields="name,status,version,update_version" --update="available"
+    
+    /**
+     * Updates core, plugin, or theme.
      *
      * @param $name
      * @param $version
@@ -109,13 +135,20 @@ class WpCli extends BaseRunner
      * @throws Exception
      * @return mixed
      */
-    public function updatePackage($name, $version = null): Process
+    public function updatePackage($name, $type, $version = null): Process
     {
-        if ($name == 'core') {
-            return $this->coreUpdate($version);
+        switch($type) {
+            case "core":
+                return $this->coreUpdate($version);
+                break;
+            case "plugin":
+                return $this->pluginUpdate($name);
+                break;
+            case "theme":
+                return $this->themeUpdate($name);
+                break;
         }
-        
-        return $this->pluginUpdate($name);
+        return false;
     }
     
     
@@ -156,6 +189,27 @@ class WpCli extends BaseRunner
         $command = new WpCliCommand(
             [
                 'plugin',
+                'update',
+                $name,
+            ]
+        );
+        
+        return $command->getProcess();
+    }
+    
+    /**
+     * Updates a Wordpress theme by name.
+     *
+     * @param $name
+     *
+     * @throws Exception
+     * @return Process
+     */
+    public function themeUpdate($name): Process
+    {
+        $command = new WpCliCommand(
+            [
+                'theme',
                 'update',
                 $name,
             ]
