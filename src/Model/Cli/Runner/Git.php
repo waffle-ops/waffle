@@ -171,7 +171,7 @@ class Git extends BaseRunner
      * @return string
      * @throws Exception
      */
-    public function getCurrentBranch() : string
+    public function getCurrentBranch(): string
     {
         $command = new GitCommand(['branch', '--show-current']);
         $process = $command->getProcess();
