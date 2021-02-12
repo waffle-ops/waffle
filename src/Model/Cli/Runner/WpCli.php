@@ -137,7 +137,7 @@ class WpCli extends BaseRunner
      */
     public function updatePackage($name, $type, $version = null): Process
     {
-        switch($type) {
+        switch ($type) {
             case "core":
                 return $this->coreUpdate($version);
                 break;
