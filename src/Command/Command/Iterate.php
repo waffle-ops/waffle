@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffle\Command\General;
+namespace Waffle\Command\Command;
 
 use Exception;
 use Symfony\Component\Console\Command\Command;
@@ -14,13 +14,10 @@ use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\WaffleCommand;
 use Waffle\Model\Config\ProjectConfig;
-use Waffle\Traits\ConfigTrait;
 
 class Iterate extends BaseCommand implements DiscoverableCommandInterface
 {
-    use ConfigTrait;
-
-    public const COMMAND_KEY = 'global:iterate';
+    public const COMMAND_KEY = 'iterate';
 
     private $processes = [];
 
@@ -134,7 +131,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
 
         return $finder->getIterator();
     }
-    
+
     /**
      * Runs a waffle command.
      *
