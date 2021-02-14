@@ -14,6 +14,8 @@ use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Model\Config\ProjectConfig;
 use Symfony\Component\Finder\Finder;
 use Waffle\Model\Cli\WaffleCommand;
+use Exception;
+use Waffle\Helper\CliHelper;
 
 class Iterate extends BaseCommand implements DiscoverableCommandInterface
 {
@@ -98,11 +100,14 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         // Run the commands.
         $this->runWaffleCommands($max_threads);
 
+        $cliHelper = new CliHelper($this->io);
         foreach ($this->processes as $path => $process) {
             // Consider changing the way this output is displayed. This is
             // likely already cumbersome to read.
+            $this->io->newLine();
+            $this->io->writeln('---------------------------------------------');
             $this->io->highlightText('Begin output from running %s on %s', [$cmd, $path]);
-            $this->io->writeln($process->getOutput());
+            $this->io->writeln($cliHelper->getOutput($process, false));
             $this->io->highlightText('End output from running %s on %s', [$cmd, $path]);
         }
 
@@ -130,7 +135,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
 
         return $finder->getIterator();
     }
-
+    
     /**
      * Runs a waffle command.
      *
@@ -140,11 +145,12 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
      *   The command to run.
      *
      * @return Process
+     * @throws Exception
      */
-    private function getWaffleCommand($path, $cmd)
+    private function getWaffleCommand($path, $cmd): Process
     {
         // This is super basic and may need to be updated to support
-        // aruments and options.
+        // arguments and options.
         $wfl_cmd = new WaffleCommand([$cmd]);
         $process = $wfl_cmd->getProcess();
         $process->setWorkingDirectory($path);
@@ -206,7 +212,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         }
 
         $this->io->progressFinish();
-        $this->io->writeln('Finished! See ouput below:');
+        $this->io->writeln('Finished! See output below:');
     }
 
     /**
