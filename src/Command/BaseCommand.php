@@ -8,14 +8,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
-use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
-use Waffle\Traits\ConfigTrait;
 
 class BaseCommand extends Command
 {
-    use ConfigTrait;
 
     /**
      * Defines the Input/Output helper object.
@@ -23,21 +20,14 @@ class BaseCommand extends Command
      * @var IOStyle
      */
     protected $io;
-    
-    /**
-     * A reference to the project config.
-     *
-     * @var ProjectConfig
-     */
-    protected $config;
-    
+
     /**
      * A reference to the project config.
      *
      * @var CliHelper
      */
     protected $cliHelper;
-    
+
     /**
      * @param string|null $name The name of the command; passing null means it must be set in configure()
      *
@@ -46,7 +36,6 @@ class BaseCommand extends Command
     public function __construct(string $name = null)
     {
         parent::__construct($name);
-        $this->config = $this->getConfig();
         $this->io = IO::getInstance()->getIO();
         $this->cliHelper = new CliHelper($this->io);
     }

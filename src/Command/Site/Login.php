@@ -6,11 +6,11 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
-use Waffle\Command\DiscoverableCommandInterface;
+use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\ConfigTrait;
 
-class Login extends BaseCommand implements DiscoverableCommandInterface
+class Login extends BaseCommand implements DiscoverableTaskInterface
 {
     use ConfigTrait;
 

@@ -7,12 +7,12 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
-use Waffle\Command\DiscoverableCommandInterface;
+use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\ConfigTrait;
 use Waffle\Traits\DefaultUpstreamTrait;
 
-class Db extends BaseCommand implements DiscoverableCommandInterface
+class Db extends BaseCommand implements DiscoverableTaskInterface
 {
     use DefaultUpstreamTrait;
     use ConfigTrait;

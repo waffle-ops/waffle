@@ -6,9 +6,9 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
-use Waffle\Command\DiscoverableCommandInterface;
+use Waffle\Command\DiscoverableTaskInterface;
 
-class Release extends BaseCommand implements DiscoverableCommandInterface
+class Release extends BaseCommand implements DiscoverableTaskInterface
 {
 
     public const COMMAND_KEY = 'site:sync:release';

@@ -7,35 +7,35 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
-use Waffle\Command\DiscoverableCommandInterface;
+use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\SymfonyCli;
 use Waffle\Model\Cli\Runner\WpCli;
 use Waffle\Model\Config\ProjectConfig;
 
-class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
+class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
 {
     public const COMMAND_KEY = 'site:update:status';
-    
+
     /**
      * @var Drush
      */
     protected $drush;
-    
+
     /**
      * @var SymfonyCli
      */
     protected $symfonyCli;
-    
+
     protected function configure()
     {
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Checks the project for any pending updates and generates reports.');
         $this->setHelp('Checks the project for any pending updates and generates reports.');
-        
+
         // @todo Add support for arguments: --format, ...?
-        
+
         // @todo: Add parameter to output full report to file instead of screen
     }
 
@@ -50,7 +50,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         parent::execute($input, $output);
-    
+
         $this->symfonyCli = new SymfonyCli();
 
         switch ($this->config->getCms()) {
@@ -88,7 +88,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
 
             $this->generateComposerReport();
         }
-    
+
         $this->cliHelper->message('Checking Drupal core and contrib via drush', $this->drush->pmSecurity());
         // @todo: get non-composer-tracked pending updates for drush 9+ via
         // @todo: `drush eval "var_export(update_get_available(TRUE));"`
@@ -111,14 +111,14 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
         if (!empty($this->config->getComposerPath())) {
             $this->generateComposerReport();
         }
-    
+
         $this->cliHelper->message('Checking Drupal core and contrib via drush', $this->drush->pmSecurity());
 
         // @todo: What other type of reporting should be done here? `npm audit`?
         // @todo: Run an ADA compliance audit/tester?
         // @todo: Run Lighthouse Audit?
     }
-    
+
     /**
      * Runs composer-related update reporting.
      *
@@ -131,13 +131,13 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
             'Checking minor version composer updates',
             $composer->getMinorVersionUpdates()
         );
-    
+
         // @todo: low priority: this is only showing the 2nd grep command in output b/c of the grep filtering.
         $this->cliHelper->message(
             'Checking major version composer updates',
             $composer->getMajorVersionUpdates()
         );
-    
+
         if (!$this->symfonyCli->isInstalled()) {
             $this->io->warning('Unable to generate Symfony security reports: Missing Symfony CLI installation.');
         } else {
@@ -147,7 +147,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
             );
         }
     }
-    
+
     /**
      * Outputs a Wordpress update report.
      *
@@ -156,32 +156,32 @@ class UpdateStatus extends BaseCommand implements DiscoverableCommandInterface
     protected function generateWordpressReport()
     {
         $this->io->title('Generating Wordpress Update Reports');
-    
+
         if (!empty($this->config->getComposerPath())) {
             $this->generateComposerReport();
         }
-        
+
         $wp = new WpCli();
         if (!$wp->isInstalled()) {
             $this->io->warning('Unable to generate Wordpress update report: Missing WP CLI installation.');
             return;
         }
-    
+
         $this->cliHelper->message(
             'Check Wordpress core pending updates',
             $wp->coreCheckUpdate()
         );
-    
+
         $this->cliHelper->message(
             'Checking plugin pending updates',
             $wp->pluginListAvailable()
         );
-    
+
         $this->cliHelper->message(
             'Checking theme pending updates',
             $wp->themeListAvailable()
         );
-        
+
         // @todo: Possibly add WP CLI security scanning
         // @todo: https://guides.wp-bullet.com/using-wp-cli-to-scan-for-wordpress-security-vulnerabilities/
     }
