@@ -581,6 +581,11 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         // @todo: check for errors before continuing.
         $plugins = $this->cliHelper->getOutput($plugins, true, false);
         $plugins = json_decode($plugins, true);
+    
+        $themes = $this->wp->themeListAvailable('json');
+        // @todo: check for errors before continuing.
+        $themes = $this->cliHelper->getOutput($themes, true, false);
+        $themes = json_decode($themes, true);
         
         $core_version = $this->wp->coreVersion();
         
@@ -590,6 +595,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             if (!array_key_exists('core', $updates)) {
                 $updates['core'] = [
                     'name' => 'core',
+                    'type' => 'core',
                     'version' => $core_version,
                     'update_version' => $core_update['version']
                 ];
@@ -607,6 +613,12 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         
         foreach ($plugins as $plugin) {
             $updates[$plugin['name']] = $plugin;
+            $updates[$plugin['name']]['type'] = 'plugin';
+        }
+    
+        foreach ($themes as $theme) {
+            $updates[$theme['name']] = $theme;
+            $updates[$theme['name']]['type'] = 'theme';
         }
         
         if (empty($updates)) {
@@ -635,7 +647,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
     }
     
     /**
-     * Updates a single Wordpress module/core package.
+     * Updates a single Wordpress plugin/theme/core item.
      *
      * @param $package
      * @throws Exception
@@ -643,12 +655,13 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
     protected function updateWordpressItem($package)
     {
         $name = $package['name'];
+        $type = $package['type'];
         $from = $package['version'];
         $to = $package['update_version'];
         
         $this->io->section("Updating {$name} from {$from} to {$to} ...");
         $this->cliHelper->outputOrFail(
-            $this->wp->updatePackage($name, $to),
+            $this->wp->updatePackage($name, $type, $to),
             "Error updating item {$name} ({$from} => {$to})"
         );
         

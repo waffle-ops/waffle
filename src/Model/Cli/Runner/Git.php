@@ -5,6 +5,7 @@ namespace Waffle\Model\Cli\Runner;
 use Waffle\Model\Cli\GitCommand;
 use Symfony\Component\Process\Process;
 use Exception;
+use Waffle\Helper\CliHelper;
 
 class Git extends BaseRunner
 {
@@ -70,5 +71,111 @@ class Git extends BaseRunner
         
         $command = new GitCommand(['commit', "--message={$message}"]);
         return $command->getProcess();
+    }
+    
+    /**
+     * Check if a branch exists locally.
+     *
+     * @param string $branch
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public function branchExists(string $branch): bool
+    {
+        if (empty($branch)) {
+            return false;
+        }
+        
+        $process = $this->branchList($branch);
+        $cliHelper = new CliHelper();
+        $output = $cliHelper->getOutput($process);
+        
+        return strpos($output, $branch) !== false;
+    }
+    
+    /**
+     * Get a list of local git branches.
+     *
+     * @param string|null $branch
+     *
+     * @return Process
+     * @throws Exception
+     */
+    public function branchList(string $branch = null): Process
+    {
+        $args = ['branch', '--list'];
+        if (!empty($branch)) {
+            $args[] = $branch;
+        }
+        
+        $command = new GitCommand($args);
+        return $command->getProcess();
+    }
+    
+    /**
+     * Checkout a branch.
+     *
+     * @param string $branch
+     * @param bool $isNew
+     *
+     * @return Process
+     * @throws Exception
+     */
+    public function checkout(string $branch, bool $isNew = false): Process
+    {
+        if (empty($branch)) {
+            throw new Exception('Git branch name is required.');
+        }
+        
+        $args = ['checkout'];
+        if ($isNew) {
+            $args[] = '-b';
+        }
+        $args[] = $branch;
+        
+        $command = new GitCommand($args);
+        return $command->getProcess();
+    }
+    
+    /**
+     * Fetch from upstreams.
+     *
+     * @return Process
+     * @throws Exception
+     */
+    public function fetch(): Process
+    {
+        $command = new GitCommand(['fetch']);
+        return $command->getProcess();
+    }
+    
+    /**
+     * Check if there are pending commits that should be pulled down.
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public function hasUpstreamPending(): bool
+    {
+        $command = new GitCommand(['rev-list', 'HEAD...', '--count']);
+        $process = $command->getProcess();
+        $cliHelper = new CliHelper();
+        $output = (int) $cliHelper->getOutput($process);
+        return !empty($output);
+    }
+    
+    /**
+     * Get the name of the current branch.
+     *
+     * @return string
+     * @throws Exception
+     */
+    public function getCurrentBranch(): string
+    {
+        $command = new GitCommand(['branch', '--show-current']);
+        $process = $command->getProcess();
+        $cliHelper = new CliHelper();
+        return trim($cliHelper->getOutput($process));
     }
 }

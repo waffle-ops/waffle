@@ -117,13 +117,30 @@ class Composer extends BaseRunner
                 $package,
             ]
         );
-        
+    
         $process = $command->getProcess();
-        
+    
         if (isset($timeout)) {
             $process->setTimeout($timeout);
         }
-        
+    
         return $process;
+    }
+    
+    /**
+     * Install composer dependencies.
+     *
+     * @return Process
+     * @throws Exception
+     */
+    public function install(): Process
+    {
+        $command = new ComposerCommand(
+            [
+                'install',
+            ]
+        );
+        
+        return $command->getProcess();
     }
 }
