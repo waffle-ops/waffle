@@ -2,10 +2,10 @@
 
 namespace Waffle\Model\Cli\Runner;
 
-use Waffle\Model\Cli\GitCommand;
-use Symfony\Component\Process\Process;
 use Exception;
+use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
+use Waffle\Model\Cli\GitCommand;
 
 class Git extends BaseRunner
 {

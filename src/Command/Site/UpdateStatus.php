@@ -8,9 +8,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
+use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\SymfonyCli;
-use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\WpCli;
 use Waffle\Model\Config\ProjectConfig;
 

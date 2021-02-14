@@ -4,8 +4,8 @@ namespace Waffle\Helper;
 
 use Symfony\Component\Process\Process;
 use Waffle\Model\IO\IO;
-use Waffle\Traits\ConfigTrait;
 use Waffle\Model\IO\IOStyle;
+use Waffle\Traits\ConfigTrait;
 
 class CliHelper
 {

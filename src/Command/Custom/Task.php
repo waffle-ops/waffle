@@ -5,12 +5,10 @@ namespace Waffle\Command\Custom;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
-use Waffle\Traits\ConfigTrait;
 use Waffle\Helper\CliHelper;
+use Waffle\Traits\ConfigTrait;
 
 class Task extends BaseCommand
 {

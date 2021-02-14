@@ -7,13 +7,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Exception\UpdateCheckException;
+use Waffle\Helper\GitHubHelper;
+use Waffle\Helper\PharHelper;
+use Waffle\Helper\WaffleHelper;
 use Waffle\Model\Command\CommandManager;
-use Waffle\Model\Validate\Preflight\PreflightValidator;
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
-use Waffle\Helper\PharHelper;
-use Waffle\Helper\GitHubHelper;
-use Waffle\Helper\WaffleHelper;
+use Waffle\Model\Validate\Preflight\PreflightValidator;
 
 class Application extends SymfonyApplication
 {
