@@ -2,11 +2,11 @@
 
 namespace Waffle\Model\Cli\Runner;
 
+use Exception;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
-use Exception;
-use Waffle\Model\Cli\DrushCommand;
 use Waffle\Helper\WaffleHelper;
+use Waffle\Model\Cli\DrushCommand;
 
 class Drush extends BaseRunner
 {

@@ -2,10 +2,10 @@
 
 namespace Waffle\Model\Cli\Runner;
 
-use Waffle\Model\Cli\ComposerCommand;
-use Symfony\Component\Process\Process;
 use Exception;
+use Symfony\Component\Process\Process;
 use Waffle\Model\Cli\BaseCliCommand;
+use Waffle\Model\Cli\ComposerCommand;
 
 class Composer extends BaseRunner
 {

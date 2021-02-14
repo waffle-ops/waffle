@@ -3,8 +3,6 @@
 namespace Waffle\Model\Site\Sync;
 
 use Waffle\Model\Config\ProjectConfig;
-use Waffle\Model\Site\Sync\DrushSiteSync;
-use Waffle\Model\Site\Sync\SiteSyncInterface;
 
 class SiteSyncFactory
 {

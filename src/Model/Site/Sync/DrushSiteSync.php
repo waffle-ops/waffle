@@ -3,7 +3,6 @@
 namespace Waffle\Model\Site\Sync;
 
 use Waffle\Model\Cli\Runner\Drush;
-use Waffle\Model\Site\Sync\SiteSyncInterface;
 
 class DrushSiteSync implements SiteSyncInterface
 {
