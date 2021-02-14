@@ -3,15 +3,15 @@
 namespace Waffle\Command;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Process\Process;
-use Waffle\Traits\ConfigTrait;
+use Waffle\Helper\CliHelper;
 use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
-use Waffle\Helper\CliHelper;
+use Waffle\Traits\ConfigTrait;
 
 class BaseCommand extends Command
 {
