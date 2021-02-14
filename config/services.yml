@@ -23,5 +23,15 @@ services:
     arguments:
       - !tagged commands
 
+  Waffle\Model\Command\TaskManager:
+    public: true
+    arguments:
+      - !tagged tasks
+
+  Waffle\Model\Command\RecipeManager:
+    public: true
+    arguments:
+      - !tagged recipes
+
 
 
