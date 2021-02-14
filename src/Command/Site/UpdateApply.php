@@ -4,17 +4,17 @@ namespace Waffle\Command\Site;
 
 use Exception;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\Git;
-use Waffle\Model\Cli\Runner\Composer;
-use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\Cli\Runner\WpCli;
+use Waffle\Model\Config\ProjectConfig;
 
 class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
 {

@@ -2,9 +2,9 @@
 
 namespace Waffle\Model\Cli\Runner;
 
+use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\IO\IO;
 use Waffle\Traits\ConfigTrait;
-use Waffle\Model\Config\ProjectConfig;
 
 class BaseRunner
 {

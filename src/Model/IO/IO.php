@@ -4,9 +4,6 @@ namespace Waffle\Model\IO;
 
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
-use Waffle\Model\IO\IOStyle;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
 use Waffle\Model\Output\Runner;
 
 class IO

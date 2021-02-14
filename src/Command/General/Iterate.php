@@ -2,20 +2,19 @@
 
 namespace Waffle\Command\General;
 
+use Exception;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
-use Waffle\Traits\ConfigTrait;
 use Waffle\Command\DiscoverableCommandInterface;
-use Waffle\Model\Config\ProjectConfig;
-use Symfony\Component\Finder\Finder;
-use Waffle\Model\Cli\WaffleCommand;
-use Exception;
 use Waffle\Helper\CliHelper;
+use Waffle\Model\Cli\WaffleCommand;
+use Waffle\Model\Config\ProjectConfig;
+use Waffle\Traits\ConfigTrait;
 
 class Iterate extends BaseCommand implements DiscoverableCommandInterface
 {
