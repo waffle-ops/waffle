@@ -10,7 +10,7 @@ use Waffle\Exception\UpdateCheckException;
 use Waffle\Helper\GitHubHelper;
 use Waffle\Helper\PharHelper;
 use Waffle\Helper\WaffleHelper;
-use Waffle\Model\Command\CommandManager;
+use Waffle\Model\Command\CommandLoader;
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
 use Waffle\Model\Validate\Preflight\PreflightValidator;
@@ -37,11 +37,11 @@ class Application extends SymfonyApplication
     ];
 
     /**
-     * @var CommandManager
+     * @var CommandLoader
      *
-     * Command manager for the Waffle application.
+     * Command loader for the Waffle application.
      */
-    private $commandManager;
+    private $commandLoader;
 
     /**
      * Defines the Input/Output helper object.
@@ -50,7 +50,12 @@ class Application extends SymfonyApplication
      */
     protected $io;
 
-    public function __construct()
+    /**
+     * Constructor
+     *
+     * @param CommandLoader $commandLoader
+     */
+    public function __construct(CommandLoader $commandLoader)
     {
         // Adding some emoji flair for fun.
         $emoji = array_rand(array_flip(self::EMOJI_POOL), 1);
@@ -58,6 +63,7 @@ class Application extends SymfonyApplication
         parent::__construct($name, self::VERSION);
 
         $this->io = IO::getInstance()->getIO();
+        $this->commandLoader = $commandLoader;
 
         // Prevent auto exiting (so we can run extra code).
         $this->setAutoExit(false);
@@ -81,17 +87,14 @@ class Application extends SymfonyApplication
             $passed_preflight_checks = false;
         }
 
-        // Most exceptions should prevent Waffle commands from loading.
-        if ($passed_preflight_checks && !empty($this->commandManager)) {
-            $this->addCommands($this->commandManager->getCommands());
-        }
-
         if ($missing_config) {
             // TODO: Attach some sort of 'init' command that can help guide
             // users in creating a .waffle.yml file.
             $this->io->writeln('<error>No .waffle.yml file was found!</error>');
             $this->io->writeln('<error>Waffle can\'t do much without knowing more about your project.</error>');
         }
+
+        $this->addCommands($this->commandLoader->getCommands());
 
         $exitCode = parent::run();
 
@@ -100,19 +103,6 @@ class Application extends SymfonyApplication
         $this->checkVersion();
 
         exit($exitCode);
-    }
-
-    /**
-     * Sets the command manager for the application.
-     *
-     * @param CommandManager $commandManager
-     *   The command manager for the application.
-     *
-     * @return void
-     */
-    public function setCommandManager(CommandManager $commandManager)
-    {
-        $this->commandManager = $commandManager;
     }
 
     /**
