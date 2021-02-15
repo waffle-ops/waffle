@@ -23,19 +23,6 @@ class Application extends SymfonyApplication
 
     public const REPOSITORY = 'waffle-ops/waffle';
 
-    public const EMOJI_POOL = [
-        // Older emojis that should be supported everywhere.
-        "\u{1F353}", // Strawberry
-        "\u{1F953}", // Bacon
-        "\u{1F95A}", // Egg
-
-        // TODO: The below emojis were added in 2019, but are not widely
-        // supported yet. Eventually I would like to have these two replace the
-        // pool above (or at the very least add to the pool).
-        // "\u{1F9C7}", // Waffle
-        // "\u{1F9C8}", // Butter
-    ];
-
     /**
      * @var CommandLoader
      *
@@ -57,16 +44,34 @@ class Application extends SymfonyApplication
      */
     public function __construct(CommandLoader $commandLoader)
     {
-        // Adding some emoji flair for fun.
-        $emoji = array_rand(array_flip(self::EMOJI_POOL), 1);
-        $name = sprintf('%s %s', $emoji, self::NAME);
-        parent::__construct($name, self::VERSION);
+        parent::__construct(self::NAME, self::VERSION);
 
         $this->io = IO::getInstance()->getIO();
         $this->commandLoader = $commandLoader;
 
         // Prevent auto exiting (so we can run extra code).
         $this->setAutoExit(false);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getDefaultCommands()
+    {
+        // TODO -- Update this once the list and help commands are added.
+        return parent::getDefaultCommands();
+    }
+
+    /**
+     * getCommandLoader
+     *
+     * Gets the command loader.
+     *
+     * @return CommandLoader
+     */
+    public function getCommandLoader()
+    {
+        return $this->commandLoader;
     }
 
     /**
