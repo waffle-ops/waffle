@@ -16,8 +16,12 @@ class Task extends BaseCommand
 
     protected function configure()
     {
-        // TODO: Help and description are not set since these are populated.
-        // Consider allow help and description text to be set in config.
+        // TODO: Help and description are not properly set since these are
+        // populated. Consider allow help and description text to be set in
+        // config.
+        $this->setDescription(
+            'Custom Task -- <comment>See Waffle config file.</comment>'
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -28,7 +32,7 @@ class Task extends BaseCommand
         $config_tasks = $this->getConfig()->getTasks() ?? [];
         $task = isset($config_tasks[$task_key]) ? $config_tasks[$task_key] : '';
         $output->writeln('<info>Running task <comment>' . $task_key . '</comment>: "' . $task . '"</info>');
-        
+
         // TODO: Would be wise to add some sort of validation here.
 
         // TODO: I'm not a huge fan of using the shell command line method.

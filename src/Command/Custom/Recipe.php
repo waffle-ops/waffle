@@ -22,15 +22,19 @@ class Recipe extends BaseCommand
 
     protected function configure()
     {
-        // TODO: Help and description are not set since these are populated.
-        // Consider allow help and description text to be set in config.
-
         // Storing the config to be used later.
         $this->config_key = $this->getName();
 
         // Forces all recipes to fall under the recipe namespace.
         $recipe_key = $this->getRecipeKey($this->config_key);
         $this->setName($recipe_key);
+
+        // TODO: Help and description are not properly set since these are
+        // populated. Consider allow help and description text to be set in
+        // config.
+        $this->setDescription(
+            'Custom Recipe -- <comment>See Waffle config file.</comment>'
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
