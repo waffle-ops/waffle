@@ -34,7 +34,7 @@ class CommandLoader
      *
      * @param CommandManager
      *   A CommandManager that has been preloaded with Waffle commands.
-     * @param TaskManager
+     * @param CommandManager
      *   A TaskManager that has been preloaded with Waffle tasks.
      * @param RecipeManager
      *   A RecipeManager that has been preloaded with Waffle recipes.
@@ -54,7 +54,7 @@ class CommandLoader
      *
      * Gets a list of all Waffle commands.
      *
-     * @return Command[]
+     * @return CommandManager
      */
     public function getCommands()
     {
@@ -63,5 +63,41 @@ class CommandLoader
         $recipes = $this->recipeManager->getCommands();
 
         return array_merge($commands, $tasks, $recipes);
+    }
+
+    /**
+     * getCommandManager
+     *
+     * Gets a list of all Waffle commands.
+     *
+     * @return CommandManager
+     */
+    public function getCommandManager()
+    {
+        return $this->commandManager;
+    }
+
+    /**
+     * getTaskManager
+     *
+     * Gets a list of all Waffle commands.
+     *
+     * @return TaskManager
+     */
+    public function getTaskManager()
+    {
+        return $this->taskManager;
+    }
+
+    /**
+     * getRecipeManager
+     *
+     * Gets a list of all Waffle commands.
+     *
+     * @return RecipeManager
+     */
+    public function getRecipeManager()
+    {
+        return $this->recipeManager;
     }
 }
