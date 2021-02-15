@@ -58,8 +58,9 @@ class Application extends SymfonyApplication
      */
     protected function getDefaultCommands()
     {
-        // TODO -- Update this once the list and help commands are added.
-        return parent::getDefaultCommands();
+        // We are adding commands via the CommandLoader. Overriding the default
+        // settings with 'nothing'.
+        return [];
     }
 
     /**
