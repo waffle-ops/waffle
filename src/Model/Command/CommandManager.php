@@ -2,9 +2,6 @@
 
 namespace Waffle\Model\Command;
 
-use SelfUpdate\SelfUpdateCommand;
-use Waffle\Helper\PharHelper;
-
 class CommandManager
 {
 
@@ -28,11 +25,6 @@ class CommandManager
             // Adding as a keyed array so we can override later if needed.
             $command_key = $command::COMMAND_KEY;
             $this->commands[$command_key] = $command;
-        }
-
-        // Adds the self:update command.
-        if (PharHelper::isPhar()) {
-            $this->commands['self:update'] = new SelfUpdateCommand(Waffle::NAME, Waffle::VERSION, Waffle::REPOSITORY);
         }
     }
 

@@ -13,8 +13,6 @@ class ListCommand extends BaseCommand implements DiscoverableCommandInterface
 {
     public const COMMAND_KEY = 'list';
 
-    private $processes = [];
-
     protected function configure()
     {
         $this->setName(self::COMMAND_KEY);
@@ -100,6 +98,10 @@ class ListCommand extends BaseCommand implements DiscoverableCommandInterface
         $data[] = [$header, ''];
 
         foreach ($commands as $commandKey => $command) {
+            if (!$command->isEnabled()) {
+                continue;
+            }
+
             $data[] = [
                 sprintf('  <info>%s</info>', $commandKey),
                 $command->getDescription()
