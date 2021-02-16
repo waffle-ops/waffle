@@ -3,7 +3,6 @@
 namespace Waffle\Model\Command;
 
 use SelfUpdate\SelfUpdateCommand;
-use Symfony\Component\Console\Command\HelpCommand;
 use Waffle\Helper\PharHelper;
 
 class CommandManager
@@ -30,12 +29,6 @@ class CommandManager
             $command_key = $command::COMMAND_KEY;
             $this->commands[$command_key] = $command;
         }
-
-        // We are overriding the way commands are loaded, so we need to add the
-        // default 'help' command back in (because it is not loaded via DI).
-        // We could probably autoload this, but this is fine for now.
-        $help = new HelpCommand();
-        $this->commands[$help->getName()] = $help;
 
         // Adds the self:update command.
         if (PharHelper::isPhar()) {
