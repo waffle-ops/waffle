@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffle\Command\Custom;
+namespace Waffle\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;

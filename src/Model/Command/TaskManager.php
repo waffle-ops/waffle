@@ -2,7 +2,7 @@
 
 namespace Waffle\Model\Command;
 
-use Waffle\Command\Custom\Task;
+use Waffle\Command\Task;
 use Waffle\Traits\ConfigTrait;
 
 class TaskManager

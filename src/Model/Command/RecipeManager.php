@@ -2,7 +2,7 @@
 
 namespace Waffle\Model\Command;
 
-use Waffle\Command\Custom\Recipe;
+use Waffle\Command\Recipe;
 use Waffle\Traits\ConfigTrait;
 
 class RecipeManager
