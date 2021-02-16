@@ -7,7 +7,6 @@ use Symfony\Component\Console\Command\ListCommand as ParentListCommand;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
 
 class ListCommand extends ParentListCommand implements DiscoverableCommandInterface

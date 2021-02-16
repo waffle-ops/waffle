@@ -4,8 +4,8 @@ namespace Waffle\Command\Command;
 
 use SelfUpdate\SelfUpdateCommand;
 use Waffle\Application as Waffle;
-use Waffle\Helper\PharHelper;
 use Waffle\Command\DiscoverableCommandInterface;
+use Waffle\Helper\PharHelper;
 
 class SelfUpdate extends SelfUpdateCommand implements DiscoverableCommandInterface
 {
