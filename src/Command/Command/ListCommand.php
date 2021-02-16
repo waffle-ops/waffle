@@ -3,21 +3,22 @@
 namespace Waffle\Command\Command;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Command\ListCommand as ParentListCommand;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
 
-class ListCommand extends BaseCommand implements DiscoverableCommandInterface
+class ListCommand extends ParentListCommand implements DiscoverableCommandInterface
 {
     public const COMMAND_KEY = 'list';
 
     protected function configure()
     {
+        parent::configure();
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Lists commands, tasks, and recipes.');
-        $this->setHelp('TODO.'); // TODO
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
