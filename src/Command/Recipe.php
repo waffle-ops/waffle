@@ -32,9 +32,9 @@ class Recipe extends BaseCommand
         // TODO: Help and description are not properly set since these are
         // populated. Consider allow help and description text to be set in
         // config.
-        $this->setDescription(
-            'Custom Recipe -- <comment>See Waffle config file.</comment>'
-        );
+        $help = 'Custom Recipe -- <comment>See Waffle config file.</comment>';
+        $this->setDescription($help);
+        $this->setHelp($help);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
