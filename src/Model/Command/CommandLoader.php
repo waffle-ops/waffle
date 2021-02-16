@@ -2,10 +2,6 @@
 
 namespace Waffle\Model\Command;
 
-use Waffle\Model\Command\CommandManager;
-use Waffle\Model\Command\TaskManager;
-use Waffle\Model\Command\RecipeManager;
-
 /**
  * This class name is a bit of a misnomer. This class is responsible for
  * loading Symfony Console Commands in general, which includes Commands, Tasks,

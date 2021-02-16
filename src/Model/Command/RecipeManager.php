@@ -2,11 +2,7 @@
 
 namespace Waffle\Model\Command;
 
-use SelfUpdate\SelfUpdateCommand;
-use Waffle\Application as Waffle;
 use Waffle\Command\Custom\Recipe;
-use Waffle\Command\Custom\Task;
-use Waffle\Helper\PharHelper;
 use Waffle\Traits\ConfigTrait;
 
 class RecipeManager

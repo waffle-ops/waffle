@@ -2,21 +2,12 @@
 
 namespace Waffle\Command\Command;
 
-use Exception;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
-use Waffle\Helper\CliHelper;
-use Waffle\Model\Cli\WaffleCommand;
-use Waffle\Model\Config\ProjectConfig;
-use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Helper\TableCell;
-use Symfony\Component\Console\Helper\TableSeparator;
 
 class ListCommand extends BaseCommand implements DiscoverableCommandInterface
 {

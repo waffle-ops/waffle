@@ -3,8 +3,8 @@
 namespace Waffle\Model\Command;
 
 use SelfUpdate\SelfUpdateCommand;
-use Waffle\Helper\PharHelper;
 use Symfony\Component\Console\Command\HelpCommand;
+use Waffle\Helper\PharHelper;
 
 class CommandManager
 {
