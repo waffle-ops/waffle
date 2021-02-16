@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffle\Command\Site;
+namespace Waffle\Command\Task;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -11,7 +11,7 @@ use Waffle\Command\DiscoverableTaskInterface;
 class Release extends BaseCommand implements DiscoverableTaskInterface
 {
 
-    public const COMMAND_KEY = 'site:sync:release';
+    public const COMMAND_KEY = 'release-script';
 
     protected function configure()
     {

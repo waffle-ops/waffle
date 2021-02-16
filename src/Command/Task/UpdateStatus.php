@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffle\Command\Site;
+namespace Waffle\Command\Task;
 
 use Exception;
 use Symfony\Component\Console\Command\Command;
@@ -16,7 +16,7 @@ use Waffle\Model\Config\ProjectConfig;
 
 class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
 {
-    public const COMMAND_KEY = 'site:update:status';
+    public const COMMAND_KEY = 'update-status';
 
     /**
      * @var Drush

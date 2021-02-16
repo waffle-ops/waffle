@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffle\Command\Site;
+namespace Waffle\Command\Task;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -14,7 +14,7 @@ class Login extends BaseCommand implements DiscoverableTaskInterface
 {
     use ConfigTrait;
 
-    public const COMMAND_KEY = 'site:sync:login';
+    public const COMMAND_KEY = 'login';
 
     protected function configure()
     {

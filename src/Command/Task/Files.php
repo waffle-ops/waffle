@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffle\Command\Site;
+namespace Waffle\Command\Task;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -17,7 +17,7 @@ class Files extends BaseCommand implements DiscoverableTaskInterface
     use DefaultUpstreamTrait;
     use ConfigTrait;
 
-    public const COMMAND_KEY = 'site:sync:files';
+    public const COMMAND_KEY = 'sync-files';
 
     protected function configure()
     {

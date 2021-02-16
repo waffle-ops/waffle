@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffle\Command\Site;
+namespace Waffle\Command\Task;
 
 use Exception;
 use Symfony\Component\Console\Command\Command;
@@ -18,7 +18,7 @@ use Waffle\Model\Config\ProjectConfig;
 
 class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
 {
-    public const COMMAND_KEY = 'site:update:apply';
+    public const COMMAND_KEY = 'update-apply';
 
     /**
      * A short string to put before the git commit message.

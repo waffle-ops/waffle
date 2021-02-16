@@ -1,6 +1,6 @@
 <?php
 
-namespace Waffle\Command\Site;
+namespace Waffle\Command\Task;
 
 use DateTime;
 use Exception;
@@ -16,7 +16,7 @@ use Waffle\Model\Cli\Runner\Git;
 
 class UpdatePrepare extends BaseCommand implements DiscoverableTaskInterface
 {
-    public const COMMAND_KEY = 'site:update:prepare';
+    public const COMMAND_KEY = 'update-prepare';
 
     /**
      * The name of the main branch (typically master).
