@@ -8,10 +8,24 @@ use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\DiscoverableCommandInterface;
+use Waffle\Model\IO\IO;
 
 class ListCommand extends ParentListCommand implements DiscoverableCommandInterface
 {
     public const COMMAND_KEY = 'list';
+
+    /**
+     * Defines the Input/Output helper object.
+     *
+     * @var IOStyle
+     */
+    protected $io;
+
+    public function __construct()
+    {
+        $this->io = IO::getInstance()->getIO();
+        parent::__construct();
+    }
 
     protected function configure()
     {
