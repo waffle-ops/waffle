@@ -3,6 +3,7 @@
 namespace Waffle\Model\Command;
 
 use Waffle\Command\Task;
+use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Traits\ConfigTrait;
 
 class TaskManager
@@ -62,10 +63,15 @@ class TaskManager
      */
     private function getUserDefinedTasks()
     {
+
+        try {
+            $tasks = $this->getConfig()->getTasks() ?? [];
+        } catch (MissingConfigFileException $e) {
+            return [];
+        }
+
         $user_tasks = [];
 
-        // Recipes (runs multiple tasks). Allows overriding 'core' recipes.
-        $tasks = $this->getConfig()->getTasks() ?? [];
 
         foreach ($tasks as $task => $task_list) {
             $user_tasks[] = new Task($task);

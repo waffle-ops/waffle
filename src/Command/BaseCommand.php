@@ -7,14 +7,13 @@ use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
+use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
-use Waffle\Traits\ConfigTrait;
 
 class BaseCommand extends Command
 {
-    use ConfigTrait;
 
     /**
      * Defines the Input/Output helper object.
@@ -26,16 +25,18 @@ class BaseCommand extends Command
     /**
      * A reference to the project config.
      *
-     * @var ProjectConfig
-     */
-    protected $config;
-
-    /**
-     * A reference to the project config.
+     * @todo Remove this from the base class and inject where needed.
      *
      * @var CliHelper
      */
     protected $cliHelper;
+
+    /**
+     * A boolean to indicate that this command is enabled.
+     *
+     * @var bool
+     */
+    protected $isEnabled = true;
 
     /**
      * @param string|null $name The name of the command; passing null means it must be set in configure()
@@ -44,21 +45,18 @@ class BaseCommand extends Command
      */
     public function __construct(string $name = null)
     {
-        parent::__construct($name);
-        $this->config = $this->getConfig();
         $this->io = IO::getInstance()->getIO();
         $this->cliHelper = new CliHelper($this->io);
-    }
 
-    /**
-     * Sets up properties used for all commands.
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int|void
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
+        // We don't want to automatically load config for all commands. We can,
+        // however assume they will attempt to load config in the configure()
+        // method if it is needed. The default behavior will be if a command
+        // fails to load config, it will be disabled automatically.
+        try {
+            parent::__construct($name);
+        } catch (MissingConfigFileException $e) {
+            $this->isEnabled = false;
+        }
     }
 
     /**
@@ -69,5 +67,13 @@ class BaseCommand extends Command
     protected function dumpProcess(Process $process)
     {
         $this->cliHelper->dumpProcess($process);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isEnabled()
+    {
+        return $this->isEnabled;
     }
 }

@@ -13,9 +13,12 @@ use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\SymfonyCli;
 use Waffle\Model\Cli\Runner\WpCli;
 use Waffle\Model\Config\ProjectConfig;
+use Waffle\Traits\ConfigTrait;
 
 class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
 {
+    use ConfigTrait;
+
     public const COMMAND_KEY = 'update-status';
 
     /**
@@ -37,6 +40,10 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
         // @todo Add support for arguments: --format, ...?
 
         // @todo: Add parameter to output full report to file instead of screen
+
+        // Attempting to load config. Parent class will catch exception if we
+        // are unable to load it.
+        $this->config = $this->getConfig();
     }
 
     /**

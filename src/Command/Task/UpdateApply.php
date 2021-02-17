@@ -15,9 +15,12 @@ use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\Git;
 use Waffle\Model\Cli\Runner\WpCli;
 use Waffle\Model\Config\ProjectConfig;
+use Waffle\Traits\ConfigTrait;
 
 class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
 {
+    use ConfigTrait;
+
     public const COMMAND_KEY = 'update-apply';
 
     /**
@@ -118,6 +121,13 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
     protected $wp;
 
     /**
+     * A reference to the project config.
+     *
+     * @var ProjectConfig
+     */
+    protected $config;
+
+    /**
      * @inheritDoc
      */
     protected function configure()
@@ -204,8 +214,11 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
             ''
         );
 
-
         // @todo: add an option to set the git commit message format template
+
+        // Attempting to load config. Parent class will catch exception if we
+        // are unable to load it.
+        $this->config = $this->getConfig();
     }
 
     /**

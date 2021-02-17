@@ -13,9 +13,12 @@ use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\Git;
+use Waffle\Traits\ConfigTrait;
 
 class UpdatePrepare extends BaseCommand implements DiscoverableTaskInterface
 {
+    use ConfigTrait;
+
     public const COMMAND_KEY = 'update-prepare';
 
     /**
@@ -73,6 +76,10 @@ class UpdatePrepare extends BaseCommand implements DiscoverableTaskInterface
             'The name of the update branch. Using {MM} and {YYYY} will be replaced with the current month and year.',
             'updates/{MM}-{YYYY}'
         );
+
+        // Attempting to load config. Parent class will catch exception if we
+        // are unable to load it.
+        $this->config = $this->getConfig();
     }
 
     /**

@@ -13,6 +13,9 @@ class Task extends BaseCommand
 {
     use ConfigTrait;
 
+    /**
+     * {@inheritdoc}
+     */
     protected function configure()
     {
         // TODO: Help and description are not properly set since these are
@@ -23,12 +26,24 @@ class Task extends BaseCommand
         $this->setHelp($help);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $config = $this->getConfig();
+
         // Note: The 'command' argument is defined by the Symfony Command class.
         $task_key = $input->getArgument('command');
 
-        $config_tasks = $this->getConfig()->getTasks() ?? [];
+        $config_tasks = $config->getTasks() ?? [];
         $task = isset($config_tasks[$task_key]) ? $config_tasks[$task_key] : '';
         $output->writeln('<info>Running task <comment>' . $task_key . '</comment>: "' . $task . '"</info>');
 
@@ -37,7 +52,7 @@ class Task extends BaseCommand
         // TODO: I'm not a huge fan of using the shell command line method.
         // Would be better id this used an input array.
         $process = Process::fromShellCommandline($task);
-        $process->setTimeout($this->config->getTimeout());
+        $process->setTimeout($config->getTimeout());
         $process->run();
 
         // TODO Handle output. Can it be streamed? Or do we actually have to

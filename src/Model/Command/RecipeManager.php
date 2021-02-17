@@ -3,6 +3,7 @@
 namespace Waffle\Model\Command;
 
 use Waffle\Command\Recipe;
+use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Traits\ConfigTrait;
 
 class RecipeManager
@@ -61,9 +62,13 @@ class RecipeManager
      */
     private function getUserDefinedRecipes()
     {
-        $user_recipes = [];
+        try {
+            $recipes = $this->getConfig()->getRecipes() ?? [];
+        } catch (MissingConfigFileException $e) {
+            return [];
+        }
 
-        $recipes = $this->getConfig()->getRecipes() ?? [];
+        $user_recipes = [];
 
         foreach ($recipes as $recipe => $task_list) {
             $user_recipes[] = new Recipe($recipe);
