@@ -80,29 +80,29 @@ class Application extends SymfonyApplication
      */
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
-        $passed_preflight_checks = true;
         $missing_config = false;
 
         try {
             $validator = new PreflightValidator();
             $validator->runChecks();
         } catch (MissingConfigFileException $e) {
-            $passed_preflight_checks = false;
             $missing_config = true;
         } catch (\Exception $e) {
-            $passed_preflight_checks = false;
-        }
-
-        if ($missing_config) {
-            // TODO: Attach some sort of 'init' command that can help guide
-            // users in creating a .waffle.yml file.
-            $this->io->writeln('<error>No .waffle.yml file was found!</error>');
-            $this->io->writeln('<error>Waffle can\'t do much without knowing more about your project.</error>');
+            $this->io->error($e->getMessage());
         }
 
         $this->addCommands($this->commandLoader->getCommands());
 
         $exitCode = parent::run();
+
+        if ($missing_config) {
+            $notice = [
+                'Looks like you are using Waffle without a .waffle.yml file!',
+                'To take full advantage of Waffle with your project, try running the \'init\' command.',
+            ];
+
+            $this->io->block($notice, null, 'fg=cyan', '');
+        }
 
         // Update notices will be after all other output so that they don't get
         // lost.
@@ -207,6 +207,7 @@ class Application extends SymfonyApplication
 
         // It has been a while since we last checked, so calling out to GitHub.
         try {
+            $this->io->styledText('[Update Check] Checking for updates...', 'comment');
             $githubHelper = new GitHubHelper();
             $release = $githubHelper->getLatestRelease(self::REPOSITORY);
             $latest = $release['tag_name'];
@@ -219,6 +220,7 @@ class Application extends SymfonyApplication
             ];
 
             $helper->setCacheData('update_check', $data);
+            $this->io->styledText('[Update Check] Done!', 'comment');
         } catch (UpdateCheckException $e) {
             // TODO: We should probably have some sort of log file where we can
             // log this type of failure.
