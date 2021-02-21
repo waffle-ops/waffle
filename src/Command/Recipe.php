@@ -68,6 +68,7 @@ class Recipe extends BaseCommand
 
         // Runs the tasks for the recipes.
         foreach ($tasks as $task) {
+            $task_key = $this->getTaskKey($task);
             $output->writeln('<info>Recipe - running <comment>' . $task_key . '</comment></info>');
 
             $task_key = $this->getTaskKey($task);
