@@ -58,7 +58,11 @@ class CommandLoader
         $tasks = $this->taskManager->getCommands();
         $recipes = $this->recipeManager->getCommands();
 
-        return array_merge($commands, $tasks, $recipes);
+        return array_merge(
+            $recipes, // Recipes can be overidden by tasks, so they go first.
+            $tasks,
+            $commands, // Commands should go last so they cannot be overridden.
+        );
     }
 
     /**
