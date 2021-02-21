@@ -1,21 +1,26 @@
 <?php
 
-namespace Waffle\Command\Site;
+namespace Waffle\Command\Task;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
 use Waffle\Command\BaseCommand;
-use Waffle\Command\DiscoverableCommandInterface;
+use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\ConfigTrait;
 
-class Login extends BaseCommand implements DiscoverableCommandInterface
+class Login extends BaseCommand implements DiscoverableTaskInterface
 {
     use ConfigTrait;
 
-    public const COMMAND_KEY = 'site:sync:login';
+    public const COMMAND_KEY = 'login';
+
+    /**
+     * @var ProjectConfig
+     */
+    protected $config;
 
     protected function configure()
     {
@@ -25,6 +30,8 @@ class Login extends BaseCommand implements DiscoverableCommandInterface
 
         // TODO Add support for arguments: --name, email?, user id?
         // This could be pulled out a level and support dev, stg, prod
+
+        $this->config = $this->getConfig();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

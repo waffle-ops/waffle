@@ -1,25 +1,23 @@
 <?php
 
-namespace Waffle\Command\Site;
+namespace Waffle\Command\Recipe;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
-use Waffle\Command\DiscoverableCommandInterface;
-use Waffle\Model\Site\Sync\SiteSyncFactory;
-use Waffle\Traits\DefaultUpstreamTrait;
+use Waffle\Command\DiscoverableRecipeInterface;
 use Waffle\Traits\ConfigTrait;
+use Waffle\Traits\DefaultUpstreamTrait;
 
-class Sync extends BaseCommand implements DiscoverableCommandInterface
+class Sync extends BaseCommand implements DiscoverableRecipeInterface
 {
     use DefaultUpstreamTrait;
     use ConfigTrait;
 
-    public const COMMAND_KEY = 'site:sync';
+    public const COMMAND_KEY = 'site-sync';
 
     protected function configure()
     {

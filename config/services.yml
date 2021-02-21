@@ -5,7 +5,11 @@ services:
 
   _instanceof:
     Waffle\Command\DiscoverableCommandInterface:
-      tags: ['command']
+      tags: ['commands']
+    Waffle\Command\DiscoverableTaskInterface:
+      tags: ['tasks']
+    Waffle\Command\DiscoverableRecipeInterface:
+      tags: ['recipes']
 
   Waffle\:
     lazy: true
@@ -17,6 +21,17 @@ services:
   Waffle\Model\Command\CommandManager:
     public: true
     arguments:
-      - !tagged command
+      - !tagged commands
+
+  Waffle\Model\Command\TaskManager:
+    public: true
+    arguments:
+      - !tagged tasks
+
+  Waffle\Model\Command\RecipeManager:
+    public: true
+    arguments:
+      - !tagged recipes
+
 
 

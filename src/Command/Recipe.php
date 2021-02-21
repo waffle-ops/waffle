@@ -1,14 +1,11 @@
 <?php
 
-namespace Waffle\Command\Custom;
+namespace Waffle\Command;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Process\Process;
-use Waffle\Command\BaseCommand;
 use Waffle\Traits\ConfigTrait;
 
 class Recipe extends BaseCommand
@@ -24,22 +21,20 @@ class Recipe extends BaseCommand
 
     protected function configure()
     {
-        // TODO: Help and description are not set since these are populated.
-        // Consider allow help and description text to be set in config.
-
         // Storing the config to be used later.
         $this->config_key = $this->getName();
 
-        // Forces all recipes to fall under the recipe namespace.
-        $recipe_key = $this->getRecipeKey($this->config_key);
-        $this->setName($recipe_key);
+        // TODO: Help and description are not properly set since these are
+        // populated. Consider allow help and description text to be set in
+        // config.
+        $help = 'Custom Recipe -- <comment>See Waffle config file.</comment>';
+        $this->setDescription($help);
+        $this->setHelp($help);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $recipe_key = $this->getRecipeKey($this->config_key);
-
-        $output->writeln('<info>Running recipe <comment>' . $recipe_key . '</comment></info>');
+        $this->io->highlightText('Running recipe %s', [$this->config_key]);
 
         // Note: This is not explicitly defined here, but is from the parent
         // class.
@@ -67,7 +62,7 @@ class Recipe extends BaseCommand
 
         // Runs the tasks for the recipes.
         foreach ($tasks as $task) {
-            $output->writeln('<info>Recipe - running <comment>' . $task_key . '</comment></info>');
+            $task_key = $this->getTaskKey($task);
 
             $task_key = $this->getTaskKey($task);
             $args = $this->getTaskArguments($task_key, $task);
@@ -78,13 +73,18 @@ class Recipe extends BaseCommand
             $return_code = $task_command->run($task_arguments, $output);
 
             if ($return_code !== Command::SUCCESS) {
-                $output->writeln('<error>Recipe ' . $recipe_key . ' failed while running ' . $task_key . '.</error>');
-                $output->writeln('<error>See error output for more details.</error>');
+                $this->io->highlightText(
+                    '[Recipe %s] Failed while running task %s',
+                    [$this->config_key, $task_key],
+                    'error',
+                    'none'
+                );
+                $this->io->styledText('See error output for more details.', 'error');
                 return Command::FAILURE;
             }
         }
 
-        $output->writeln('<info>Recipe <comment>' . $recipe_key . '</comment> complete</info>');
+        $this->io->highlightText('Recipe %s complete!', [$this->config_key]);
 
         return Command::SUCCESS;
     }
@@ -124,10 +124,5 @@ class Recipe extends BaseCommand
         }
 
         return new ArrayInput($input_args);
-    }
-
-    private function getRecipeKey($config_key)
-    {
-        return 'recipe:' . $config_key;
     }
 }

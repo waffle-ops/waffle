@@ -1,1 +1,4 @@
 /vendor/
+
+# Ignore dev specific files
+.idea/

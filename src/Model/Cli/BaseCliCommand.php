@@ -2,10 +2,10 @@
 
 namespace Waffle\Model\Cli;
 
-use Symfony\Component\Process\Process;
 use Exception;
-use Waffle\Traits\ConfigTrait;
+use Symfony\Component\Process\Process;
 use Waffle\Model\Config\ProjectConfig;
+use Waffle\Traits\ConfigTrait;
 
 class BaseCliCommand
 {

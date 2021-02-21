@@ -2,11 +2,11 @@
 
 namespace Waffle\Model\Cli\Runner;
 
-use Symfony\Component\Process\Process;
-use Waffle\Model\Cli\BaseCliCommand;
 use Exception;
-use Waffle\Model\Cli\SymfonyCliCommand;
+use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
+use Waffle\Model\Cli\BaseCliCommand;
+use Waffle\Model\Cli\SymfonyCliCommand;
 
 class SymfonyCli extends BaseRunner
 {

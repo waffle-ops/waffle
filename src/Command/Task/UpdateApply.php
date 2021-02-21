@@ -1,25 +1,28 @@
 <?php
 
-namespace Waffle\Command\Site;
+namespace Waffle\Command\Task;
 
 use Exception;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
-use Waffle\Command\BaseCommand;
-use Waffle\Command\DiscoverableCommandInterface;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Waffle\Command\BaseCommand;
+use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\Git;
-use Waffle\Model\Cli\Runner\Composer;
-use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\Cli\Runner\WpCli;
+use Waffle\Model\Config\ProjectConfig;
+use Waffle\Traits\ConfigTrait;
 
-class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
+class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
 {
-    public const COMMAND_KEY = 'site:update:apply';
-    
+    use ConfigTrait;
+
+    public const COMMAND_KEY = 'update-apply';
+
     /**
      * A short string to put before the git commit message.
      *
@@ -89,34 +92,41 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
      * @var array
      */
     protected $packages = [];
-    
+
     /**
      * A list of composer packages that should be updated before others.
      *
      * @var string[]
      */
     protected $priorityPackages = ['drupal/core-recommended', 'drupal/core'];
-    
+
     /**
      * @var Git
      */
     protected $git;
-    
+
     /**
      * @var Drush
      */
     protected $drush;
-    
+
     /**
      * @var Composer
      */
     protected $composer;
-    
+
     /**
      * @var WpCli
      */
     protected $wp;
-    
+
+    /**
+     * A reference to the project config.
+     *
+     * @var ProjectConfig
+     */
+    protected $config;
+
     /**
      * @inheritDoc
      */
@@ -125,7 +135,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Applies any pending site updates.');
         $this->setHelp('Applies any pending site updates.');
-        
+
         // @todo: have these configurable at the .waffle.yml level (and test)
 
         $this->addOption(
@@ -204,8 +214,11 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             ''
         );
 
-
         // @todo: add an option to set the git commit message format template
+
+        // Attempting to load config. Parent class will catch exception if we
+        // are unable to load it.
+        $this->config = $this->getConfig();
     }
 
     /**
@@ -219,10 +232,10 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         parent::execute($input, $output);
-    
+
         $this->git = new Git();
         $this->composer = new Composer();
-        
+
         $this->gitPrefix = $input->getOption('git-prefix');
         $this->gitPostfix = $input->getOption('git-postfix');
         $this->skipGit = $input->getOption('skip-git');
@@ -238,7 +251,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         if (!empty($ignore)) {
             $this->ignore = str_getcsv($ignore);
         }
-        
+
         // Warn user that this will be applying git commits to the local repo.
         if (!$this->skipGit && !$this->forceYes) {
             $confirmation = $this->io->confirm(
@@ -250,7 +263,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
                 return 1;
             }
         }
-        
+
         // Fail if there are any pending git changes before starting.
         if ($this->git->hasPendingChanges() && !$this->skipGit) {
             $this->io->caution($this->cliHelper->getOutput($this->git->statusShort()));
@@ -258,7 +271,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
                 'You have pending changes in your git repo. Resolve these before attempting to run this command.'
             );
         }
-        
+
         switch ($this->config->getCms()) {
             case ProjectConfig::CMS_DRUPAL_8:
                 $this->drush = new Drush();
@@ -306,22 +319,22 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
     protected function applyDrupal7Updates()
     {
         $this->io->title('Applying Drupal 7 Pending Updates');
-    
+
         if (!empty($this->config->getComposerPath())) {
             $this->updateMinorComposerDependencies();
         }
-    
+
         $ups = $this->drush->pmSecurity('json');
-    
+
         // @todo: check for errors before continuing.
         $ups_output = $ups->getOutput();
         $updates = json_decode($ups_output, true);
-    
+
         if (empty($updates)) {
             $this->io->writeln('No pending updates found.');
             exit(0);
         }
-    
+
         if (!empty($this->packages)) {
             foreach ($this->packages as $specific_package) {
                 if (!array_key_exists($specific_package, $updates)) {
@@ -332,7 +345,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             }
             return;
         }
-    
+
         foreach ($updates as $module => $update) {
             if (in_array($update['name'], $this->ignore)) {
                 $this->io->warning("Skipping ignored package: {$update['name']}");
@@ -353,21 +366,21 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $name = $package['name'];
         $from = $package['existing_version'];
         $to = $package['latest_version'];
-    
+
         $this->io->section("Updating {$name} from {$from} to {$to} ...");
         $this->cliHelper->outputOrFail(
             $this->drush->updateCode($name),
             "Error updating item {$name} ({$from} => {$to})"
         );
-        
+
         // @todo: If htaccess was updated, output a warning.
-    
+
         $this->io->section('Clearing Drupal cache');
         $this->cliHelper->outputOrFail($this->drush->clearCaches(), 'Error when clearing Drupal cache.');
-    
+
         $this->io->section('Running any pending Drupal DB updates');
         $this->cliHelper->outputOrFail($this->drush->updateDatabase(), 'Error when running pending Drupal DB updates.');
-    
+
         if (!$this->git->hasPendingChanges()) {
             $this->io->warning("No git changes found for: {$name} ({$from} => {$to})");
             // No need to attempt to commit or export config if there are no changes.
@@ -377,7 +390,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
             $this->gitCommitChanges($message);
         }
-    
+
         if (!$this->drush->getDrushPatchingEnabled()) {
             $this->io->warning(
                 "Unable to automatically reapply patches due to missing dependency: Drush Patcher"
@@ -395,7 +408,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
                 }
             }
             $this->io->writeln($this->cliHelper->getOutput($pp));
-        
+
             if (!$this->skipGit && $this->git->hasPendingChanges()) {
                 $message = "{$this->gitPrefix}Reapplied patches for {$name} " . "({$from} => {$to}){$this->gitPostfix}";
                 $this->gitCommitChanges($message);
@@ -423,7 +436,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             $this->io->section('No pending updates found.');
             return;
         }
-    
+
         // If updating a specific package, then search for it in the pending list.
         // @todo: Should we refactor this to allow non-pending items?
         if (!empty($this->packages)) {
@@ -484,81 +497,81 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $name = $package['name'];
         $from = $package['version'];
         $to = $package['latest'];
-    
+
         if ($from == $to) {
             $this->io->warning("Skipping {$name} because old and new version are the same. ({$from})");
             return;
         }
-    
+
         $this->io->section("Updating {$package['name']} from {$package['version']} to {$package['latest']} ...");
-    
+
         $update_process = $this->composer->updatePackage($package['name'], $this->timeout);
         $update_output = $this->cliHelper->getOutput($update_process);
-    
+
         // We use the exit code for Composer since it outputs to both normal & error channels.
         if (!empty($update_process->getExitCode())) {
             $this->io->error('Composer update failed with error.');
             $this->dumpProcess($update_process);
             exit(1);
         }
-    
+
         // Check to see if there was a patch that did not reapply cleanly.
         if (strpos($update_output, 'Could not apply patch!') !== false) {
             $this->io->error('Composer patching failed with error.');
             $this->dumpProcess($update_process);
             exit(1);
         }
-    
+
         // For some reason Composer puts the "error" output before the normal output.
         $this->io->writeln($update_process->getErrorOutput());
         $this->io->writeln($update_process->getOutput());
-    
+
         // Clear the Drupal cache.
         $this->io->section('Clearing Drupal cache');
         $cc = $this->drush->clearCaches();
         // @todo: This isn't detecting php error output for some reason.
         $this->cliHelper->outputOrFail($cc, 'Error when clearing Drupal cache.');
-    
+
         // Run any pending Drupal database updates.
         $this->io->section('Running any pending Drupal DB updates');
         $updb = $this->drush->updateDatabase();
         $this->cliHelper->outputOrFail($updb, 'Error when running pending Drupal DB updates.');
-    
+
         if (!$this->git->hasPendingChanges()) {
             $this->io->warning("No git changes found for: {$name} ({$from} => {$to})");
             // No need to attempt to commit or export config if there are no changes.
             return;
         }
-    
+
         $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
         $this->gitCommitChanges($message);
-    
+
         if ($this->includeConfig) {
             $this->io->section('Clearing Drupal cache for config export');
             $cc = $this->drush->clearCaches();
             $this->cliHelper->outputOrFail($cc, 'Error when clearing Drupal cache for config export.');
-        
+
             $this->io->section('Exporting config changes.');
             $cex = $this->drush->configExport($this->configKey);
             $this->cliHelper->outputOrFail($cex, 'Error when exporting config.');
-        
+
             $message =
                 "{$this->gitPrefix}Export config changes from update of {$name}" .
                 "({$from} => {$to}){$this->gitPostfix}";
             $this->gitCommitChanges($message);
         }
-    
+
         // @todo: run phpcs or any client-specific post-update processes as defined in .waffle.yml
-    
+
         // @todo: Take a screenshot somehow of the site (maybe a configurable list of URLs in .waffle.yml?)
-    
+
         // If we are skipping git commits then don't continue to the next one.
         if ($this->skipGit) {
             $this->io->writeln('Completed update. Review and commit the changes when ready.');
             exit(1);
         }
     }
-    
+
     /**
      * Applies Wordpress site and dependency updates.
      *
@@ -567,28 +580,28 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
     protected function applyWordpressUpdates()
     {
         $this->io->title('Applying Wordpress Pending Updates');
-        
+
         if (!empty($this->config->getComposerPath())) {
             $this->updateMinorComposerDependencies();
         }
-        
+
         $core = $this->wp->coreCheckUpdate('json');
         // @todo: check for errors before continuing.
         $core = $this->cliHelper->getOutput($core, true, false);
         $core = json_decode($core, true);
-        
+
         $plugins = $this->wp->pluginListAvailable('json');
         // @todo: check for errors before continuing.
         $plugins = $this->cliHelper->getOutput($plugins, true, false);
         $plugins = json_decode($plugins, true);
-    
+
         $themes = $this->wp->themeListAvailable('json');
         // @todo: check for errors before continuing.
         $themes = $this->cliHelper->getOutput($themes, true, false);
         $themes = json_decode($themes, true);
-        
+
         $core_version = $this->wp->coreVersion();
-        
+
         $updates = [];
         foreach ($core as $core_update) {
             // Default to using the first one.
@@ -600,7 +613,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
                     'update_version' => $core_update['version']
                 ];
             }
-            
+
             // If there are multiple available, then use the major one.
             if ($core_update['update_type'] == 'major') {
                 $updates['core'] = [
@@ -610,22 +623,22 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
                 ];
             }
         }
-        
+
         foreach ($plugins as $plugin) {
             $updates[$plugin['name']] = $plugin;
             $updates[$plugin['name']]['type'] = 'plugin';
         }
-    
+
         foreach ($themes as $theme) {
             $updates[$theme['name']] = $theme;
             $updates[$theme['name']]['type'] = 'theme';
         }
-        
+
         if (empty($updates)) {
             $this->io->writeln('No pending updates found.');
             exit(0);
         }
-        
+
         if (!empty($this->packages)) {
             foreach ($this->packages as $specific_package) {
                 if (!array_key_exists($specific_package, $updates)) {
@@ -636,7 +649,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             }
             return;
         }
-        
+
         foreach ($updates as $update) {
             if (in_array($update['name'], $this->ignore)) {
                 $this->io->warning("Skipping ignored package: {$update['name']}");
@@ -645,7 +658,7 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             $this->updateWordpressItem($update);
         }
     }
-    
+
     /**
      * Updates a single Wordpress plugin/theme/core item.
      *
@@ -658,21 +671,21 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         $type = $package['type'];
         $from = $package['version'];
         $to = $package['update_version'];
-        
+
         $this->io->section("Updating {$name} from {$from} to {$to} ...");
         $this->cliHelper->outputOrFail(
             $this->wp->updatePackage($name, $type, $to),
             "Error updating item {$name} ({$from} => {$to})"
         );
-        
+
         // @todo: If htaccess was updated, output a warning.
-        
+
         $this->io->section('Clearing Wordpress cache');
         $this->cliHelper->outputOrFail($this->wp->cacheFlush(), 'Error when clearing Wordpress cache.');
-        
+
         $this->io->section('Running any pending Wordpress DB updates');
         $this->cliHelper->outputOrFail($this->wp->updateDatabase(), 'Error when running pending Wordpress DB updates.');
-        
+
         if (!$this->git->hasPendingChanges()) {
             $this->io->warning("No git changes found for: {$name} ({$from} => {$to})");
             // No need to attempt to commit or export config if there are no changes.
@@ -682,16 +695,16 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
             $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
             $this->gitCommitChanges($message);
         }
-        
+
         // @todo: Add automatic patch reapplication
-        
+
         // If we are skipping git commits then don't continue to the next one.
         if ($this->skipGit) {
             $this->io->writeln('Completed update. Review and commit the changes when ready.');
             exit(1);
         }
     }
-    
+
     /**
      * Helper utility function that stages all changes in git and commits them.
      *
@@ -704,10 +717,10 @@ class UpdateApply extends BaseCommand implements DiscoverableCommandInterface
         if ($this->skipGit || !$this->git->hasPendingChanges()) {
             return;
         }
-    
+
         $this->io->section('Adding pending changes to git index.');
         $this->cliHelper->outputOrFail($this->git->addAll(), 'Error when adding pending changes to git index.');
-    
+
         $this->io->section('Committing changes to git.');
         $this->cliHelper->outputOrFail($this->git->commit($message), 'Error when committing to git.');
     }

@@ -7,13 +7,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Exception\UpdateCheckException;
-use Waffle\Model\Command\CommandManager;
-use Waffle\Model\Validate\Preflight\PreflightValidator;
+use Waffle\Helper\GitHubHelper;
+use Waffle\Helper\PharHelper;
+use Waffle\Helper\WaffleHelper;
+use Waffle\Model\Command\CommandLoader;
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
-use Waffle\Helper\PharHelper;
-use Waffle\Helper\GitHubHelper;
-use Waffle\Helper\WaffleHelper;
+use Waffle\Model\Validate\Preflight\PreflightValidator;
 
 class Application extends SymfonyApplication
 {
@@ -23,25 +23,12 @@ class Application extends SymfonyApplication
 
     public const REPOSITORY = 'waffle-ops/waffle';
 
-    public const EMOJI_POOL = [
-        // Older emojis that should be supported everywhere.
-        "\u{1F353}", // Strawberry
-        "\u{1F953}", // Bacon
-        "\u{1F95A}", // Egg
-
-        // TODO: The below emojis were added in 2019, but are not widely
-        // supported yet. Eventually I would like to have these two replace the
-        // pool above (or at the very least add to the pool).
-        // "\u{1F9C7}", // Waffle
-        // "\u{1F9C8}", // Butter
-    ];
-
     /**
-     * @var CommandManager
+     * @var CommandLoader
      *
-     * Command manager for the Waffle application.
+     * Command loader for the Waffle application.
      */
-    private $commandManager;
+    private $commandLoader;
 
     /**
      * Defines the Input/Output helper object.
@@ -50,14 +37,17 @@ class Application extends SymfonyApplication
      */
     protected $io;
 
-    public function __construct()
+    /**
+     * Constructor
+     *
+     * @param CommandLoader $commandLoader
+     */
+    public function __construct(CommandLoader $commandLoader)
     {
-        // Adding some emoji flair for fun.
-        $emoji = array_rand(array_flip(self::EMOJI_POOL), 1);
-        $name = sprintf('%s %s', $emoji, self::NAME);
-        parent::__construct($name, self::VERSION);
+        parent::__construct(self::NAME, self::VERSION);
 
         $this->io = IO::getInstance()->getIO();
+        $this->commandLoader = $commandLoader;
 
         // Prevent auto exiting (so we can run extra code).
         $this->setAutoExit(false);
@@ -66,53 +56,59 @@ class Application extends SymfonyApplication
     /**
      * {@inheritdoc}
      */
+    protected function getDefaultCommands()
+    {
+        // We are adding commands via the CommandLoader. Overriding the default
+        // settings with 'nothing'.
+        return [];
+    }
+
+    /**
+     * getCommandLoader
+     *
+     * Gets the command loader.
+     *
+     * @return CommandLoader
+     */
+    public function getCommandLoader()
+    {
+        return $this->commandLoader;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
-        $passed_preflight_checks = true;
         $missing_config = false;
 
         try {
             $validator = new PreflightValidator();
             $validator->runChecks();
         } catch (MissingConfigFileException $e) {
-            $passed_preflight_checks = false;
             $missing_config = true;
         } catch (\Exception $e) {
-            $passed_preflight_checks = false;
+            $this->io->error($e->getMessage());
         }
 
-        // Most exceptions should prevent Waffle commands from loading.
-        if ($passed_preflight_checks && !empty($this->commandManager)) {
-            $this->addCommands($this->commandManager->getCommands());
-        }
-
-        if ($missing_config) {
-            // TODO: Attach some sort of 'init' command that can help guide
-            // users in creating a .waffle.yml file.
-            $this->io->writeln('<error>No .waffle.yml file was found!</error>');
-            $this->io->writeln('<error>Waffle can\'t do much without knowing more about your project.</error>');
-        }
+        $this->addCommands($this->commandLoader->getCommands());
 
         $exitCode = parent::run();
+
+        if ($missing_config) {
+            $notice = [
+                'Looks like you are using Waffle without a .waffle.yml file!',
+                'To take full advantage of Waffle with your project, try running the \'init\' command.',
+            ];
+
+            $this->io->block($notice, null, 'fg=cyan', '');
+        }
 
         // Update notices will be after all other output so that they don't get
         // lost.
         $this->checkVersion();
 
         exit($exitCode);
-    }
-
-    /**
-     * Sets the command manager for the application.
-     *
-     * @param CommandManager $commandManager
-     *   The command manager for the application.
-     *
-     * @return void
-     */
-    public function setCommandManager(CommandManager $commandManager)
-    {
-        $this->commandManager = $commandManager;
     }
 
     /**
@@ -211,6 +207,7 @@ class Application extends SymfonyApplication
 
         // It has been a while since we last checked, so calling out to GitHub.
         try {
+            $this->io->styledText('[Update Check] Checking for updates...', 'comment');
             $githubHelper = new GitHubHelper();
             $release = $githubHelper->getLatestRelease(self::REPOSITORY);
             $latest = $release['tag_name'];
@@ -223,6 +220,7 @@ class Application extends SymfonyApplication
             ];
 
             $helper->setCacheData('update_check', $data);
+            $this->io->styledText('[Update Check] Done!', 'comment');
         } catch (UpdateCheckException $e) {
             // TODO: We should probably have some sort of log file where we can
             // log this type of failure.
