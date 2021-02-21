@@ -8,6 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
+use Waffle\Model\Config\ProjectConfig;
 use Waffle\Traits\ConfigTrait;
 
 class Login extends BaseCommand implements DiscoverableTaskInterface
@@ -15,6 +16,11 @@ class Login extends BaseCommand implements DiscoverableTaskInterface
     use ConfigTrait;
 
     public const COMMAND_KEY = 'login';
+
+    /**
+     * @var ProjectConfig
+     */
+    protected $config;
 
     protected function configure()
     {
@@ -24,6 +30,8 @@ class Login extends BaseCommand implements DiscoverableTaskInterface
 
         // TODO Add support for arguments: --name, email?, user id?
         // This could be pulled out a level and support dev, stg, prod
+
+        $this->config = $this->getConfig();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)

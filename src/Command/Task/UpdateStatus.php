@@ -31,6 +31,11 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
      */
     protected $symfonyCli;
 
+    /**
+     * @var ProjectConfig
+     */
+    protected $config;
+
     protected function configure()
     {
         $this->setName(self::COMMAND_KEY);
