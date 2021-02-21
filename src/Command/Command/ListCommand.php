@@ -52,9 +52,9 @@ class ListCommand extends ParentListCommand implements DiscoverableCommandInterf
         ));
 
         // We are injecting commands in the DI via manager classes that are
-        // referenced in the command loader class. Injectin the command loader
+        // referenced in the command loader class. Injecting the command loader
         // in a constructor basically creates an infinite loop. So, will just
-        //grab it from the parent application.
+        // grab it from the parent application.
         $commandLoader = $application->getCommandLoader();
 
         $commandManager = $commandLoader->getCommandManager();
@@ -122,6 +122,11 @@ class ListCommand extends ParentListCommand implements DiscoverableCommandInterf
             ];
         }
 
+        // Return nothing if commands were disabled.
+        if (count($data) == 1) {
+            return [];
+        }
+
         return $data;
     }
 
@@ -141,6 +146,11 @@ class ListCommand extends ParentListCommand implements DiscoverableCommandInterf
         $rows = [];
 
         foreach ($lists as $group) {
+            // We may have empty groups if there is no config file.
+            if (empty($group)) {
+                continue;
+            }
+
             foreach ($group as $element) {
                 $rows[] = $element;
             }
