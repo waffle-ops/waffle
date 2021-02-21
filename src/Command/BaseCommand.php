@@ -4,8 +4,6 @@ namespace Waffle\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\LogicException;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Helper\CliHelper;

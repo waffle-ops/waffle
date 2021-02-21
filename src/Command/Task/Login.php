@@ -7,8 +7,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
-use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Model\Config\ProjectConfig;
+use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\ConfigTrait;
 
 class Login extends BaseCommand implements DiscoverableTaskInterface
