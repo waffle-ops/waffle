@@ -17,7 +17,7 @@ class Sync extends BaseCommand implements DiscoverableRecipeInterface
     use DefaultUpstreamTrait;
     use ConfigTrait;
 
-    public const COMMAND_KEY = 'site:sync';
+    public const COMMAND_KEY = 'site-sync';
 
     protected function configure()
     {
