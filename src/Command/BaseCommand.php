@@ -4,6 +4,8 @@ namespace Waffle\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\LogicException;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Helper\CliHelper;
@@ -55,6 +57,17 @@ class BaseCommand extends Command
         } catch (MissingConfigFileException $e) {
             $this->isEnabled = false;
         }
+    }
+
+    /**
+     * Sets up properties used for all commands.
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|void
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
     }
 
     /**
