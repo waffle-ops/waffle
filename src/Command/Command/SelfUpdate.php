@@ -9,9 +9,7 @@ use Waffle\Helper\PharHelper;
 
 class SelfUpdate extends SelfUpdateCommand implements DiscoverableCommandInterface
 {
-    // We need to keep this as 'self:update' as the parent class has it
-    // hardcoded.
-    public const COMMAND_KEY = 'self:update';
+    public const COMMAND_KEY = 'self-update';
 
     /**
      * Constructor
