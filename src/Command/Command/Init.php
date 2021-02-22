@@ -28,9 +28,7 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Guides you through creating a Waffle config file for your project.');
 
-        // TODO Add optional arguments so that something like
-        // wfl init --cms=drupal8 --host=custom can be done in a CI layer
-        // without actuall needing to create track a .waffle.yml file.
+        // TODO - Extend options (and command as a whole) as mre features are implemented.
 
         $this->addOption(
             ProjectConfig::KEY_CMS,
@@ -155,7 +153,7 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
         // Issue a warning if the cms is not officially supported.
         if (!in_array($host, ProjectConfig::CMS_OPTIONS)) {
             $this->io->note([
-                'Your project is using a hosting provider that is not officially supported by Waffle, but that\'s okay!',
+                'Your are using a hosting provider that is not officially supported by Waffle, but that\'s okay!',
                 'You will need to implement custom tasks and recipes in order to make your project work with Waffle.',
             ]);
         }
