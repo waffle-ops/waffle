@@ -76,6 +76,17 @@ class ProjectConfig
     ];
 
     /**
+     * Constants for the 'host' config key.
+     */
+    public const HOST_ACQUIA = 'acquia';
+    public const HOST_PANTHEON = 'pantheon';
+
+    public const HOST_OPTIONS = [
+        self::HOST_ACQUIA,
+        self::HOST_PANTHEON,
+    ];
+
+    /**
      * Constructor
      */
     private function __construct()

@@ -39,6 +39,14 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
             'The cms used for this project (drupal7, wordpress, ect...)',
             null
         );
+
+        $this->addOption(
+            ProjectConfig::KEY_HOST,
+            null,
+            InputArgument::OPTIONAL,
+            'The hosting provider used for this project (acquia, pantheon, ect...)',
+            null
+        );
     }
 
     /**
@@ -55,9 +63,10 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
 
         $initConfig = [
             ProjectConfig::KEY_CMS => $this->getCms($input),
+            ProjectConfig::KEY_HOST => $this->getHost($input),
         ];
 
-        $this->io->highlightText('Writing %s!', [ProjectConfig::CONFIG_FILE]);
+        $this->io->highlightText('Writing %s config file!', [ProjectConfig::CONFIG_FILE]);
 
         $yaml = Yaml::dump($initConfig);
         file_put_contents(ProjectConfig::CONFIG_FILE, $yaml);
@@ -112,11 +121,45 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
         // Issue a warning if the cms is not officially supported.
         if (!in_array($cms, ProjectConfig::CMS_OPTIONS)) {
             $this->io->note([
-                'You have chosen a CMS that is not officially supported by Waffle, and that\'s okay!',
+                'You have chosen a CMS that is not officially supported by Waffle, but that\'s okay!',
                 'You will need to implement custom tasks and recipes in order to make your project work with Waffle.',
             ]);
         }
 
         return $cms;
+    }
+
+    /**
+     * Helper method for initializing the host config key.
+     *
+     * @param InputInterface $input
+     *
+     * @return string
+     */
+    private function getHost(InputInterface $input)
+    {
+        $host = $input->getOption(ProjectConfig::KEY_HOST);
+
+        if (empty($host)) {
+            $hostOptions = array_merge(ProjectConfig::HOST_OPTIONS, ['other']);
+            $host = $this->io->choice(
+                'What hosting provider is this project using?',
+                $hostOptions
+            );
+
+            if ($host === 'other') {
+                $host = $this->io->ask('What hosting provider is the project using?');
+            }
+        }
+
+        // Issue a warning if the cms is not officially supported.
+        if (!in_array($host, ProjectConfig::CMS_OPTIONS)) {
+            $this->io->note([
+                'Your project is using a hosting provider that is not officially supported by Waffle, but that\'s okay!',
+                'You will need to implement custom tasks and recipes in order to make your project work with Waffle.',
+            ]);
+        }
+
+        return $host;
     }
 }
