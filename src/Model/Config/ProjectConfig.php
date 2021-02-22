@@ -69,6 +69,23 @@ class ProjectConfig
     public const CMS_DRUPAL_8 = 'drupal8';
     public const CMS_WORDPRESS = 'wordpress';
 
+    public const CMS_OPTIONS = [
+        self::CMS_DRUPAL_7,
+        self::CMS_DRUPAL_8,
+        self::CMS_WORDPRESS,
+    ];
+
+    /**
+     * Constants for the 'host' config key.
+     */
+    public const HOST_ACQUIA = 'acquia';
+    public const HOST_PANTHEON = 'pantheon';
+
+    public const HOST_OPTIONS = [
+        self::HOST_ACQUIA,
+        self::HOST_PANTHEON,
+    ];
+
     /**
      * Constructor
      */
@@ -194,7 +211,7 @@ class ProjectConfig
 
         return null;
     }
-    
+
     /**
      * Checks if a config key/value is set at all.
      *
@@ -208,7 +225,7 @@ class ProjectConfig
     {
         return isset($this->project_config[$key]);
     }
-    
+
     /**
      * Sets a project config key to a value.
      *
@@ -291,7 +308,7 @@ class ProjectConfig
             // Attempt to derive the composer.json path.
             $this->set(self::KEY_COMPOSER_PATH, $this->determineComposerPath());
         }
-        
+
         return $this->get(self::KEY_COMPOSER_PATH);
     }
 
@@ -306,7 +323,7 @@ class ProjectConfig
         $allowed_upstreams = explode(',', $raw_upstreams);
         return $allowed_upstreams;
     }
-    
+
     /**
      * Gets the command prefix.
      *
@@ -316,7 +333,7 @@ class ProjectConfig
     {
         return $this->get(self::KEY_COMMAND_PREFIX);
     }
-    
+
     /**
      * Gets the local settings filename.
      *
@@ -329,10 +346,10 @@ class ProjectConfig
         if (!$this->keyExists(self::KEY_LOCAL_SETTINGS_FILENAME)) {
             $this->set(self::KEY_LOCAL_SETTINGS_FILENAME, 'settings.local.php');
         }
-    
+
         return $this->get(self::KEY_LOCAL_SETTINGS_FILENAME);
     }
-    
+
     /**
      * Gets the timeout time (in milliseconds) for commands.
      *
@@ -345,7 +362,7 @@ class ProjectConfig
         if (!$this->keyExists(self::KEY_TIMEOUT)) {
             $this->set(self::KEY_TIMEOUT, 300);
         }
-        
+
         return $this->get(self::KEY_TIMEOUT);
     }
 }
