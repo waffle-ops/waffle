@@ -23,6 +23,8 @@ class Application extends SymfonyApplication
 
     public const REPOSITORY = 'waffle-ops/waffle';
 
+    public const DOCS_URL = 'https://github.com/waffle-ops/waffle/wiki';
+
     /**
      * @var CommandLoader
      *
