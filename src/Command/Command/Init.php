@@ -9,9 +9,15 @@ use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Model\Config\ProjectConfig;
 use Symfony\Component\Console\Input\InputArgument;
+use Waffle\Exception\Config\MissingConfigFileException;
+use Waffle\Traits\ConfigTrait;
+use Symfony\Component\Yaml\Yaml;
+use Waffle\Application as Waffle;
 
 class Init extends BaseCommand implements DiscoverableCommandInterface
 {
+    use ConfigTrait;
+
     public const COMMAND_KEY = 'init';
 
     /**
@@ -40,17 +46,44 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        if ($this->hasExistingConfig()) {
+            $this->io->warning('Waffle config file already exists. If you continue, it will be overwitten!');
+            if (!$this->io->confirm('Would you like to continue?', false)) {
+                return Command::SUCCESS;
+            }
+        }
 
-        // TODO ask if user is where they want to be?
-        // TODO -- Check for .waffle.yml directory?
-
-        $config = [
+        $initConfig = [
             ProjectConfig::KEY_CMS => $this->getCms($input),
         ];
 
-        $this->io->note($config);
+        $this->io->highlightText('Writing %s!', [ProjectConfig::CONFIG_FILE]);
+
+        $yaml = Yaml::dump($initConfig);
+        file_put_contents(ProjectConfig::CONFIG_FILE, $yaml);
+
+        $this->io->styledText('Done!');
+        $this->io->styledText('For more information about the config file, go check out the Waffle documentation!');
+        $this->io->highlightText('Here is a link: %s', [Waffle::DOCS_URL]);
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Helper method for checking for existing config.
+     *
+     * @return bool
+     */
+    private function hasExistingConfig()
+    {
+        try {
+            $projectConfig = $this->getConfig();
+            return true;
+        } catch (MissingConfigFileException $e) {
+            // Intentionally blank.
+        }
+
+        return false;
     }
 
     /**
