@@ -3,16 +3,16 @@
 namespace Waffle\Command\Command;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Waffle\Command\BaseCommand;
-use Waffle\Command\DiscoverableCommandInterface;
-use Waffle\Model\Config\ProjectConfig;
-use Symfony\Component\Console\Input\InputArgument;
-use Waffle\Exception\Config\MissingConfigFileException;
-use Waffle\Traits\ConfigTrait;
 use Symfony\Component\Yaml\Yaml;
 use Waffle\Application as Waffle;
+use Waffle\Command\BaseCommand;
+use Waffle\Command\DiscoverableCommandInterface;
+use Waffle\Exception\Config\MissingConfigFileException;
+use Waffle\Model\Config\ProjectConfig;
+use Waffle\Traits\ConfigTrait;
 
 class Init extends BaseCommand implements DiscoverableCommandInterface
 {

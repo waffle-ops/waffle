@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\SymfonyCli;
@@ -36,6 +37,24 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
      */
     protected $config;
 
+    /**
+     * @var CliHelper
+     */
+    protected $cliHelper;
+
+    /**
+     * Constructor
+     *
+     * @param CliHelper $cliHelper
+     */
+    public function __construct(CliHelper $cliHelper) {
+        $this->cliHelper = $cliHelper;
+        parent::__construct();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function configure()
     {
         $this->setName(self::COMMAND_KEY);

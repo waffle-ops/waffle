@@ -6,9 +6,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
 use Waffle\Exception\Config\MissingConfigFileException;
-use Waffle\Helper\CliHelper;
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
 
@@ -21,15 +19,6 @@ class BaseCommand extends Command
      * @var IOStyle
      */
     protected $io;
-
-    /**
-     * A reference to the project config.
-     *
-     * @todo Remove this from the base class and inject where needed.
-     *
-     * @var CliHelper
-     */
-    protected $cliHelper;
 
     /**
      * A boolean to indicate that this command is enabled.
@@ -46,7 +35,6 @@ class BaseCommand extends Command
     public function __construct(string $name = null)
     {
         $this->io = IO::getInstance()->getIO();
-        $this->cliHelper = new CliHelper($this->io);
 
         // We don't want to automatically load config for all commands. We can,
         // however assume they will attempt to load config in the configure()
@@ -68,16 +56,6 @@ class BaseCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-    }
-
-    /**
-     * Defines a utility function to dump all relevant process information for debugging.
-     *
-     * @param Process $process
-     */
-    protected function dumpProcess(Process $process)
-    {
-        $this->cliHelper->dumpProcess($process);
     }
 
     /**

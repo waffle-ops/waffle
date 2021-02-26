@@ -10,6 +10,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\Git;
@@ -121,14 +122,27 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
     protected $wp;
 
     /**
-     * A reference to the project config.
-     *
      * @var ProjectConfig
      */
     protected $config;
 
     /**
-     * @inheritDoc
+     * @var CliHelper
+     */
+    protected $cliHelper;
+
+    /**
+     * Constructor
+     *
+     * @param CliHelper $cliHelper
+     */
+    public function __construct(CliHelper $cliHelper) {
+        $this->cliHelper = $cliHelper;
+        parent::__construct();
+    }
+
+    /**
+     * {@inheritdoc}
      */
     protected function configure()
     {
@@ -403,7 +417,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
                 $pp_output = $this->cliHelper->getOutput($pp);
                 if (strpos($pp_output, 'There are no patches') === false) {
                     $this->io->error('Unable to reapply patch.');
-                    $this->dumpProcess($pp);
+                    $this->cliHelper->dumpProcess($pp);
                     exit(1);
                 }
             }
@@ -511,14 +525,14 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
         // We use the exit code for Composer since it outputs to both normal & error channels.
         if (!empty($update_process->getExitCode())) {
             $this->io->error('Composer update failed with error.');
-            $this->dumpProcess($update_process);
+            $this->cliHelper->dumpProcess($update_process);
             exit(1);
         }
 
         // Check to see if there was a patch that did not reapply cleanly.
         if (strpos($update_output, 'Could not apply patch!') !== false) {
             $this->io->error('Composer patching failed with error.');
-            $this->dumpProcess($update_process);
+            $this->cliHelper->dumpProcess($update_process);
             exit(1);
         }
 
