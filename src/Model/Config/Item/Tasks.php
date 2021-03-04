@@ -23,6 +23,7 @@ class Tasks extends BaseConfigItem
         parent::__construct(
             self::KEY,
             [
+                ConfigItemInterface::SCOPE_GLOBAL,
                 ConfigItemInterface::SCOPE_PROJECT,
                 ConfigItemInterface::SCOPE_LOCAL,
             ]
@@ -37,6 +38,7 @@ class Tasks extends BaseConfigItem
         $nodeBuilder = new NodeBuilder();
         return $nodeBuilder
             ->arrayNode(self::KEY)
+                ->useAttributeAsKey(self::KEY)
                 ->normalizeKeys(false)
                 ->scalarPrototype()->end();
     }

@@ -6,14 +6,14 @@ use Symfony\Component\Config\Definition\Builder\NodeBuilder;
 use Waffle\Model\Config\BaseConfigItem;
 use Waffle\Model\Config\ConfigItemInterface;
 
-class Recipes extends BaseConfigItem
+class Upstreams extends BaseConfigItem
 {
     /**
      * @var string
      *
      * The key for this config item.
      */
-    public const KEY = 'recipes';
+    public const KEY = 'upstreams';
 
     /**
      * Constructor
@@ -23,7 +23,6 @@ class Recipes extends BaseConfigItem
         parent::__construct(
             self::KEY,
             [
-                ConfigItemInterface::SCOPE_GLOBAL,
                 ConfigItemInterface::SCOPE_PROJECT,
                 ConfigItemInterface::SCOPE_LOCAL,
             ]
@@ -35,13 +34,8 @@ class Recipes extends BaseConfigItem
      */
     public function getDefinition()
     {
-        // TODO - This works, but does not provide any sort of real schema
-        // definition or validation.
+        // TODO -- This is a scalar for backwards compatability (for now).
         $nodeBuilder = new NodeBuilder();
-        return $nodeBuilder
-            ->arrayNode(self::KEY)
-                ->useAttributeAsKey(self::KEY)
-                ->normalizeKeys(false)
-                ->variablePrototype()->end();
+        return $nodeBuilder->scalarNode(self::KEY);
     }
 }

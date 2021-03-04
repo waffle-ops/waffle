@@ -61,7 +61,9 @@ class ConfigTreeService
     }
 
     /**
+     * Gets the global config definition.
      *
+     * @return TreeBuilder
      */
     public function getGlobalConfigDefinition()
     {
@@ -79,7 +81,9 @@ class ConfigTreeService
     }
 
     /**
+     * Gets the project config definition.
      *
+     * @return TreeBuilder
      */
     public function getProjectConfigDefinition()
     {
@@ -97,7 +101,9 @@ class ConfigTreeService
     }
 
     /**
+     * Gets the local config definition.
      *
+     * @return TreeBuilder
      */
     public function getLocalConfigDefinition()
     {
@@ -115,11 +121,13 @@ class ConfigTreeService
     }
 
     /**
+     * Gets the application config definition.
      *
+     * @return TreeBuilder
      */
     public function getApplicationConfigDefinition()
     {
-        $treeBuilder = new TreeBuilder('application');
+        $treeBuilder = new TreeBuilder(ConfigItemInterface::SCOPE_APPLICATION);
 
         $children = $treeBuilder->getRootNode()->children();
 

@@ -37,6 +37,16 @@ interface ConfigItemInterface
     ];
 
     /**
+     * @var string
+     *
+     * Constant for denoting the application scope.
+     *
+     * Note: This is specifically not included in ALLOWED_SCOPES as this will
+     * become the combined results of all valid scopes.
+     */
+    public const SCOPE_APPLICATION = 'application';
+
+    /**
      * The key of which this config item is associated with.
      *
      * @return string

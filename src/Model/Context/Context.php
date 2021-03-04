@@ -5,6 +5,13 @@ namespace Waffle\Model\Context;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Processor;
 use Waffle\Model\Config\ConfigTreeService;
+use Waffle\Model\Config\Item\Alias;
+use Waffle\Model\Config\Item\Cms;
+use Waffle\Model\Config\Item\DefaultUpstream;
+use Waffle\Model\Config\Item\Host;
+use Waffle\Model\Config\Item\Recipes;
+use Waffle\Model\Config\Item\Tasks;
+use Waffle\Model\Config\Item\Upstreams;
 
 class Context implements ConfigurationInterface
 {
@@ -73,5 +80,79 @@ class Context implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         return $this->configTreeService->getApplicationConfigDefinition();
+    }
+
+    /**
+     * Gets the the config item for the specified key.
+     *
+     * @return string|array
+     */
+    private function get($key)
+    {
+        if (isset($this->config[$key])) {
+            return $this->config[$key];
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the site alias as defined in the config file.
+     *
+     * @return string
+     */
+    public function getAlias()
+    {
+        return $this->get(Alias::KEY);
+    }
+
+    /**
+     * Gets the cms as defined in config.
+     *
+     * @return string
+     */
+    public function getCms()
+    {
+        return $this->get(Cms::KEY);
+    }
+
+    /**
+     * Gets the default upstream as defined in config.
+     *
+     * @return string
+     */
+    public function getDefaultUpstream()
+    {
+        return $this->get(DefaultUpstream::KEY);
+    }
+
+    /**
+     * Gets the host value as defined in config.
+     *
+     * @return string
+     */
+    public function getHost()
+    {
+        return $this->get(Host::KEY);
+    }
+
+    /**
+     * Gets the recipes as defined in config.
+     *
+     * @return string
+     */
+    public function getRecipes()
+    {
+        return $this->get(Recipes::KEY);
+    }
+
+    /**
+     * Gets the task as defined in config.
+     *
+     * @return string
+     */
+    public function getTasks()
+    {
+        return $this->get(Tasks::KEY);
     }
 }
