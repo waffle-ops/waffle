@@ -2,7 +2,7 @@
 
 namespace Waffle\Model\Context;
 
-use Waffle\Model\Config\LocalConfigLoader;
+use Waffle\Model\Config\Loader\LocalConfigLoader;
 
 class LocalContext extends BaseContext
 {

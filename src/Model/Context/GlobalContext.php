@@ -2,7 +2,7 @@
 
 namespace Waffle\Model\Context;
 
-use Waffle\Model\Config\GlobalConfigLoader;
+use Waffle\Model\Config\Loader\GlobalConfigLoader;
 
 class GlobalContext extends BaseContext
 {

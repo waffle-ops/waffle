@@ -2,7 +2,7 @@
 
 namespace Waffle\Model\Context;
 
-use Waffle\Model\Config\ProjectConfigLoader;
+use Waffle\Model\Config\Loader\ProjectConfigLoader;
 
 class ProjectContext extends BaseContext
 {

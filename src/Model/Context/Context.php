@@ -2,7 +2,11 @@
 
 namespace Waffle\Model\Context;
 
-class Context
+use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\Processor;
+use Waffle\Model\Config\ConfigTreeService;
+
+class Context implements ConfigurationInterface
 {
     /**
      * This is a wrapper class for the various types of contexts of which
@@ -21,19 +25,9 @@ class Context
      */
 
     /**
-     * @var GlobalContext
+     * @var ConfigTreeService
      */
-    protected $globalContext;
-
-    /**
-     * @var ProjectContext
-     */
-    protected $projectContext;
-
-    /**
-     * @var LocalContext
-     */
-    protected $localContext;
+    protected $configTreeService;
 
     /**
      * The combined config from all avaliable contexts.
@@ -45,55 +39,39 @@ class Context
     /**
      * Constructor
      *
+     * @param ConfigTreeService
      * @param GlobalContext
      * @param ProjectContext
      * @param LocalContext
      */
     public function __construct(
+        ConfigTreeService $configTreeService,
         GlobalContext $globalContext,
         ProjectContext $projectContext,
         LocalContext $localContext
     ) {
-        $this->globalContext = $globalContext;
-        $this->projectContext = $projectContext;
-        $this->localContext = $localContext;
 
-        $this->config = $this->buildConfig($globalContext, $projectContext, $localContext);
+        $this->configTreeService = $configTreeService;
+
+        $processor = new Processor();
+
+        $configs = [
+            $globalContext->getConfig(),
+            $projectContext->getConfig(),
+            $localContext->getConfig(),
+        ];
+
+        $this->config = $processor->processConfiguration(
+            $this,
+            $configs
+        );
     }
 
     /**
-     * Helper method to build the combined config array from all avaliable
-     * contexts.
-     *
-     * @param GlobalContext
-     * @param ProjectContext
-     * @param LocalContext
+     * {@inheritdoc}
      */
-    private function buildConfig(
-        GlobalContext $globalContext,
-        ProjectContext $projectContext,
-        LocalContext $localContext
-    ) {
-        // This works, but only for top level keys.
-        // Tasks, Recipes and anything else that is nested in the config file
-        // will need some extra love to make this work correctly.
-        // For now, I think this is good enough.
-
-        // Need to think more about what a globally defined task looks like.
-        // If a task that calls a local shell script:
-        //   Is it relative to the project?
-        //   Is it relative to the project global config path?
-
-        // Other options:
-        //   Perhaps we add a normalize() to the stored configs. The global normalize
-        //   could unset tasks and recipes for example.
-        //   Perhaps a validate() in the stored configs. Maybe not all config keys can
-        //   be overidden.
-
-        return array_merge(
-            $this->globalContext->getConfig(),
-            $this->projectContext->getConfig(),
-            $this->localContext->getConfig(),
-        );
+    public function getConfigTreeBuilder()
+    {
+        return $this->configTreeService->getApplicationConfigDefinition();
     }
 }
