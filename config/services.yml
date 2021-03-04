@@ -4,6 +4,8 @@ services:
     autoconfigure: true
 
   _instanceof:
+    Waffle\Model\Config\ConfigItemInterface:
+      tags: ['config_items']
     Waffle\Command\DiscoverableCommandInterface:
       tags: ['commands']
     Waffle\Command\DiscoverableTaskInterface:
@@ -17,6 +19,11 @@ services:
 
   Waffle\Application:
     public: true
+
+  Waffle\Model\Config\ConfigTreeService:
+    public: true
+    arguments:
+      - !tagged config_items
 
   Waffle\Model\Command\CommandManager:
     public: true
@@ -32,6 +39,3 @@ services:
     public: true
     arguments:
       - !tagged recipes
-
-
-

@@ -1,13 +1,16 @@
 <?php
 
-namespace Waffle\Model\Config;
+namespace Waffle\Model\Config\Loader;
 
 use Symfony\Component\Finder\Finder;
 use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Helper\WaffleHelper;
+use Waffle\Model\Config\BaseConfigLoader;
+use Waffle\Model\Config\ConfigTreeService;
 
 class GlobalConfigLoader extends BaseConfigLoader
 {
+
     /**
      * @var string
      *
@@ -21,12 +24,21 @@ class GlobalConfigLoader extends BaseConfigLoader
     protected $waffleHelper;
 
     /**
+     * @var ConfigTreeService
+     */
+    protected $configTreeService;
+
+    /**
      * Constructor
      *
+     * @param ConfigTreeService
      * @param WaffleHelper
      */
-    public function __construct(WaffleHelper $waffleHelper)
-    {
+    public function __construct(
+        ConfigTreeService $configTreeService,
+        WaffleHelper $waffleHelper
+    ) {
+        $this->configTreeService = $configTreeService;
         $this->waffleHelper = $waffleHelper;
     }
 
@@ -57,5 +69,13 @@ class GlobalConfigLoader extends BaseConfigLoader
         $file = $iterator->current();
 
         return $file->getRealPath();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfigTreeBuilder()
+    {
+        return $this->configTreeService->getGlobalConfigDefinition();
     }
 }

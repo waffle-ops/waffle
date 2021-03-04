@@ -2,9 +2,11 @@
 
 namespace Waffle\Model\Config;
 
+use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Yaml\Yaml;
 
-abstract class BaseConfigLoader implements ConfigLoaderInterface
+abstract class BaseConfigLoader implements ConfigLoaderInterface, ConfigurationInterface
 {
     /**
      * Loads the config file.
@@ -13,8 +15,11 @@ abstract class BaseConfigLoader implements ConfigLoaderInterface
      */
     public function load()
     {
-        $config = $this->getConfigFile();
-        return $this->project_config = Yaml::parseFile($config);
+        $configFile = $this->getConfigFile();
+        $rawConfig = Yaml::parseFile($configFile);
+        $processor = new Processor();
+        $config = $processor->processConfiguration($this, [$rawConfig]);
+        return $config;
     }
 
     /**
@@ -23,4 +28,9 @@ abstract class BaseConfigLoader implements ConfigLoaderInterface
      * @return string
      */
     abstract protected function getConfigFile();
+
+    /**
+     * {@inheritdoc}
+     */
+    abstract public function getConfigTreeBuilder();
 }

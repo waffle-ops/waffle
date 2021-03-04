@@ -1,19 +1,36 @@
 <?php
 
-namespace Waffle\Model\Config;
+namespace Waffle\Model\Config\Loader;
 
 use Symfony\Component\Finder\Finder;
 use Waffle\Exception\Config\AmbiguousConfigException;
 use Waffle\Exception\Config\MissingConfigFileException;
+use Waffle\Model\Config\BaseConfigLoader;
+use Waffle\Model\Config\ConfigTreeService;
 
-class ProjectConfigLoader extends BaseConfigLoader
+class LocalConfigLoader extends BaseConfigLoader
 {
     /**
      * @var string
      *
      * Constant for config file name.
      */
-    public const CONFIG_FILE = '.waffle.yml';
+    public const CONFIG_FILE = '.waffle.local.yml';
+
+    /**
+     * @var ConfigTreeService
+     */
+    protected $configTreeService;
+
+    /**
+     * Constructor
+     *
+     * @param ConfigTreeService
+     */
+    public function __construct(ConfigTreeService $configTreeService)
+    {
+        $this->configTreeService = $configTreeService;
+    }
 
     /**
      * Gets the project config path.
@@ -39,7 +56,7 @@ class ProjectConfigLoader extends BaseConfigLoader
             throw new MissingConfigFileException();
         }
 
-        // We should never have more than one project config.
+        // We should never have more than one local config.
         if ($finder->count() > 1) {
             throw new AmbiguousConfigException();
         }
@@ -49,5 +66,13 @@ class ProjectConfigLoader extends BaseConfigLoader
         $file = $iterator->current();
 
         return $file->getRealPath();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getConfigTreeBuilder()
+    {
+        return $this->configTreeService->getLocalConfigDefinition();
     }
 }
