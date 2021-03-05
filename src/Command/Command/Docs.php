@@ -10,6 +10,7 @@ use Waffle\Application as Waffle;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Helper\BrowserHelper;
+use Waffle\Model\Context\Context;
 
 class Docs extends BaseCommand implements DiscoverableCommandInterface
 {
@@ -23,12 +24,13 @@ class Docs extends BaseCommand implements DiscoverableCommandInterface
     /**
      * Constructor
      *
+     * @param Context $context
      * @param BrowserHelper $browserHelper
      */
-    public function __construct(BrowserHelper $browserHelper)
+    public function __construct(Context $context, BrowserHelper $browserHelper)
     {
         $this->browserHelper = $browserHelper;
-        parent::__construct();
+        parent::__construct($context);
     }
 
     /**

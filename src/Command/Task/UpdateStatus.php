@@ -14,6 +14,7 @@ use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\SymfonyCli;
 use Waffle\Model\Cli\Runner\WpCli;
 use Waffle\Model\Config\ProjectConfig;
+use Waffle\Model\Context\Context;
 use Waffle\Traits\ConfigTrait;
 
 class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
@@ -47,9 +48,10 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
      *
      * @param CliHelper $cliHelper
      */
-    public function __construct(CliHelper $cliHelper) {
+    public function __construct(Context $context, CliHelper $cliHelper)
+    {
         $this->cliHelper = $cliHelper;
-        parent::__construct();
+        parent::__construct($context);
     }
 
     /**

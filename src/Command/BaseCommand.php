@@ -7,11 +7,19 @@ use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Exception\Config\MissingConfigFileException;
+use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
 
 class BaseCommand extends Command
 {
+
+    /**
+     * Defines the Input/Output helper object.
+     *
+     * @var Command
+     */
+    protected $context;
 
     /**
      * Defines the Input/Output helper object.
@@ -32,8 +40,9 @@ class BaseCommand extends Command
      *
      * @throws LogicException When the command name is empty
      */
-    public function __construct(string $name = null)
+    public function __construct(Context $context, string $name = null)
     {
+        $this->context = $context;
         $this->io = IO::getInstance()->getIO();
 
         // We don't want to automatically load config for all commands. We can,
