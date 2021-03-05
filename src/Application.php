@@ -11,9 +11,9 @@ use Waffle\Helper\GitHubHelper;
 use Waffle\Helper\PharHelper;
 use Waffle\Helper\WaffleHelper;
 use Waffle\Model\Command\CommandLoader;
+use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
-use Waffle\Model\Validate\Preflight\PreflightValidator;
 
 class Application extends SymfonyApplication
 {
@@ -24,6 +24,11 @@ class Application extends SymfonyApplication
     public const REPOSITORY = 'waffle-ops/waffle';
 
     public const DOCS_URL = 'https://github.com/waffle-ops/waffle/wiki';
+
+    /**
+     * @var Context
+     */
+    private $context;
 
     /**
      * @var CommandLoader
@@ -44,11 +49,12 @@ class Application extends SymfonyApplication
      *
      * @param CommandLoader $commandLoader
      */
-    public function __construct(CommandLoader $commandLoader)
+    public function __construct(Context $context, CommandLoader $commandLoader)
     {
         parent::__construct(self::NAME, self::VERSION);
 
         $this->io = IO::getInstance()->getIO();
+        $this->context = $context;
         $this->commandLoader = $commandLoader;
 
         // Prevent auto exiting (so we can run extra code).
@@ -82,22 +88,12 @@ class Application extends SymfonyApplication
      */
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
-        $missing_config = false;
-
-        try {
-            $validator = new PreflightValidator();
-            $validator->runChecks();
-        } catch (MissingConfigFileException $e) {
-            $missing_config = true;
-        } catch (\Exception $e) {
-            $this->io->error($e->getMessage());
-        }
-
         $this->addCommands($this->commandLoader->getCommands());
 
         $exitCode = parent::run();
 
-        if ($missing_config) {
+        // TODO -- Consider absorbing this into the list command.
+        if (!$this->context->hasProjectConfig()) {
             $notice = [
                 'Looks like you are using Waffle without a .waffle.yml file!',
                 'To take full advantage of Waffle with your project, try running the \'init\' command.',

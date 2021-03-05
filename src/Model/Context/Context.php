@@ -37,6 +37,27 @@ class Context implements ConfigurationInterface
     protected $configTreeService;
 
     /**
+     * The config from the global context.
+     *
+     * @var array
+     */
+    protected $globalConfig;
+
+    /**
+     * The config from the project context.
+     *
+     * @var array
+     */
+    protected $projectConfig;
+
+    /**
+     * The config from the local context.
+     *
+     * @var array
+     */
+    protected $localConfig;
+
+    /**
      * The combined config from all avaliable contexts.
      *
      * @var array
@@ -60,12 +81,16 @@ class Context implements ConfigurationInterface
 
         $this->configTreeService = $configTreeService;
 
+        $this->globalConfig = $globalContext->getConfig();
+        $this->projectConfig = $projectContext->getConfig();
+        $this->localConfig = $localContext->getConfig();
+
         $processor = new Processor();
 
         $configs = [
-            $globalContext->getConfig(),
-            $projectContext->getConfig(),
-            $localContext->getConfig(),
+            $this->globalConfig,
+            $this->projectConfig,
+            $this->localConfig,
         ];
 
         $this->config = $processor->processConfiguration(
@@ -80,6 +105,26 @@ class Context implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         return $this->configTreeService->getApplicationConfigDefinition();
+    }
+
+    /**
+     * Checks if project config exists.
+     *
+     * @return bool
+     */
+    public function hasProjectConfig()
+    {
+        return !empty($this->projectConfig);
+    }
+
+    /**
+     * Checks if project config exists.
+     *
+     * @return bool
+     */
+    public function hasLocalConfig()
+    {
+        return !empty($this->localConfig);
     }
 
     /**

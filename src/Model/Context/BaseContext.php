@@ -2,6 +2,7 @@
 
 namespace Waffle\Model\Context;
 
+use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Model\Config\ConfigLoaderInterface;
 
 class BaseContext
