@@ -33,9 +33,11 @@ services:
   Waffle\Model\Command\TaskManager:
     public: true
     arguments:
+      - '@Waffle\Model\Context\Context'
       - !tagged tasks
 
   Waffle\Model\Command\RecipeManager:
     public: true
     arguments:
+      - '@Waffle\Model\Context\Context'
       - !tagged recipes

@@ -7,12 +7,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
-use Waffle\Traits\ConfigTrait;
 
 class Task extends BaseCommand
 {
-    use ConfigTrait;
-
     /**
      * {@inheritdoc}
      */
@@ -29,21 +26,12 @@ class Task extends BaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function initialize(InputInterface $input, OutputInterface $output)
-    {
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $config = $this->getConfig();
-
         // Note: The 'command' argument is defined by the Symfony Command class.
         $task_key = $input->getArgument('command');
 
-        $config_tasks = $config->getTasks() ?? [];
+        $config_tasks = $this->context->getTasks() ?? [];
         $task = isset($config_tasks[$task_key]) ? $config_tasks[$task_key] : '';
         $output->writeln('<info>Running task <comment>' . $task_key . '</comment>: "' . $task . '"</info>');
 
@@ -52,7 +40,7 @@ class Task extends BaseCommand
         // TODO: I'm not a huge fan of using the shell command line method.
         // Would be better id this used an input array.
         $process = Process::fromShellCommandline($task);
-        $process->setTimeout($config->getTimeout());
+        // $process->setTimeout($config->getTimeout()); // TODO This will need to be re-added.
         $process->run();
 
         // TODO Handle output. Can it be streamed? Or do we actually have to
