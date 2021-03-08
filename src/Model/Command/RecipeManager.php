@@ -3,7 +3,6 @@
 namespace Waffle\Model\Command;
 
 use Waffle\Command\Recipe;
-use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Model\Context\Context;
 
 class RecipeManager

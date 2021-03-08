@@ -5,7 +5,6 @@ namespace Waffle;
 use Symfony\Component\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Exception\UpdateCheckException;
 use Waffle\Helper\GitHubHelper;
 use Waffle\Helper\PharHelper;
