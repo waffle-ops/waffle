@@ -17,12 +17,9 @@ use Waffle\Model\Cli\Runner\Git;
 use Waffle\Model\Cli\Runner\WpCli;
 use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\Context\Context;
-use Waffle\Traits\ConfigTrait;
 
 class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
 {
-    use ConfigTrait;
-
     public const COMMAND_KEY = 'update-apply';
 
     /**
@@ -234,7 +231,6 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
 
         // Attempting to load config. Parent class will catch exception if we
         // are unable to load it.
-        $this->config = $this->getConfig();
     }
 
     /**

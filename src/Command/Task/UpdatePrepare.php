@@ -15,12 +15,9 @@ use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\Git;
 use Waffle\Model\Context\Context;
-use Waffle\Traits\ConfigTrait;
 
 class UpdatePrepare extends BaseCommand implements DiscoverableTaskInterface
 {
-    use ConfigTrait;
-
     public const COMMAND_KEY = 'update-prepare';
 
     /**
@@ -102,7 +99,6 @@ class UpdatePrepare extends BaseCommand implements DiscoverableTaskInterface
 
         // Attempting to load config. Parent class will catch exception if we
         // are unable to load it.
-        $this->config = $this->getConfig();
     }
 
     /**

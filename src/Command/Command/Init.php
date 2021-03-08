@@ -12,12 +12,9 @@ use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Model\Config\ProjectConfig;
-use Waffle\Traits\ConfigTrait;
 
 class Init extends BaseCommand implements DiscoverableCommandInterface
 {
-    use ConfigTrait;
-
     public const COMMAND_KEY = 'init';
 
     /**
@@ -83,14 +80,7 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
      */
     private function hasExistingConfig()
     {
-        try {
-            $projectConfig = $this->getConfig();
-            return true;
-        } catch (MissingConfigFileException $e) {
-            // Intentionally blank.
-        }
-
-        return false;
+        return $this->context->hasProjectConfig();
     }
 
     /**
