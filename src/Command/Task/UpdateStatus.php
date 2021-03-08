@@ -82,7 +82,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
 
         $this->symfonyCli = new SymfonyCli();
 
-        switch ($this->config->getCms()) {
+        switch ($this->context->getCms()) {
             case ProjectConfig::CMS_DRUPAL_8:
                 $this->drush = new Drush();
                 $this->generateDrupal8Report();
@@ -110,7 +110,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
     {
         $this->io->title('Generating Drupal 8 Update Reports');
 
-        if (empty($this->config->getComposerPath())) {
+        if (empty($this->context->getComposerPath())) {
             $this->io->warning('Unable to generate composer reports: Missing composer file.');
         } else {
             // @todo: Add a report on what packages are required by composer but not currently installed by Drupal
@@ -137,7 +137,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
     {
         $this->io->title('Generating Drupal 7 Update Reports');
 
-        if (!empty($this->config->getComposerPath())) {
+        if (!empty($this->context->getComposerPath())) {
             $this->generateComposerReport();
         }
 
@@ -186,7 +186,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
     {
         $this->io->title('Generating Wordpress Update Reports');
 
-        if (!empty($this->config->getComposerPath())) {
+        if (!empty($this->context->getComposerPath())) {
             $this->generateComposerReport();
         }
 

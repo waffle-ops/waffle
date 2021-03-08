@@ -147,7 +147,7 @@ class UpdatePrepare extends BaseCommand implements DiscoverableTaskInterface
 
         // @todo: Run local setup script or something like that here as optional step.
 
-        if (!empty($this->config->getComposerPath())) {
+        if (!empty($this->context->getComposerPath())) {
             $install = $this->composer->install();
             $this->cliHelper->outputOrFail($install, "Error installing composer dependencies.");
         }

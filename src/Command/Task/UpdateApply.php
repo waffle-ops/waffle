@@ -284,7 +284,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
             );
         }
 
-        switch ($this->config->getCms()) {
+        switch ($this->context->getCms()) {
             case ProjectConfig::CMS_DRUPAL_8:
                 $this->drush = new Drush();
                 $this->applyDrupal8Updates();
@@ -313,7 +313,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
     {
         $this->io->title('Applying Drupal 8 Pending Updates');
 
-        if (empty($this->config->getComposerPath())) {
+        if (empty($this->context->getComposerPath())) {
             $this->io->warning('Unable to apply pending composer updates: Missing composer file.');
         } else {
             $this->updateMinorComposerDependencies();
@@ -332,7 +332,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
     {
         $this->io->title('Applying Drupal 7 Pending Updates');
 
-        if (!empty($this->config->getComposerPath())) {
+        if (!empty($this->context->getComposerPath())) {
             $this->updateMinorComposerDependencies();
         }
 
@@ -593,7 +593,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
     {
         $this->io->title('Applying Wordpress Pending Updates');
 
-        if (!empty($this->config->getComposerPath())) {
+        if (!empty($this->context->getComposerPath())) {
             $this->updateMinorComposerDependencies();
         }
 

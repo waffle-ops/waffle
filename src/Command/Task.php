@@ -40,7 +40,7 @@ class Task extends BaseCommand
         // TODO: I'm not a huge fan of using the shell command line method.
         // Would be better id this used an input array.
         $process = Process::fromShellCommandline($task);
-        // $process->setTimeout($config->getTimeout()); // TODO This will need to be re-added.
+        $process->setTimeout($this->context->getTimeout());
         $process->run();
 
         // TODO Handle output. Can it be streamed? Or do we actually have to
