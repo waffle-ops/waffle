@@ -8,9 +8,40 @@ use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\BaseCliCommand;
 use Waffle\Model\Cli\BaseCliRunner;
 use Waffle\Model\Cli\WpCliCommand;
+use Waffle\Model\Cli\Factory\GenericCommandFactory;
+use Waffle\Model\Cli\Factory\WpCliCommandFactory;
+use Waffle\Model\Context\Context;
 
 class WpCli extends BaseCliRunner
 {
+    /**
+     * @var GenericCommandFactory
+     */
+    private $genericCommandFactory;
+
+    /**
+     * @var WpCliCommandFactory
+     */
+    private $wpCliCommandFactory;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param GenericCommandFactory $genericCommandFactory
+     * @param WpCliCommandFactory $wpCliCommandFactory
+     *
+     * @throws Exception
+     */
+    public function __construct(
+        Context $context,
+        GenericCommandFactory $genericCommandFactory,
+        WpCliCommandFactory $wpCliCommandFactory
+    ) {
+        $this->genericCommandFactory = $genericCommandFactory;
+        $this->wpCliCommandFactory = $wpCliCommandFactory;
+        parent::__construct($context);
+    }
 
     /**
      * Checks if WP CLI is installed.
@@ -22,7 +53,7 @@ class WpCli extends BaseCliRunner
     {
         // @todo: run this on construct and/or cache the result?
 
-        $command = new BaseCliCommand(['which', 'wp']);
+        $command = $this->genericCommandFactory->create(['which', 'wp']);
         $process = $command->getProcess();
         $cliHelper = new CliHelper();
         $output = $cliHelper->getOutput($process);
@@ -37,7 +68,7 @@ class WpCli extends BaseCliRunner
      */
     public function coreVersion(): string
     {
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'core',
                 'version',
@@ -59,7 +90,7 @@ class WpCli extends BaseCliRunner
     public function coreCheckUpdate($format = 'table'): Process
     {
         // @todo: table output is not showing table borders.
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'core',
                 'check-update',
@@ -81,7 +112,7 @@ class WpCli extends BaseCliRunner
     public function pluginListAvailable($format = 'table'): Process
     {
         // @todo: table output is not showing table borders.
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'plugin',
                 'list',
@@ -105,7 +136,7 @@ class WpCli extends BaseCliRunner
     public function themeListAvailable($format = 'table'): Process
     {
         // @todo: table output is not showing table borders.
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'theme',
                 'list',
@@ -165,7 +196,7 @@ class WpCli extends BaseCliRunner
             $args[] = "--version={$version}";
         }
 
-        $command = new WpCliCommand($args);
+        $command = $this->wpCliCommandFactory->create($args);
 
         return $command->getProcess();
     }
@@ -180,7 +211,7 @@ class WpCli extends BaseCliRunner
      */
     public function pluginUpdate($name): Process
     {
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'plugin',
                 'update',
@@ -201,7 +232,7 @@ class WpCli extends BaseCliRunner
      */
     public function themeUpdate($name): Process
     {
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'theme',
                 'update',
@@ -220,7 +251,7 @@ class WpCli extends BaseCliRunner
      */
     public function cacheFlush(): Process
     {
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'cache',
                 'flush',
@@ -238,7 +269,7 @@ class WpCli extends BaseCliRunner
      */
     public function updateDatabase(): Process
     {
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'core',
                 'update-db',
