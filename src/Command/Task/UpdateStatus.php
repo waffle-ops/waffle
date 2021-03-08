@@ -8,17 +8,22 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
-use Waffle\Model\Config\Item\Cms;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\SymfonyCli;
 use Waffle\Model\Cli\Runner\WpCli;
+use Waffle\Model\Config\Item\Cms;
 use Waffle\Model\Context\Context;
 
 class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
 {
     public const COMMAND_KEY = 'update-status';
+
+    /**
+     * @var CliHelper
+     */
+    protected $cliHelper;
 
     /**
      * @var Drush
@@ -31,18 +36,38 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
     protected $symfonyCli;
 
     /**
-     * @var CliHelper
+     * @var Composer
      */
-    protected $cliHelper;
+    protected $composer;
+
+    /**
+     * @var WpCli
+     */
+    protected $wp;
 
     /**
      * Constructor
      *
+     * @param Context $context
      * @param CliHelper $cliHelper
+     * @param Drush $drush
+     * @param SymfonyCli $symfonyCli
+     * @param Composer $composer
+     * @param WpCli $wp
      */
-    public function __construct(Context $context, CliHelper $cliHelper)
-    {
+    public function __construct(
+        Context $context,
+        CliHelper $cliHelper,
+        Drush $drush,
+        SymfonyCli $symfonyCli,
+        Composer $composer,
+        WpCli $wp
+    ) {
         $this->cliHelper = $cliHelper;
+        $this->drush = $drush;
+        $this->symfonyCli = $symfonyCli;
+        $this->composer = $composer;
+        $this->wp = $wp;
         parent::__construct($context);
     }
 
@@ -75,15 +100,11 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
     {
         parent::execute($input, $output);
 
-        $this->symfonyCli = new SymfonyCli();
-
         switch ($this->context->getCms()) {
-            case Cms::OPTION_DRUPAL_7:
-                $this->drush = new Drush();
+            case Cms::OPTION_DRUPAL_8:
                 $this->generateDrupal8Report();
                 break;
-            case Cms::OPTION_DRUPAL_8:
-                $this->drush = new Drush();
+            case Cms::OPTION_DRUPAL_7:
                 $this->generateDrupal7Report();
                 break;
             case Cms::OPTION_WORDPRESS:
@@ -150,16 +171,15 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
      */
     protected function generateComposerReport()
     {
-        $composer = new Composer();
         $this->cliHelper->message(
             'Checking minor version composer updates',
-            $composer->getMinorVersionUpdates()
+            $this->composer->getMinorVersionUpdates()
         );
 
         // @todo: low priority: this is only showing the 2nd grep command in output b/c of the grep filtering.
         $this->cliHelper->message(
             'Checking major version composer updates',
-            $composer->getMajorVersionUpdates()
+            $this->composer->getMajorVersionUpdates()
         );
 
         if (!$this->symfonyCli->isInstalled()) {
@@ -185,25 +205,24 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
             $this->generateComposerReport();
         }
 
-        $wp = new WpCli();
-        if (!$wp->isInstalled()) {
+        if (!$this->wp->isInstalled()) {
             $this->io->warning('Unable to generate Wordpress update report: Missing WP CLI installation.');
             return;
         }
 
         $this->cliHelper->message(
             'Check Wordpress core pending updates',
-            $wp->coreCheckUpdate()
+            $this->wp->coreCheckUpdate()
         );
 
         $this->cliHelper->message(
             'Checking plugin pending updates',
-            $wp->pluginListAvailable()
+            $this->wp->pluginListAvailable()
         );
 
         $this->cliHelper->message(
             'Checking theme pending updates',
-            $wp->themeListAvailable()
+            $this->wp->themeListAvailable()
         );
 
         // @todo: Possibly add WP CLI security scanning
