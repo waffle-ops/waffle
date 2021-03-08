@@ -4,6 +4,7 @@ namespace Waffle\Model\Context;
 
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Processor;
+use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Config\ConfigTreeService;
 use Waffle\Model\Config\Item\Alias;
 use Waffle\Model\Config\Item\Cms;
@@ -236,14 +237,17 @@ class Context implements ConfigurationInterface
         /**
          * @todo The code below is part of the previous implementation of this,
          * that needs to be re-implemented.
+         *
+         * See src/Model/Config/Item/ComposerPath.php
          */
 
-        // if (!$this->keyExists(self::KEY_COMPOSER_PATH)) {
-        //     // Attempt to derive the composer.json path.
-        //     $this->set(self::KEY_COMPOSER_PATH, $this->determineComposerPath());
-        // }
+        $path = $this->get(ComposerPath::KEY);
 
-        return $this->get(ComposerPath::KEY);
+        if (empty($path)) {
+            $path = Composer::determineComposerPath();
+        }
+
+        return $path;
     }
 
     /**
@@ -255,6 +259,13 @@ class Context implements ConfigurationInterface
      */
     public function getCommandPrefix()
     {
+        /**
+         * @todo The code below is part of the previous implementation of this,
+         * that needs to be re-implemented.
+         *
+         * See src/Model/Config/Item/CommandPrefix.php
+         */
+
         return $this->get(CommandPrefix::KEY);
     }
 
@@ -272,13 +283,17 @@ class Context implements ConfigurationInterface
         /**
          * @todo The code below is part of the previous implementation of this,
          * that needs to be re-implemented.
+         *
+         * See src/Model/Config/Item/LocalSettingFilename.php
          */
 
-        // if (!$this->keyExists(self::KEY_LOCAL_SETTINGS_FILENAME)) {
-        //     $this->set(self::KEY_LOCAL_SETTINGS_FILENAME, 'settings.local.php');
-        // }
+        $file = $this->get(LocalSettingsFilename::KEY);
 
-        return $this->get(LocalSettingsFilename::KEY);
+        if (empty($file)) {
+            $time = 'settings.local.php';
+        }
+
+        return $file;
     }
 
     /**
@@ -293,12 +308,16 @@ class Context implements ConfigurationInterface
         /**
          * @todo The code below is part of the previous implementation of this,
          * that needs to be re-implemented.
+         *
+         * See src/Model/Config/Item/Timeout.php
          */
 
-        // if (!$this->keyExists(self::KEY_TIMEOUT)) {
-        //     $this->set(self::KEY_TIMEOUT, 300);
-        // }
+        $time = $this->get(Timeout::KEY);
 
-        return $this->get(Timeout::KEY);
+        if (empty($time)) {
+            $time = 300;
+        }
+
+        return $time;
     }
 }

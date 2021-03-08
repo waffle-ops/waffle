@@ -136,4 +136,29 @@ class Composer extends BaseCliRunner
 
         return $command->getProcess();
     }
+
+    /**
+     * Gets the composer.json path.
+     *
+     * @return string
+     */
+    public static function determineComposerPath()
+    {
+        // @todo: use Finder here instead.
+        $cwd = getcwd();
+
+        // Current directory.
+        $composer_path = $cwd . '/composer.json';
+        if (file_exists($composer_path)) {
+            return './';
+        }
+
+        // Parent directory.
+        $composer_path = $cwd . '/../composer.json';
+        if (file_exists($composer_path)) {
+            return '../';
+        }
+
+        return false;
+    }
 }
