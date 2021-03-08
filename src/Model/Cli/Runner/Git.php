@@ -6,10 +6,32 @@ use Exception;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\BaseCliRunner;
-use Waffle\Model\Cli\GitCommand;
+use Waffle\Model\Cli\Factory\GitCommandFactory;
+use Waffle\Model\Context\Context;
 
 class Git extends BaseCliRunner
 {
+
+    /**
+     * @var GitCommandFactory
+     */
+    private $gitCommandFactory;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param GitCommandFactory $gitCommandFactory
+     *
+     * @throws Exception
+     */
+    public function __construct(
+        Context $context,
+        GitCommandFactory $gitCommandFactory
+    ) {
+        $this->gitCommandFactory = $gitCommandFactory;
+        parent::__construct($context);
+    }
 
     /**
      * Adds all pending changes to index.
@@ -19,7 +41,7 @@ class Git extends BaseCliRunner
      */
     public function addAll(): Process
     {
-        $command = new GitCommand(['add', '-A']);
+        $command = $this->gitCommandFactory->create(['add', '-A']);
         return $command->getProcess();
     }
 
@@ -31,7 +53,7 @@ class Git extends BaseCliRunner
      */
     public function statusShort(): Process
     {
-        $command = new GitCommand(['status', '--short']);
+        $command = $this->gitCommandFactory->create(['status', '--short']);
         return $command->getProcess();
     }
 
@@ -62,7 +84,7 @@ class Git extends BaseCliRunner
             throw new Exception('Git commit message is required.');
         }
 
-        $command = new GitCommand(['commit', "--message={$message}"]);
+        $command = $this->gitCommandFactory->create(['commit', "--message={$message}"]);
         return $command->getProcess();
     }
 
@@ -102,7 +124,7 @@ class Git extends BaseCliRunner
             $args[] = $branch;
         }
 
-        $command = new GitCommand($args);
+        $command = $this->gitCommandFactory->create($args);
         return $command->getProcess();
     }
 
@@ -127,7 +149,7 @@ class Git extends BaseCliRunner
         }
         $args[] = $branch;
 
-        $command = new GitCommand($args);
+        $command = $this->gitCommandFactory->create($args);
         return $command->getProcess();
     }
 
@@ -139,7 +161,7 @@ class Git extends BaseCliRunner
      */
     public function fetch(): Process
     {
-        $command = new GitCommand(['fetch']);
+        $command = $this->gitCommandFactory->create(['fetch']);
         return $command->getProcess();
     }
 
@@ -151,7 +173,7 @@ class Git extends BaseCliRunner
      */
     public function hasUpstreamPending(): bool
     {
-        $command = new GitCommand(['rev-list', 'HEAD...', '--count']);
+        $command = $this->gitCommandFactory->create(['rev-list', 'HEAD...', '--count']);
         $process = $command->getProcess();
         $cliHelper = new CliHelper();
         $output = (int) $cliHelper->getOutput($process);
@@ -166,7 +188,7 @@ class Git extends BaseCliRunner
      */
     public function getCurrentBranch(): string
     {
-        $command = new GitCommand(['branch', '--show-current']);
+        $command = $this->gitCommandFactory->create(['branch', '--show-current']);
         $process = $command->getProcess();
         $cliHelper = new CliHelper();
         return trim($cliHelper->getOutput($process));
