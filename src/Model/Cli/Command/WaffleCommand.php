@@ -2,7 +2,7 @@
 
 namespace Waffle\Model\Cli\Command;
 
-use Waffle\Model\Cli\Command\BaseCliCommand;
+use Waffle\Model\Cli\BaseCliCommand;
 
 class WaffleCommand extends BaseCliCommand
 {
