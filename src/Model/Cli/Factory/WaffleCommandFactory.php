@@ -21,6 +21,7 @@ class WaffleCommandFactory extends BaseCliCommandFactory
      */
     public function __construct(Context $context)
     {
+        $this->context = $context;
         parent::__construct($context);
     }
 

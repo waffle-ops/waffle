@@ -12,14 +12,36 @@ use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Helper\CliHelper;
-use Waffle\Model\Cli\WaffleCommand;
+use Waffle\Model\Cli\Factory\WaffleCommandFactory;
 use Waffle\Model\Config\Loader\ProjectConfigLoader;
+use Waffle\Model\Context\Context;
 
 class Iterate extends BaseCommand implements DiscoverableCommandInterface
 {
     public const COMMAND_KEY = 'iterate';
 
     private $processes = [];
+
+     /**
+     * @var WaffleCommandFactory
+     */
+    private $waffleCommandFactory;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param WaffleCommandFactory $waffleCommandFactory
+     *
+     * @throws Exception
+     */
+    public function __construct(
+        Context $context,
+        WaffleCommandFactory $waffleCommandFactory
+    ) {
+        $this->waffleCommandFactory = $waffleCommandFactory;
+        parent::__construct($context);
+    }
 
     protected function configure()
     {
@@ -147,7 +169,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
     {
         // This is super basic and may need to be updated to support
         // arguments and options.
-        $wfl_cmd = new WaffleCommand([$cmd]);
+        $wfl_cmd = $this->waffleCommandFactory->create([$cmd]);
         $process = $wfl_cmd->getProcess();
         $process->setWorkingDirectory($path);
         return $process;
