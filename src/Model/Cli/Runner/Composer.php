@@ -4,12 +4,42 @@ namespace Waffle\Model\Cli\Runner;
 
 use Exception;
 use Symfony\Component\Process\Process;
-use Waffle\Model\Cli\BaseCliCommand;
 use Waffle\Model\Cli\BaseCliRunner;
-use Waffle\Model\Cli\ComposerCommand;
+use Waffle\Model\Cli\Factory\ComposerCommandFactory;
+use Waffle\Model\Cli\Factory\GenericCommandFactory;
+use Waffle\Model\Context\Context;
 
 class Composer extends BaseCliRunner
 {
+
+    /**
+     * @var ComposerCommandFactory
+     */
+    private $composerCommandFactory;
+
+    /**
+     * @var GenericCommandFactory
+     */
+    private $genericCommandFactory;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param ComposerCommandFactory $composerCommandFactory
+     * @param GenericCommandFactory $genericCommandFactory
+     *
+     * @throws Exception
+     */
+    public function __construct(
+        Context $context,
+        ComposerCommandFactory $composerCommandFactory,
+        GenericCommandFactory $genericCommandFactory
+    ) {
+        $this->composerCommandFactory = $composerCommandFactory;
+        $this->genericCommandFactory = $genericCommandFactory;
+        parent::__construct($context);
+    }
 
     /**
      * Runs composer outdated to retrieve only minor version updates.
@@ -26,7 +56,7 @@ class Composer extends BaseCliRunner
             $directory = $this->context->getComposerPath();
         }
 
-        $command = new ComposerCommand(
+        $command = $this->composerCommandFactory->create(
             [
                 'outdated',
                 '-Dmn',
@@ -55,7 +85,7 @@ class Composer extends BaseCliRunner
             $directory = $this->context->getComposerPath();
         }
 
-        $command = new ComposerCommand(
+        $command = $this->composerCommandFactory->create(
             [
                 'outdated',
                 '-Dn',
@@ -71,7 +101,7 @@ class Composer extends BaseCliRunner
         $output = $process->getOutput();
 
         // Filter out non-major updates.
-        $command = new BaseCliCommand(['grep', '-v', '!']);
+        $command = $this->genericCommandFactory->create(['grep', '-v', '!']);
         $process = $command->getProcess();
         $process->setInput($output);
 
@@ -100,7 +130,7 @@ class Composer extends BaseCliRunner
             $directory = $this->context->getComposerPath();
         }
 
-        $command = new ComposerCommand(
+        $command = $this->composerCommandFactory->create(
             [
                 'update',
                 '--with-dependencies',
@@ -128,7 +158,7 @@ class Composer extends BaseCliRunner
      */
     public function install(): Process
     {
-        $command = new ComposerCommand(
+        $command = $this->composerCommandFactory->create(
             [
                 'install',
             ]

@@ -3,10 +3,10 @@
 namespace Waffle\Model\Cli\Factory;
 
 use Waffle\Model\Cli\BaseCliCommandFactory;
-use Waffle\Model\Cli\Command\SymfonyCommand;
+use Waffle\Model\Cli\Command\SymfonyCliCommand;
 use Waffle\Model\Context\Context;
 
-class SymfonyCommandFactory extends BaseCliCommandFactory
+class SymfonyCliCommandFactory extends BaseCliCommandFactory
 {
 
     /**
@@ -33,6 +33,6 @@ class SymfonyCommandFactory extends BaseCliCommandFactory
      */
     public function create(array $args)
     {
-        return new SymfonyCommand($this->context, $args);
+        return new SymfonyCliCommand($this->context, $args);
     }
 }
