@@ -2,7 +2,7 @@
 
 namespace Waffle\Model\Site\Sync;
 
-use Waffle\Model\Config\ProjectConfig;
+use Waffle\Model\Config\Item\Cms;
 
 class SiteSyncFactory
 {
@@ -15,8 +15,8 @@ class SiteSyncFactory
     public function getSiteSyncAdapter($cms)
     {
         switch ($cms) {
-            case ProjectConfig::CMS_DRUPAL_7:
-            case ProjectConfig::CMS_DRUPAL_8:
+            case Cms::OPTION_DRUPAL_7:
+            case Cms::OPTION_DRUPAL_8:
                 return new DrushSiteSync();
 
             default:
