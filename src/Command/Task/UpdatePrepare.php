@@ -52,11 +52,6 @@ class UpdatePrepare extends BaseCommand implements DiscoverableTaskInterface
     protected $composer;
 
     /**
-     * @var ProjectConfig
-     */
-    protected $config;
-
-    /**
      * @var CliHelper
      */
     protected $cliHelper;

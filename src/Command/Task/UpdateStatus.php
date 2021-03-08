@@ -8,12 +8,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Model\Config\Item\Cms;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\SymfonyCli;
 use Waffle\Model\Cli\Runner\WpCli;
-use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\Context\Context;
 
 class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
@@ -29,11 +29,6 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
      * @var SymfonyCli
      */
     protected $symfonyCli;
-
-    /**
-     * @var ProjectConfig
-     */
-    protected $config;
 
     /**
      * @var CliHelper
@@ -83,15 +78,15 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
         $this->symfonyCli = new SymfonyCli();
 
         switch ($this->context->getCms()) {
-            case ProjectConfig::CMS_DRUPAL_8:
+            case Cms::OPTION_DRUPAL_7:
                 $this->drush = new Drush();
                 $this->generateDrupal8Report();
                 break;
-            case ProjectConfig::CMS_DRUPAL_7:
+            case Cms::OPTION_DRUPAL_8:
                 $this->drush = new Drush();
                 $this->generateDrupal7Report();
                 break;
-            case ProjectConfig::CMS_WORDPRESS:
+            case Cms::OPTION_WORDPRESS:
                 $this->generateWordpressReport();
                 break;
             default:

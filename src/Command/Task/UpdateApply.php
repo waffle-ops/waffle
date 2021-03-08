@@ -10,12 +10,12 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Model\Config\Item\Cms;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\Git;
 use Waffle\Model\Cli\Runner\WpCli;
-use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\Context\Context;
 
 class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
@@ -118,11 +118,6 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
      * @var WpCli
      */
     protected $wp;
-
-    /**
-     * @var ProjectConfig
-     */
-    protected $config;
 
     /**
      * @var CliHelper
@@ -285,15 +280,15 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
         }
 
         switch ($this->context->getCms()) {
-            case ProjectConfig::CMS_DRUPAL_8:
+            case Cms::OPTION_DRUPAL_8:
                 $this->drush = new Drush();
                 $this->applyDrupal8Updates();
                 break;
-            case ProjectConfig::CMS_DRUPAL_7:
+            case Cms::OPTION_DRUPAL_7:
                 $this->drush = new Drush();
                 $this->applyDrupal7Updates();
                 break;
-            case ProjectConfig::CMS_WORDPRESS:
+            case Cms::OPTION_WORDPRESS:
                 $this->wp = new WpCli();
                 $this->applyWordpressUpdates();
                 break;
