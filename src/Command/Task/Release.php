@@ -7,16 +7,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
-use Waffle\Model\Config\ProjectConfig;
 
 class Release extends BaseCommand implements DiscoverableTaskInterface
 {
     public const COMMAND_KEY = 'release-script';
-
-    /**
-     * @var ProjectConfig
-     */
-    protected $config;
 
     protected function configure()
     {

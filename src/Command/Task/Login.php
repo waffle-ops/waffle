@@ -7,17 +7,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
-use Waffle\Model\Config\ProjectConfig;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 
 class Login extends BaseCommand implements DiscoverableTaskInterface
 {
     public const COMMAND_KEY = 'login';
-
-    /**
-     * @var ProjectConfig
-     */
-    protected $config;
 
     protected function configure()
     {
