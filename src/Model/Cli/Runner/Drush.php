@@ -8,6 +8,7 @@ use Symfony\Component\Process\Process;
 use Waffle\Model\Cli\Factory\DrushCommandFactory;
 use Waffle\Helper\WaffleHelper;
 use Waffle\Model\Cli\BaseCliRunner;
+use Waffle\Model\Config\Item\Cms;
 use Waffle\Model\Context\Context;
 
 class Drush extends BaseCliRunner
@@ -55,10 +56,21 @@ class Drush extends BaseCliRunner
         WaffleHelper $waffleHelper,
         DrushCommandFactory $drushCommandFactory
     ) {
+        // Need to call the parent constructor first as we need to set $context.
         parent::__construct($context);
-
         $this->waffleHelper = $waffleHelper;
         $this->drushCommandFactory = $drushCommandFactory;
+
+        // Exiting early if the context does not apply. This is necessary
+        // because we are using DI, but not using lazy loading on the commands.
+        $validCms = [
+            Cms::OPTION_DRUPAL_7,
+            Cms::OPTION_DRUPAL_8,
+        ];
+
+        if (!in_array($this->context->getCms(), $validCms)) {
+            return;
+        }
 
         // Calling 'drush status --format=json' will give us a json blob that
         // we can parse to get info about the site.
