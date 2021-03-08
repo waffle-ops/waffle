@@ -5,19 +5,12 @@ namespace Waffle\Model\Cli\Runner;
 use Exception;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
+use Waffle\Model\Cli\BaseCliRunner;
 use Waffle\Model\Cli\GitCommand;
 
-class Git extends BaseRunner
+class Git extends BaseCliRunner
 {
-    
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-    
+
     /**
      * Adds all pending changes to index.
      *
@@ -29,7 +22,7 @@ class Git extends BaseRunner
         $command = new GitCommand(['add', '-A']);
         return $command->getProcess();
     }
-    
+
     /**
      * Check git status.
      *
@@ -41,7 +34,7 @@ class Git extends BaseRunner
         $command = new GitCommand(['status', '--short']);
         return $command->getProcess();
     }
-    
+
     /**
      * Check if current git repo has any pending uncommitted changes.
      *
@@ -54,7 +47,7 @@ class Git extends BaseRunner
         $process->run();
         return !empty($process->getOutput());
     }
-    
+
     /**
      * Commit staged changes.
      *
@@ -68,11 +61,11 @@ class Git extends BaseRunner
         if (empty($message)) {
             throw new Exception('Git commit message is required.');
         }
-        
+
         $command = new GitCommand(['commit', "--message={$message}"]);
         return $command->getProcess();
     }
-    
+
     /**
      * Check if a branch exists locally.
      *
@@ -86,14 +79,14 @@ class Git extends BaseRunner
         if (empty($branch)) {
             return false;
         }
-        
+
         $process = $this->branchList($branch);
         $cliHelper = new CliHelper();
         $output = $cliHelper->getOutput($process);
-        
+
         return strpos($output, $branch) !== false;
     }
-    
+
     /**
      * Get a list of local git branches.
      *
@@ -108,11 +101,11 @@ class Git extends BaseRunner
         if (!empty($branch)) {
             $args[] = $branch;
         }
-        
+
         $command = new GitCommand($args);
         return $command->getProcess();
     }
-    
+
     /**
      * Checkout a branch.
      *
@@ -127,17 +120,17 @@ class Git extends BaseRunner
         if (empty($branch)) {
             throw new Exception('Git branch name is required.');
         }
-        
+
         $args = ['checkout'];
         if ($isNew) {
             $args[] = '-b';
         }
         $args[] = $branch;
-        
+
         $command = new GitCommand($args);
         return $command->getProcess();
     }
-    
+
     /**
      * Fetch from upstreams.
      *
@@ -149,7 +142,7 @@ class Git extends BaseRunner
         $command = new GitCommand(['fetch']);
         return $command->getProcess();
     }
-    
+
     /**
      * Check if there are pending commits that should be pulled down.
      *
@@ -164,7 +157,7 @@ class Git extends BaseRunner
         $output = (int) $cliHelper->getOutput($process);
         return !empty($output);
     }
-    
+
     /**
      * Get the name of the current branch.
      *

@@ -6,18 +6,12 @@ use Exception;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\BaseCliCommand;
+use Waffle\Model\Cli\BaseCliRunner;
 use Waffle\Model\Cli\WpCliCommand;
 
-class WpCli extends BaseRunner
+class WpCli extends BaseCliRunner
 {
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-    
+
     /**
      * Checks if WP CLI is installed.
      *
@@ -27,14 +21,14 @@ class WpCli extends BaseRunner
     public function isInstalled(): bool
     {
         // @todo: run this on construct and/or cache the result?
-        
+
         $command = new BaseCliCommand(['which', 'wp']);
         $process = $command->getProcess();
         $cliHelper = new CliHelper();
         $output = $cliHelper->getOutput($process);
         return !empty($output);
     }
-    
+
     /**
      * Gets the current WP core version.
      *
@@ -49,11 +43,11 @@ class WpCli extends BaseRunner
                 'version',
             ]
         );
-        
+
         $cliHelper = new CliHelper();
         return trim($cliHelper->getOutput($command->getProcess(), true, false));
     }
-    
+
     /**
      * Checks for any updates for Wordpress core.
      *
@@ -72,10 +66,10 @@ class WpCli extends BaseRunner
                 "--format={$format}",
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Gets a list of available plugin updates.
      *
@@ -96,10 +90,10 @@ class WpCli extends BaseRunner
                 "--format={$format}",
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Gets a list of available theme updates.
      *
@@ -120,12 +114,12 @@ class WpCli extends BaseRunner
                 "--format={$format}",
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     //wp theme list --fields="name,status,version,update_version" --update="available"
-    
+
     /**
      * Updates core, plugin, or theme.
      *
@@ -150,8 +144,8 @@ class WpCli extends BaseRunner
         }
         return false;
     }
-    
-    
+
+
     /**
      * Updates Wordpress core.
      *
@@ -166,16 +160,16 @@ class WpCli extends BaseRunner
             'core',
             'update',
         ];
-        
+
         if (!empty($version)) {
             $args[] = "--version={$version}";
         }
-        
+
         $command = new WpCliCommand($args);
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Updates a Wordpress plugin by name.
      *
@@ -193,10 +187,10 @@ class WpCli extends BaseRunner
                 $name,
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Updates a Wordpress theme by name.
      *
@@ -214,10 +208,10 @@ class WpCli extends BaseRunner
                 $name,
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Clears the Wordpress cache.
      *
@@ -232,10 +226,10 @@ class WpCli extends BaseRunner
                 'flush',
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Updates Wordpress database.
      *
@@ -250,7 +244,7 @@ class WpCli extends BaseRunner
                 'update-db',
             ]
         );
-        
+
         return $command->getProcess();
     }
 }

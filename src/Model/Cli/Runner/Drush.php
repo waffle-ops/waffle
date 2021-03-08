@@ -6,9 +6,11 @@ use Exception;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\WaffleHelper;
+use Waffle\Model\Cli\BaseCliRunner;
 use Waffle\Model\Cli\DrushCommand;
+use Waffle\Model\Context\Context;
 
-class Drush extends BaseRunner
+class Drush extends BaseCliRunner
 {
 
     /**
@@ -37,13 +39,15 @@ class Drush extends BaseRunner
     private $waffleHelper;
 
     /**
-     *  Constructor
+     * Constructor
+     *
+     * @param Context $context
      *
      * @throws Exception
      */
-    public function __construct()
+    public function __construct(Context $context)
     {
-        parent::__construct();
+        parent::__construct($context);
 
         $this->waffleHelper = new WaffleHelper();
 
@@ -410,7 +414,7 @@ class Drush extends BaseRunner
         $finder = new Finder();
         $finder->files();
         $finder->in(getcwd());
-        $filename = $this->config->getLocalSettingsFilename();
+        $filename = $this->context->getLocalSettingsFilename();
         $finder->name($filename);
 
         if ($finder->hasResults()) {

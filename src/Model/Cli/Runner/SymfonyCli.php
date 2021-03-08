@@ -6,18 +6,12 @@ use Exception;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\BaseCliCommand;
+use Waffle\Model\Cli\BaseCliRunner;
 use Waffle\Model\Cli\SymfonyCliCommand;
 
-class SymfonyCli extends BaseRunner
+class SymfonyCli extends BaseCliRunner
 {
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-    
+
     /**
      * Checks if symfony CLI is installed.
      *
@@ -27,14 +21,14 @@ class SymfonyCli extends BaseRunner
     public function isInstalled(): bool
     {
         // @todo: run this on construct and/or cache the result?
-        
+
         $command = new BaseCliCommand(['which', 'symfony']);
         $process = $command->getProcess();
         $cliHelper = new CliHelper();
         $output = $cliHelper->getOutput($process);
         return !empty($output);
     }
-    
+
     /**
      * Runs security:check for a composer.lock.
      *
@@ -46,16 +40,16 @@ class SymfonyCli extends BaseRunner
     public function securityCheck($directory = ''): Process
     {
         if (empty($directory)) {
-            $directory = $this->config->getComposerPath();
+            $directory = $this->context->getComposerPath();
         }
-        
+
         $command = new SymfonyCliCommand(
             [
                 'security:check',
                 '--dir=' . $directory,
             ]
         );
-        
+
         return $command->getProcess();
     }
 }

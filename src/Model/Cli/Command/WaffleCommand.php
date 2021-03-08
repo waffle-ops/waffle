@@ -1,21 +1,20 @@
 <?php
 
-namespace Waffle\Model\Cli;
+namespace Waffle\Model\Cli\Command;
 
-use Exception;
+use Waffle\Model\Cli\Command\BaseCliCommand;
 
 class WaffleCommand extends BaseCliCommand
 {
 
     /**
      * {@inheritdoc}
-     * @throws Exception
      */
-    public function __construct(array $args)
+    public function __construct(ontext $context, array $args)
     {
         global $argv;
         $waffle_bin = realpath($argv[0]);
         array_unshift($args, $waffle_bin);
-        parent::__construct($args);
+        parent::__construct($context, $args);
     }
 }
