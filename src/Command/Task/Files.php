@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Model\Context\Context;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\DefaultUpstreamTrait;
 
@@ -16,6 +17,25 @@ class Files extends BaseCommand implements DiscoverableTaskInterface
     use DefaultUpstreamTrait;
 
     public const COMMAND_KEY = 'sync-files';
+
+    /**
+     * @var SiteSyncFactory
+     */
+    protected $siteSyncFactory;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param SiteSyncFactory $siteSyncFactory
+     */
+    public function __construct(
+        Context $context,
+        SiteSyncFactory $siteSyncFactory
+    ) {
+        $this->siteSyncFactory = $siteSyncFactory;
+        parent::__construct($context);
+    }
 
     protected function configure()
     {
@@ -56,8 +76,7 @@ class Files extends BaseCommand implements DiscoverableTaskInterface
         $remote_alias = sprintf('@%s.%s:%%files/', $this->context->getAlias(), $upstream);
 
         try {
-            $factory = new SiteSyncFactory();
-            $sync = $factory->getSiteSyncAdapter($this->context->getCms());
+            $sync = $this->siteSyncFactory->getSiteSyncAdapter($this->context->getCms());
             $sync->syncFiles($remote_alias);
             $this->io->success('Files Sync');
         } catch (\Exception $e) {

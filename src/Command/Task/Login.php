@@ -7,11 +7,31 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Model\Context\Context;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 
 class Login extends BaseCommand implements DiscoverableTaskInterface
 {
     public const COMMAND_KEY = 'login';
+
+    /**
+     * @var SiteSyncFactory
+     */
+    protected $siteSyncFactory;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param SiteSyncFactory $siteSyncFactory
+     */
+    public function __construct(
+        Context $context,
+        SiteSyncFactory $siteSyncFactory
+    ) {
+        $this->siteSyncFactory = $siteSyncFactory;
+        parent::__construct($context);
+    }
 
     protected function configure()
     {
@@ -28,8 +48,7 @@ class Login extends BaseCommand implements DiscoverableTaskInterface
         parent::execute($input, $output);
 
         try {
-            $factory = new SiteSyncFactory();
-            $sync = $factory->getSiteSyncAdapter($this->context->getCms());
+            $sync = $this->siteSyncFactory->getSiteSyncAdapter($this->context->getCms());
             $process = $sync->postSyncLogin();
             $url = $process->getOutput();
             $this->io->success(sprintf('User Login: %s', $url));

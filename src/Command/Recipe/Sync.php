@@ -9,6 +9,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableRecipeInterface;
+use Waffle\Command\Task\Db;
+use Waffle\Command\Task\Files;
+use Waffle\Command\Task\Login;
+use Waffle\Command\Task\Release;
 use Waffle\Traits\DefaultUpstreamTrait;
 
 class Sync extends BaseCommand implements DiscoverableRecipeInterface

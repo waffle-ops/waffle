@@ -2,6 +2,7 @@ services:
   _defaults:
     autowire: true
     autoconfigure: true
+    public: false
 
   _instanceof:
     Waffle\Model\Config\ConfigItemInterface:
@@ -12,6 +13,12 @@ services:
       tags: ['tasks']
     Waffle\Command\DiscoverableRecipeInterface:
       tags: ['recipes']
+
+  di_helper:
+    public: true
+    class: 'Waffle\Helper\DiHelper'
+    calls:
+        - [ setContainer, [ '@service_container' ]]
 
   Waffle\:
     lazy: true
@@ -41,3 +48,15 @@ services:
     arguments:
       - '@Waffle\Model\Context\Context'
       - !tagged recipes
+
+  # This gets access to the DiHelper so we can avoid loading services we don't
+  # need.
+  Waffle\Model\Site\Sync\SiteSyncFactory:
+    public: true
+    arguments:
+      - '@di_helper'
+
+  # Need to define this as public so it can be pulled from the container at
+  # runtime.
+  Waffle\Model\Site\Sync\DrushSiteSync:
+    public: true
