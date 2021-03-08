@@ -13,7 +13,7 @@ use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\WaffleCommand;
-use Waffle\Model\Config\ProjectConfig;
+use Waffle\Model\Config\Loader\ProjectConfigLoader;
 
 class Iterate extends BaseCommand implements DiscoverableCommandInterface
 {
@@ -127,7 +127,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         $finder->files();
         $finder->in($directory);
         $finder->depth('<= ' . $max_depth);
-        $finder->name(ProjectConfig::CONFIG_FILE);
+        $finder->name(ProjectConfigLoader::CONFIG_FILE);
 
         return $finder->getIterator();
     }
