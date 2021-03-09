@@ -3,10 +3,25 @@
 namespace Waffle\Helper;
 
 use Symfony\Component\Process\Process;
-use Waffle\Model\Cli\BaseCliCommand;
+use Waffle\Model\Cli\Factory\GenericCommandFactory;
 
 class BrowserHelper
 {
+    /**
+     * @var GenericCommandFactory
+     */
+    private $genericCommandFactory;
+
+    /**
+     * Constructor
+     *
+     * @param GenericCommandFactory $genericCommandFactory
+     */
+    public function __construct(
+        GenericCommandFactory $genericCommandFactory
+    ) {
+        $this->genericCommandFactory = $genericCommandFactory;
+    }
 
     /**
      * Attempts to open a web browser to the suppleid url.
@@ -21,7 +36,7 @@ class BrowserHelper
             throw new \Exception('Unable to open web browser.');
         }
 
-        $command = new BaseCliCommand([$browser, $url]);
+        $command = $this->genericCommandFactory->create([$browser, $url]);
         $process = $command->getProcess();
         $process->run();
     }
@@ -52,7 +67,7 @@ class BrowserHelper
      */
     private function programExists($program)
     {
-        $command = new BaseCliCommand(['which', $program]);
+        $command = $this->genericCommandFactory->create(['which', $program]);
         $process = $command->getProcess();
         $process->run();
         return $process->isSuccessful();

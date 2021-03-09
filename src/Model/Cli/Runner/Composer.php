@@ -4,20 +4,43 @@ namespace Waffle\Model\Cli\Runner;
 
 use Exception;
 use Symfony\Component\Process\Process;
-use Waffle\Model\Cli\BaseCliCommand;
-use Waffle\Model\Cli\ComposerCommand;
+use Waffle\Model\Cli\BaseCliRunner;
+use Waffle\Model\Cli\Factory\ComposerCommandFactory;
+use Waffle\Model\Cli\Factory\GenericCommandFactory;
+use Waffle\Model\Context\Context;
 
-class Composer extends BaseRunner
+class Composer extends BaseCliRunner
 {
-    
+
+    /**
+     * @var ComposerCommandFactory
+     */
+    private $composerCommandFactory;
+
+    /**
+     * @var GenericCommandFactory
+     */
+    private $genericCommandFactory;
+
     /**
      * Constructor
+     *
+     * @param Context $context
+     * @param ComposerCommandFactory $composerCommandFactory
+     * @param GenericCommandFactory $genericCommandFactory
+     *
+     * @throws Exception
      */
-    public function __construct()
-    {
-        parent::__construct();
+    public function __construct(
+        Context $context,
+        ComposerCommandFactory $composerCommandFactory,
+        GenericCommandFactory $genericCommandFactory
+    ) {
+        $this->composerCommandFactory = $composerCommandFactory;
+        $this->genericCommandFactory = $genericCommandFactory;
+        parent::__construct($context);
     }
-    
+
     /**
      * Runs composer outdated to retrieve only minor version updates.
      *
@@ -30,10 +53,10 @@ class Composer extends BaseRunner
     public function getMinorVersionUpdates($directory = '', $format = 'text'): Process
     {
         if (empty($directory)) {
-            $directory = $this->config->getComposerPath();
+            $directory = $this->context->getComposerPath();
         }
-        
-        $command = new ComposerCommand(
+
+        $command = $this->composerCommandFactory->create(
             [
                 'outdated',
                 '-Dmn',
@@ -44,10 +67,10 @@ class Composer extends BaseRunner
                 '*/*',
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Runs composer outdated to retrieve only major version updates.
      *
@@ -59,10 +82,10 @@ class Composer extends BaseRunner
     public function getMajorVersionUpdates($directory = ''): Process
     {
         if (empty($directory)) {
-            $directory = $this->config->getComposerPath();
+            $directory = $this->context->getComposerPath();
         }
-        
-        $command = new ComposerCommand(
+
+        $command = $this->composerCommandFactory->create(
             [
                 'outdated',
                 '-Dn',
@@ -72,19 +95,19 @@ class Composer extends BaseRunner
                 '*/*',
             ]
         );
-        
+
         $process = $command->getProcess();
         $process->run();
         $output = $process->getOutput();
-        
+
         // Filter out non-major updates.
-        $command = new BaseCliCommand(['grep', '-v', '!']);
+        $command = $this->genericCommandFactory->create(['grep', '-v', '!']);
         $process = $command->getProcess();
         $process->setInput($output);
-        
+
         return $process;
     }
-    
+
     /**
      * Update a composer package.
      *
@@ -102,12 +125,12 @@ class Composer extends BaseRunner
                 'You must pass a package name to update.'
             );
         }
-        
+
         if (empty($directory)) {
-            $directory = $this->config->getComposerPath();
+            $directory = $this->context->getComposerPath();
         }
-        
-        $command = new ComposerCommand(
+
+        $command = $this->composerCommandFactory->create(
             [
                 'update',
                 '--with-dependencies',
@@ -117,16 +140,16 @@ class Composer extends BaseRunner
                 $package,
             ]
         );
-    
+
         $process = $command->getProcess();
-    
+
         if (isset($timeout)) {
             $process->setTimeout($timeout);
         }
-    
+
         return $process;
     }
-    
+
     /**
      * Install composer dependencies.
      *
@@ -135,12 +158,37 @@ class Composer extends BaseRunner
      */
     public function install(): Process
     {
-        $command = new ComposerCommand(
+        $command = $this->composerCommandFactory->create(
             [
                 'install',
             ]
         );
-        
+
         return $command->getProcess();
+    }
+
+    /**
+     * Gets the composer.json path.
+     *
+     * @return string
+     */
+    public static function determineComposerPath()
+    {
+        // @todo: use Finder here instead.
+        $cwd = getcwd();
+
+        // Current directory.
+        $composer_path = $cwd . '/composer.json';
+        if (file_exists($composer_path)) {
+            return './';
+        }
+
+        // Parent directory.
+        $composer_path = $cwd . '/../composer.json';
+        if (file_exists($composer_path)) {
+            return '../';
+        }
+
+        return false;
     }
 }

@@ -3,21 +3,19 @@
 namespace Waffle\Command\Command;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Waffle\Command\BaseCommand;
-use Waffle\Command\DiscoverableCommandInterface;
-use Waffle\Model\Config\ProjectConfig;
-use Symfony\Component\Console\Input\InputArgument;
-use Waffle\Exception\Config\MissingConfigFileException;
-use Waffle\Traits\ConfigTrait;
 use Symfony\Component\Yaml\Yaml;
 use Waffle\Application as Waffle;
+use Waffle\Command\BaseCommand;
+use Waffle\Command\DiscoverableCommandInterface;
+use Waffle\Model\Config\Item\Cms;
+use Waffle\Model\Config\Item\Host;
+use Waffle\Model\Config\Loader\ProjectConfigLoader;
 
 class Init extends BaseCommand implements DiscoverableCommandInterface
 {
-    use ConfigTrait;
-
     public const COMMAND_KEY = 'init';
 
     /**
@@ -31,7 +29,7 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
         // TODO - Extend options (and command as a whole) as mre features are implemented.
 
         $this->addOption(
-            ProjectConfig::KEY_CMS,
+            Cms::KEY,
             null,
             InputArgument::OPTIONAL,
             'The cms used for this project (drupal7, wordpress, ect...)',
@@ -39,7 +37,7 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
         );
 
         $this->addOption(
-            ProjectConfig::KEY_HOST,
+            Host::KEY,
             null,
             InputArgument::OPTIONAL,
             'The hosting provider used for this project (acquia, pantheon, ect...)',
@@ -60,14 +58,14 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
         }
 
         $initConfig = [
-            ProjectConfig::KEY_CMS => $this->getCms($input),
-            ProjectConfig::KEY_HOST => $this->getHost($input),
+            Cms::KEY => $this->getCms($input),
+            Host::KEY => $this->getHost($input),
         ];
 
-        $this->io->highlightText('Writing %s config file!', [ProjectConfig::CONFIG_FILE]);
+        $this->io->highlightText('Writing %s config file!', [ProjectConfigLoader::CONFIG_FILE]);
 
         $yaml = Yaml::dump($initConfig);
-        file_put_contents(ProjectConfig::CONFIG_FILE, $yaml);
+        file_put_contents(ProjectConfigLoader::CONFIG_FILE, $yaml);
 
         $this->io->styledText('Done!');
         $this->io->styledText('For more information about the config file, go check out the Waffle documentation!');
@@ -83,14 +81,7 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
      */
     private function hasExistingConfig()
     {
-        try {
-            $projectConfig = $this->getConfig();
-            return true;
-        } catch (MissingConfigFileException $e) {
-            // Intentionally blank.
-        }
-
-        return false;
+        return $this->context->hasProjectConfig();
     }
 
     /**
@@ -102,24 +93,19 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
      */
     private function getCms(InputInterface $input)
     {
-        $cms = $input->getOption(ProjectConfig::KEY_CMS);
+        $cms = $input->getOption(Cms::KEY);
 
         if (empty($cms)) {
-            $cmsOptions = array_merge(ProjectConfig::CMS_OPTIONS, ['other']);
             $cms = $this->io->choice(
                 'What CMS is this project using?',
-                $cmsOptions
+                Cms::OPTIONS
             );
-
-            if ($cms === 'other') {
-                $cms = $this->io->ask('What CMS is the project using?');
-            }
         }
 
-        // Issue a warning if the cms is not officially supported.
-        if (!in_array($cms, ProjectConfig::CMS_OPTIONS)) {
+        // Issue a warning if the cms is not officially supported
+        if ($cms === Cms::OPTION_OTHER) {
             $this->io->note([
-                'You have chosen a CMS that is not officially supported by Waffle, but that\'s okay!',
+                'You have chosen a CMS type of \'' . Cms::OPTION_OTHER . '\'.',
                 'You will need to implement custom tasks and recipes in order to make your project work with Waffle.',
             ]);
         }
@@ -136,24 +122,19 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
      */
     private function getHost(InputInterface $input)
     {
-        $host = $input->getOption(ProjectConfig::KEY_HOST);
+        $host = $input->getOption(Host::KEY);
 
         if (empty($host)) {
-            $hostOptions = array_merge(ProjectConfig::HOST_OPTIONS, ['other']);
             $host = $this->io->choice(
-                'What hosting provider is this project using?',
-                $hostOptions
+                'What hosting provider is this project using ? ',
+                Host::OPTIONS
             );
-
-            if ($host === 'other') {
-                $host = $this->io->ask('What hosting provider is the project using?');
-            }
         }
 
-        // Issue a warning if the cms is not officially supported.
-        if (!in_array($host, ProjectConfig::CMS_OPTIONS)) {
+        // Issue a warning if the host is not officially supported.
+        if ($host === Host::OPTION_OTHER) {
             $this->io->note([
-                'Your are using a hosting provider that is not officially supported by Waffle, but that\'s okay!',
+                'You have chosen a host type of \'' . Cms::OPTION_OTHER . '\'.',
                 'You will need to implement custom tasks and recipes in order to make your project work with Waffle.',
             ]);
         }

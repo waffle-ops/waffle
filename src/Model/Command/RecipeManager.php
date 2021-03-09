@@ -3,12 +3,16 @@
 namespace Waffle\Model\Command;
 
 use Waffle\Command\Recipe;
-use Waffle\Exception\Config\MissingConfigFileException;
-use Waffle\Traits\ConfigTrait;
+use Waffle\Model\Context\Context;
 
 class RecipeManager
 {
-    use ConfigTrait;
+
+
+    /**
+     * @var Context
+     */
+    private $context;
 
     /**
      * @var array
@@ -23,8 +27,10 @@ class RecipeManager
      * @param iterable
      *   Commands configured in the DI container.
      */
-    public function __construct(iterable $commands = [])
+    public function __construct(Context $context, iterable $commands = [])
     {
+        $this->context = $context;
+
         // Loads in commands from the DI container.
         foreach ($commands->getIterator() as $command) {
             // Adding as a keyed array so we can override later if needed.
@@ -62,16 +68,12 @@ class RecipeManager
      */
     private function getUserDefinedRecipes()
     {
-        try {
-            $recipes = $this->getConfig()->getRecipes() ?? [];
-        } catch (MissingConfigFileException $e) {
-            return [];
-        }
+        $recipes = $this->context->getRecipes() ?? [];
 
         $user_recipes = [];
 
         foreach ($recipes as $recipe => $task_list) {
-            $user_recipes[] = new Recipe($recipe);
+            $user_recipes[] = new Recipe($this->context, $recipe);
         }
 
         return $user_recipes;

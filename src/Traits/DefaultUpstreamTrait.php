@@ -14,15 +14,14 @@ trait DefaultUpstreamTrait
      */
     private function getDefaultUpstream()
     {
-        $config =  $this->getConfig();
-        $default_upstream = $config->getDefaultUpstream();
+        $default_upstream = $this->context->getDefaultUpstream();
 
         if (!empty($default_upstream)) {
             return $default_upstream;
         }
 
         // If we know this is a Pantheon site, let's use live.
-        $host = $config->getHost();
+        $host = $this->context->getHost();
         if (!empty($host) && ($host === 'pantheon')) {
             return 'live';
         }

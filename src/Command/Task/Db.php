@@ -8,16 +8,34 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Model\Context\Context;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
-use Waffle\Traits\ConfigTrait;
 use Waffle\Traits\DefaultUpstreamTrait;
 
 class Db extends BaseCommand implements DiscoverableTaskInterface
 {
     use DefaultUpstreamTrait;
-    use ConfigTrait;
 
     public const COMMAND_KEY = 'sync-db';
+
+    /**
+     * @var SiteSyncFactory
+     */
+    protected $siteSyncFactory;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param SiteSyncFactory $siteSyncFactory
+     */
+    public function __construct(
+        Context $context,
+        SiteSyncFactory $siteSyncFactory
+    ) {
+        $this->siteSyncFactory = $siteSyncFactory;
+        parent::__construct($context);
+    }
 
     protected function configure()
     {
@@ -47,10 +65,9 @@ class Db extends BaseCommand implements DiscoverableTaskInterface
         // TODO Need to check that example settings file is present.
         // TOOD Need to check that DB connection is valid.
 
-        $config = $this->getConfig();
         $upstream = $input->getOption('upstream');
-        $allowed_upstreams = $config->getUpstreams();
-        $remote_alias = sprintf('@%s.%s', $config->getAlias(), $upstream);
+        $allowed_upstreams = $this->context->getUpstreams();
+        $remote_alias = sprintf('@%s.%s', $this->context->getAlias(), $upstream);
 
         // Ensure upstream is valid.
         if (!in_array($upstream, $allowed_upstreams)) {
@@ -61,8 +78,7 @@ class Db extends BaseCommand implements DiscoverableTaskInterface
         }
 
         try {
-            $factory = new SiteSyncFactory();
-            $sync = $factory->getSiteSyncAdapter($config->getCms());
+            $sync = $this->siteSyncFactory->getSiteSyncAdapter($this->context->getCms());
             $sync->syncDatabase($remote_alias);
             $this->io->success('Database Sync');
             // TODO Write to the console with more general status updates.

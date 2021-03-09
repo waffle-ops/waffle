@@ -4,52 +4,56 @@ namespace Waffle\Model\Cli;
 
 use Exception;
 use Symfony\Component\Process\Process;
-use Waffle\Model\Config\ProjectConfig;
-use Waffle\Traits\ConfigTrait;
+use Waffle\Model\Context\Context;
 
 class BaseCliCommand
 {
-    use ConfigTrait;
-    
-    /**
-     * @var string[]
-     */
-    private $args = [];
-    
+
     /**
      * @var Process
      */
     private $process;
-    
+
     /**
-     * A reference to the project config.
-     *
-     * @var ProjectConfig
+     * @var Context
      */
-    protected $config;
-    
+    protected $context;
+
     /**
      * Constructor
      *
-     * @param string[] The Arguments.
+     * @param Context $context
+     *   The application context / config.
+     * @param string[] $args
+     *   The command / arguments to execute.
      *
      * @throws Exception
      */
-    public function __construct(array $args)
+    public function __construct(Context $context, array $args)
     {
+        $this->context = $context;
+
         if (empty($args)) {
             throw new Exception('Invalid Arguments: You must pass at least one argument.');
         }
-        
-        $this->config = $this->getConfig();
-        
-        // @todo: check for config prefix
-        if (!empty($this->config->getCommandPrefix())) {
-            array_unshift($args, $this->config->getCommandPrefix());
+
+        /**
+         * @todo: Each command type should have its own prefix that can be
+         * defined in config. Leaving this for now for backwards compatability.
+         */
+        if (!empty($this->context->getCommandPrefix())) {
+            array_unshift($args, $this->context->getCommandPrefix());
         }
-        
+
         $this->process = new Process($args);
-        $this->process->setTimeout($this->config->getTimeout());
+
+        /**
+         * @todo: Similar to above. Consider revisiting how this works in the
+         * future.
+         */
+        if (!empty($this->context->getTimeout())) {
+            $this->process->setTimeout($this->context->getTimeout());
+        }
     }
 
     /**

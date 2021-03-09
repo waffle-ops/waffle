@@ -14,10 +14,12 @@ class DrushSiteSync implements SiteSyncInterface
 
     /**
      * Constructor
+     *
+     * @param Drush $drush
      */
-    public function __construct()
+    public function __construct(Drush $drush)
     {
-        $this->drush = new Drush();
+        $this->drush = $drush;
     }
 
     /**

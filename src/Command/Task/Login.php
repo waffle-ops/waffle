@@ -7,20 +7,31 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
-use Waffle\Model\Config\ProjectConfig;
+use Waffle\Model\Context\Context;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
-use Waffle\Traits\ConfigTrait;
 
 class Login extends BaseCommand implements DiscoverableTaskInterface
 {
-    use ConfigTrait;
-
     public const COMMAND_KEY = 'login';
 
     /**
-     * @var ProjectConfig
+     * @var SiteSyncFactory
      */
-    protected $config;
+    protected $siteSyncFactory;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param SiteSyncFactory $siteSyncFactory
+     */
+    public function __construct(
+        Context $context,
+        SiteSyncFactory $siteSyncFactory
+    ) {
+        $this->siteSyncFactory = $siteSyncFactory;
+        parent::__construct($context);
+    }
 
     protected function configure()
     {
@@ -30,19 +41,14 @@ class Login extends BaseCommand implements DiscoverableTaskInterface
 
         // TODO Add support for arguments: --name, email?, user id?
         // This could be pulled out a level and support dev, stg, prod
-
-        $this->config = $this->getConfig();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         parent::execute($input, $output);
 
-        $config = $this->getConfig();
-
         try {
-            $factory = new SiteSyncFactory();
-            $sync = $factory->getSiteSyncAdapter($config->getCms());
+            $sync = $this->siteSyncFactory->getSiteSyncAdapter($this->context->getCms());
             $process = $sync->postSyncLogin();
             $url = $process->getOutput();
             $this->io->success(sprintf('User Login: %s', $url));

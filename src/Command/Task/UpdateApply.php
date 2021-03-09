@@ -10,17 +10,16 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Drush;
 use Waffle\Model\Cli\Runner\Git;
 use Waffle\Model\Cli\Runner\WpCli;
-use Waffle\Model\Config\ProjectConfig;
-use Waffle\Traits\ConfigTrait;
+use Waffle\Model\Config\Item\Cms;
+use Waffle\Model\Context\Context;
 
 class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
 {
-    use ConfigTrait;
-
     public const COMMAND_KEY = 'update-apply';
 
     /**
@@ -121,14 +120,38 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
     protected $wp;
 
     /**
-     * A reference to the project config.
-     *
-     * @var ProjectConfig
+     * @var CliHelper
      */
-    protected $config;
+    protected $cliHelper;
 
     /**
-     * @inheritDoc
+     * Constructor
+     *
+     * @param Context $context
+     * @param CliHelper $cliHelper
+     * @param Drush $drush
+     * @param Git $git
+     * @param Composer $composer
+     * @param WpCli $wp
+     */
+    public function __construct(
+        Context $context,
+        CliHelper $cliHelper,
+        Drush $drush,
+        Git $git,
+        Composer $composer,
+        WpCli $wp
+    ) {
+        $this->cliHelper = $cliHelper;
+        $this->drush = $drush;
+        $this->git = $git;
+        $this->composer = $composer;
+        $this->wp = $wp;
+        parent::__construct($context);
+    }
+
+    /**
+     * {@inheritdoc}
      */
     protected function configure()
     {
@@ -218,7 +241,6 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
 
         // Attempting to load config. Parent class will catch exception if we
         // are unable to load it.
-        $this->config = $this->getConfig();
     }
 
     /**
@@ -232,9 +254,6 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         parent::execute($input, $output);
-
-        $this->git = new Git();
-        $this->composer = new Composer();
 
         $this->gitPrefix = $input->getOption('git-prefix');
         $this->gitPostfix = $input->getOption('git-postfix');
@@ -272,17 +291,14 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
             );
         }
 
-        switch ($this->config->getCms()) {
-            case ProjectConfig::CMS_DRUPAL_8:
-                $this->drush = new Drush();
+        switch ($this->context->getCms()) {
+            case Cms::OPTION_DRUPAL_8:
                 $this->applyDrupal8Updates();
                 break;
-            case ProjectConfig::CMS_DRUPAL_7:
-                $this->drush = new Drush();
+            case Cms::OPTION_DRUPAL_7:
                 $this->applyDrupal7Updates();
                 break;
-            case ProjectConfig::CMS_WORDPRESS:
-                $this->wp = new WpCli();
+            case Cms::OPTION_WORDPRESS:
                 $this->applyWordpressUpdates();
                 break;
             default:
@@ -301,7 +317,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
     {
         $this->io->title('Applying Drupal 8 Pending Updates');
 
-        if (empty($this->config->getComposerPath())) {
+        if (empty($this->context->getComposerPath())) {
             $this->io->warning('Unable to apply pending composer updates: Missing composer file.');
         } else {
             $this->updateMinorComposerDependencies();
@@ -320,7 +336,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
     {
         $this->io->title('Applying Drupal 7 Pending Updates');
 
-        if (!empty($this->config->getComposerPath())) {
+        if (!empty($this->context->getComposerPath())) {
             $this->updateMinorComposerDependencies();
         }
 
@@ -403,7 +419,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
                 $pp_output = $this->cliHelper->getOutput($pp);
                 if (strpos($pp_output, 'There are no patches') === false) {
                     $this->io->error('Unable to reapply patch.');
-                    $this->dumpProcess($pp);
+                    $this->cliHelper->dumpProcess($pp);
                     exit(1);
                 }
             }
@@ -511,14 +527,14 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
         // We use the exit code for Composer since it outputs to both normal & error channels.
         if (!empty($update_process->getExitCode())) {
             $this->io->error('Composer update failed with error.');
-            $this->dumpProcess($update_process);
+            $this->cliHelper->dumpProcess($update_process);
             exit(1);
         }
 
         // Check to see if there was a patch that did not reapply cleanly.
         if (strpos($update_output, 'Could not apply patch!') !== false) {
             $this->io->error('Composer patching failed with error.');
-            $this->dumpProcess($update_process);
+            $this->cliHelper->dumpProcess($update_process);
             exit(1);
         }
 
@@ -581,7 +597,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
     {
         $this->io->title('Applying Wordpress Pending Updates');
 
-        if (!empty($this->config->getComposerPath())) {
+        if (!empty($this->context->getComposerPath())) {
             $this->updateMinorComposerDependencies();
         }
 
