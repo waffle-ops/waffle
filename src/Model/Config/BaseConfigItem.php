@@ -44,7 +44,7 @@ abstract class BaseConfigItem implements ConfigItemInterface
     {
         if (empty($scopes)) {
             throw new \Exception(sprintf(
-                'No scopes provided \'%s\'. Valid scopes must be provided.',
+                'No scopes provided for \'%s\'. Valid scopes must be provided.',
                 $this->getKey()
             ));
         }

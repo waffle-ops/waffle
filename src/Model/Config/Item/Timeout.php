@@ -17,7 +17,7 @@ class Timeout extends BaseConfigItem
      * Symfony Processes.
      *
      * Leaving this for now until we figure out a better way of calling those
-     * commands. I think w factory pattern will work well. The factory could
+     * commands. I think a factory pattern will work well. The factory could
      * build the command and attach the prefix and add anything else that
      * may be needed.
      */
