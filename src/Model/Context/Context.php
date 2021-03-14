@@ -137,7 +137,7 @@ class Context implements ConfigurationInterface
      *
      * @return string|array
      */
-    private function get($key)
+    public function get($key)
     {
         if (isset($this->config[$key])) {
             return $this->config[$key];

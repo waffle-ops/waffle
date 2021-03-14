@@ -58,7 +58,18 @@ services:
     arguments:
       - '@di_helper'
 
-  # Need to define this as public so it can be pulled from the container at
-  # runtime.
   Waffle\Model\Site\Sync\DrushSiteSync:
     public: true
+
+  # Backend build handlers factory (and related handlers).
+  Waffle\Model\Build\BackendBuildHandlerFactory:
+    public: true
+    arguments:
+      - '@di_helper'
+
+  Waffle\Model\Build\Backend\ComposerBackendHandler:
+    public: true
+
+  Waffle\Model\Build\Backend\NullBackendHandler:
+    public: true
+
