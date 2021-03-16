@@ -28,18 +28,26 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
     private $waffleCommandFactory;
 
     /**
+     * @var CliHelper
+     */
+    private $cliHelper;
+
+    /**
      * Constructor
      *
      * @param Context $context
      * @param WaffleCommandFactory $waffleCommandFactory
+     * @param CliHelper $cliHelper
      *
      * @throws Exception
      */
     public function __construct(
         Context $context,
-        WaffleCommandFactory $waffleCommandFactory
+        WaffleCommandFactory $waffleCommandFactory,
+        CliHelper $cliHelper
     ) {
         $this->waffleCommandFactory = $waffleCommandFactory;
+        $this->cliHelper = $cliHelper;
         parent::__construct($context);
     }
 
@@ -118,14 +126,13 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         // Run the commands.
         $this->runWaffleCommands($max_threads);
 
-        $cliHelper = new CliHelper($this->io);
         foreach ($this->processes as $path => $process) {
             // Consider changing the way this output is displayed. This is
             // likely already cumbersome to read.
             $this->io->newLine();
             $this->io->writeln('---------------------------------------------');
             $this->io->highlightText('Begin output from running %s on %s', [$cmd, $path]);
-            $this->io->writeln($cliHelper->getOutput($process, false));
+            $this->io->writeln($this->cliHelper->getOutput($process, false));
             $this->io->highlightText('End output from running %s on %s', [$cmd, $path]);
         }
 

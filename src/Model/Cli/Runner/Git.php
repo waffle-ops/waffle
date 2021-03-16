@@ -18,18 +18,26 @@ class Git extends BaseCliRunner
     private $gitCommandFactory;
 
     /**
+     * @var CliHelper
+     */
+    private $cliHelper;
+
+    /**
      * Constructor
      *
      * @param Context $context
      * @param GitCommandFactory $gitCommandFactory
+     * @param CliHelper $cliHelper
      *
      * @throws Exception
      */
     public function __construct(
         Context $context,
-        GitCommandFactory $gitCommandFactory
+        GitCommandFactory $gitCommandFactory,
+        CliHelper $cliHelper
     ) {
         $this->gitCommandFactory = $gitCommandFactory;
+        $this->cliHelper = $cliHelper;
         parent::__construct($context);
     }
 
@@ -103,8 +111,7 @@ class Git extends BaseCliRunner
         }
 
         $process = $this->branchList($branch);
-        $cliHelper = new CliHelper();
-        $output = $cliHelper->getOutput($process);
+        $output = $this->cliHelper->getOutput($process);
 
         return strpos($output, $branch) !== false;
     }
@@ -175,8 +182,7 @@ class Git extends BaseCliRunner
     {
         $command = $this->gitCommandFactory->create(['rev-list', 'HEAD...', '--count']);
         $process = $command->getProcess();
-        $cliHelper = new CliHelper();
-        $output = (int) $cliHelper->getOutput($process);
+        $output = (int) $this->cliHelper->getOutput($process);
         return !empty($output);
     }
 
@@ -190,7 +196,6 @@ class Git extends BaseCliRunner
     {
         $command = $this->gitCommandFactory->create(['branch', '--show-current']);
         $process = $command->getProcess();
-        $cliHelper = new CliHelper();
-        return trim($cliHelper->getOutput($process));
+        return trim($this->cliHelper->getOutput($process));
     }
 }

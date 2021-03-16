@@ -23,21 +23,29 @@ class SymfonyCli extends BaseCliRunner
     private $symfonyCliCommandFactory;
 
     /**
+     * @var CliHelper
+     */
+    private $cliHelper;
+
+    /**
      * Constructor
      *
      * @param Context $context
      * @param GenericCommandFactory $genericCommandFactory
      * @param SymfonyCliCommandFactory $symfonyCliCommandFactory
+     * @param CliHelper $cliHelper
      *
      * @throws Exception
      */
     public function __construct(
         Context $context,
         GenericCommandFactory $genericCommandFactory,
-        SymfonyCliCommandFactory $symfonyCliCommandFactory
+        SymfonyCliCommandFactory $symfonyCliCommandFactory,
+        CliHelper $cliHelper
     ) {
         $this->genericCommandFactory = $genericCommandFactory;
         $this->symfonyCliCommandFactory = $symfonyCliCommandFactory;
+        $this->cliHelper = $cliHelper;
         parent::__construct($context);
     }
 
@@ -53,8 +61,7 @@ class SymfonyCli extends BaseCliRunner
 
         $command = $this->genericCommandFactory->create(['which', 'symfony']);
         $process = $command->getProcess();
-        $cliHelper = new CliHelper();
-        $output = $cliHelper->getOutput($process);
+        $output = $this->cliHelper->getOutput($process);
         return !empty($output);
     }
 

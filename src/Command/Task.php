@@ -7,9 +7,31 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
+use Waffle\Model\Context\Context;
 
 class Task extends BaseCommand
 {
+    /**
+     * @var CliHelper
+     */
+    private $cliHelper;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param CliHelper $cliHelper
+     *
+     * @throws Exception
+     */
+    public function __construct(
+        Context $context,
+        CliHelper $cliHelper
+    ) {
+        $this->$cliHelper = $cliHelper;
+        parent::__construct($context);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -47,12 +69,11 @@ class Task extends BaseCommand
         // wait until process completes? What happens in the case of something
         // like 'drush pmu' where the '-y' is ommitted?
 
-        $cliHelper = new CliHelper($this->io);
         if ($process->isSuccessful()) {
             $output->writeln('<info>Task <comment>' . $task_key . '</comment> ran sucessfully</info>');
 
             if (!empty($process->getOutput())) {
-                $output->writeln($cliHelper->getOutput($process, false));
+                $output->writeln($this->cliHelper->getOutput($process, false));
             }
 
             return Command::SUCCESS;

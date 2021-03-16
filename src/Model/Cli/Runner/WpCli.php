@@ -24,21 +24,29 @@ class WpCli extends BaseCliRunner
     private $wpCliCommandFactory;
 
     /**
+     * @var CliHelper
+     */
+    private $cliHelper;
+
+    /**
      * Constructor
      *
      * @param Context $context
      * @param GenericCommandFactory $genericCommandFactory
      * @param WpCliCommandFactory $wpCliCommandFactory
+     * @param CliHelper $cliHelper
      *
      * @throws Exception
      */
     public function __construct(
         Context $context,
         GenericCommandFactory $genericCommandFactory,
-        WpCliCommandFactory $wpCliCommandFactory
+        WpCliCommandFactory $wpCliCommandFactory,
+        CliHelper $cliHelper
     ) {
         $this->genericCommandFactory = $genericCommandFactory;
         $this->wpCliCommandFactory = $wpCliCommandFactory;
+        $this->cliHelper = $cliHelper;
         parent::__construct($context);
     }
 
@@ -54,8 +62,7 @@ class WpCli extends BaseCliRunner
 
         $command = $this->genericCommandFactory->create(['which', 'wp']);
         $process = $command->getProcess();
-        $cliHelper = new CliHelper();
-        $output = $cliHelper->getOutput($process);
+        $output = $this->cliHelper->getOutput($process);
         return !empty($output);
     }
 
@@ -74,8 +81,7 @@ class WpCli extends BaseCliRunner
             ]
         );
 
-        $cliHelper = new CliHelper();
-        return trim($cliHelper->getOutput($command->getProcess(), true, false));
+        return trim($this->cliHelper->getOutput($command->getProcess(), true, false));
     }
 
     /**
