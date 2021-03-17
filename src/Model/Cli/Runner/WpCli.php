@@ -10,6 +10,7 @@ use Waffle\Model\Cli\Factory\GenericCommandFactory;
 use Waffle\Model\Cli\Factory\WpCliCommandFactory;
 use Waffle\Model\Cli\WpCliCommand;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class WpCli extends BaseCliRunner
 {
@@ -32,14 +33,15 @@ class WpCli extends BaseCliRunner
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param GenericCommandFactory $genericCommandFactory
      * @param WpCliCommandFactory $wpCliCommandFactory
      * @param CliHelper $cliHelper
      *
-     * @throws Exception
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         GenericCommandFactory $genericCommandFactory,
         WpCliCommandFactory $wpCliCommandFactory,
         CliHelper $cliHelper
@@ -47,7 +49,7 @@ class WpCli extends BaseCliRunner
         $this->genericCommandFactory = $genericCommandFactory;
         $this->wpCliCommandFactory = $wpCliCommandFactory;
         $this->cliHelper = $cliHelper;
-        parent::__construct($context);
+        parent::__construct($context, $io);
     }
 
     /**

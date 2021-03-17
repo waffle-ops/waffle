@@ -15,6 +15,7 @@ use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\Factory\WaffleCommandFactory;
 use Waffle\Model\Config\Loader\ProjectConfigLoader;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class Iterate extends BaseCommand implements DiscoverableCommandInterface
 {
@@ -36,19 +37,20 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param WaffleCommandFactory $waffleCommandFactory
      * @param CliHelper $cliHelper
      *
-     * @throws Exception
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         WaffleCommandFactory $waffleCommandFactory,
         CliHelper $cliHelper
     ) {
         $this->waffleCommandFactory = $waffleCommandFactory;
         $this->cliHelper = $cliHelper;
-        parent::__construct($context);
+        parent::__construct($context, $io);
     }
 
     protected function configure()

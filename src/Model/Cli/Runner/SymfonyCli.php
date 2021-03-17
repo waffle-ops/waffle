@@ -9,6 +9,7 @@ use Waffle\Model\Cli\BaseCliRunner;
 use Waffle\Model\Cli\Factory\GenericCommandFactory;
 use Waffle\Model\Cli\Factory\SymfonyCliCommandFactory;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class SymfonyCli extends BaseCliRunner
 {
@@ -31,14 +32,15 @@ class SymfonyCli extends BaseCliRunner
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param GenericCommandFactory $genericCommandFactory
      * @param SymfonyCliCommandFactory $symfonyCliCommandFactory
      * @param CliHelper $cliHelper
      *
-     * @throws Exception
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         GenericCommandFactory $genericCommandFactory,
         SymfonyCliCommandFactory $symfonyCliCommandFactory,
         CliHelper $cliHelper
@@ -46,7 +48,7 @@ class SymfonyCli extends BaseCliRunner
         $this->genericCommandFactory = $genericCommandFactory;
         $this->symfonyCliCommandFactory = $symfonyCliCommandFactory;
         $this->cliHelper = $cliHelper;
-        parent::__construct($context);
+        parent::__construct($context, $io);
     }
 
     /**

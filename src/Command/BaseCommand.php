@@ -3,12 +3,10 @@
 namespace Waffle\Command;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Model\Context\Context;
-use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
 
 class BaseCommand extends Command
@@ -36,14 +34,18 @@ class BaseCommand extends Command
     protected $isEnabled = true;
 
     /**
+     * @param Context $context
+     * @param IOStyle $io
      * @param string|null $name The name of the command; passing null means it must be set in configure()
      *
-     * @throws LogicException When the command name is empty
      */
-    public function __construct(Context $context, string $name = null)
-    {
+    public function __construct(
+        Context $context,
+        IOStyle $io,
+        string $name = null
+    ) {
         $this->context = $context;
-        $this->io = IO::getInstance()->getIO();
+        $this->io = $io;
 
         // We don't want to automatically load config for all commands. We can,
         // however assume they will attempt to load config in the configure()

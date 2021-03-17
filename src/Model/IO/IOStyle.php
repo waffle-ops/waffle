@@ -4,6 +4,8 @@ namespace Waffle\Model\IO;
 
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableStyle;
+use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Style\StyleInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -11,6 +13,16 @@ class IOStyle extends SymfonyStyle implements StyleInterface
 {
     // See https://github.com/symfony/console/blob/5.x/Style/SymfonyStyle.php.
     // @todo: Make some pretty output options: https://symfony.com/doc/current/console/coloring.html
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $input = new ArgvInput();
+        $output = new ConsoleOutput();
+        parent::__construct($input, $output);
+    }
 
     /**
      * {@inheritdoc}

@@ -15,6 +15,7 @@ use Waffle\Model\Cli\Runner\SymfonyCli;
 use Waffle\Model\Cli\Runner\WpCli;
 use Waffle\Model\Config\Item\Cms;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
 {
@@ -49,6 +50,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param CliHelper $cliHelper
      * @param Drush $drush
      * @param SymfonyCli $symfonyCli
@@ -57,6 +59,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         CliHelper $cliHelper,
         Drush $drush,
         SymfonyCli $symfonyCli,
@@ -68,7 +71,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
         $this->symfonyCli = $symfonyCli;
         $this->composer = $composer;
         $this->wp = $wp;
-        parent::__construct($context);
+        parent::__construct($context, $io);
     }
 
     /**

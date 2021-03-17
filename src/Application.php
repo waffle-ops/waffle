@@ -11,7 +11,6 @@ use Waffle\Helper\PharHelper;
 use Waffle\Helper\WaffleHelper;
 use Waffle\Model\Command\CommandLoader;
 use Waffle\Model\Context\Context;
-use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
 
 class Application extends SymfonyApplication
@@ -37,8 +36,6 @@ class Application extends SymfonyApplication
     private $commandLoader;
 
     /**
-     * Defines the Input/Output helper object.
-     *
      * @var IOStyle
      */
     protected $io;
@@ -46,14 +43,16 @@ class Application extends SymfonyApplication
     /**
      * Constructor
      *
+     * @param Context $context
+     * @param IOStyle $io
      * @param CommandLoader $commandLoader
      */
-    public function __construct(Context $context, CommandLoader $commandLoader)
+    public function __construct(Context $context, IOStyle $io, CommandLoader $commandLoader)
     {
         parent::__construct(self::NAME, self::VERSION);
 
-        $this->io = IO::getInstance()->getIO();
         $this->context = $context;
+        $this->io = $io;
         $this->commandLoader = $commandLoader;
 
         // Prevent auto exiting (so we can run extra code).

@@ -14,6 +14,7 @@ use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Cli\Runner\Git;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class UpdatePrepare extends BaseCommand implements DiscoverableTaskInterface
 {
@@ -54,21 +55,22 @@ class UpdatePrepare extends BaseCommand implements DiscoverableTaskInterface
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param CliHelper $cliHelper
      * @param Composer $composer
      * @param Git $git
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         CliHelper $cliHelper,
         Composer $composer,
         Git $git
     ) {
         $this->cliHelper = $cliHelper;
-        $this->drush = $drush;
         $this->composer = $composer;
         $this->git = $git;
-        parent::__construct($context);
+        parent::__construct($context, $io);
     }
 
     /**

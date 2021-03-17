@@ -3,7 +3,6 @@
 namespace Waffle\Helper;
 
 use Symfony\Component\Process\Process;
-use Waffle\Model\IO\IO;
 use Waffle\Model\IO\IOStyle;
 
 class CliHelper
@@ -20,13 +19,9 @@ class CliHelper
      *
      * @param IO $io
      */
-    public function __construct($io = null)
+    public function __construct(IOStyle $io)
     {
-        if (empty($io)) {
-            $this->io = IO::getInstance()->getIO();
-        } else {
-            $this->io = $io;
-        }
+        $this->io = $io;
     }
 
     /**

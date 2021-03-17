@@ -8,6 +8,7 @@ use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\BaseCliRunner;
 use Waffle\Model\Cli\Factory\GitCommandFactory;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class Git extends BaseCliRunner
 {
@@ -26,19 +27,20 @@ class Git extends BaseCliRunner
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param GitCommandFactory $gitCommandFactory
      * @param CliHelper $cliHelper
      *
-     * @throws Exception
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         GitCommandFactory $gitCommandFactory,
         CliHelper $cliHelper
     ) {
         $this->gitCommandFactory = $gitCommandFactory;
         $this->cliHelper = $cliHelper;
-        parent::__construct($context);
+        parent::__construct($context, $io);
     }
 
     /**
