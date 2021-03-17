@@ -17,6 +17,7 @@ use Waffle\Model\Cli\Runner\Git;
 use Waffle\Model\Cli\Runner\WpCli;
 use Waffle\Model\Config\Item\Cms;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
 {
@@ -128,6 +129,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param CliHelper $cliHelper
      * @param Drush $drush
      * @param Git $git
@@ -136,6 +138,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         CliHelper $cliHelper,
         Drush $drush,
         Git $git,
@@ -147,7 +150,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
         $this->git = $git;
         $this->composer = $composer;
         $this->wp = $wp;
-        parent::__construct($context);
+        parent::__construct($context, $io);
     }
 
     /**

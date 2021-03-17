@@ -2,17 +2,19 @@
 
 namespace Waffle\Model\Command;
 
-use Waffle\Command\Recipe;
 use Waffle\Model\Context\Context;
 
 class RecipeManager
 {
-
-
     /**
      * @var Context
      */
     private $context;
+
+    /**
+     * @var RecipeFactory
+     */
+    private $recipeFactory;
 
     /**
      * @var array
@@ -24,12 +26,18 @@ class RecipeManager
     /**
      * Constructor
      *
+     * @param Context $context
+     * @param RecipeFactory $recipeFactory
      * @param iterable
      *   Commands configured in the DI container.
      */
-    public function __construct(Context $context, iterable $commands = [])
-    {
+    public function __construct(
+        Context $context,
+        RecipeFactory $recipeFactory,
+        iterable $commands = []
+    ) {
         $this->context = $context;
+        $this->recipeFactory = $recipeFactory;
 
         // Loads in commands from the DI container.
         foreach ($commands->getIterator() as $command) {
@@ -73,7 +81,7 @@ class RecipeManager
         $user_recipes = [];
 
         foreach ($recipes as $recipe => $task_list) {
-            $user_recipes[] = new Recipe($this->context, $recipe);
+            $user_recipes[] = $this->recipeFactory->create($recipe);
         }
 
         return $user_recipes;

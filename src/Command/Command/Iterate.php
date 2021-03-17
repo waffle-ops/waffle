@@ -15,6 +15,7 @@ use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\Factory\WaffleCommandFactory;
 use Waffle\Model\Config\Loader\ProjectConfigLoader;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class Iterate extends BaseCommand implements DiscoverableCommandInterface
 {
@@ -28,19 +29,28 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
     private $waffleCommandFactory;
 
     /**
+     * @var CliHelper
+     */
+    private $cliHelper;
+
+    /**
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param WaffleCommandFactory $waffleCommandFactory
+     * @param CliHelper $cliHelper
      *
-     * @throws Exception
      */
     public function __construct(
         Context $context,
-        WaffleCommandFactory $waffleCommandFactory
+        IOStyle $io,
+        WaffleCommandFactory $waffleCommandFactory,
+        CliHelper $cliHelper
     ) {
         $this->waffleCommandFactory = $waffleCommandFactory;
-        parent::__construct($context);
+        $this->cliHelper = $cliHelper;
+        parent::__construct($context, $io);
     }
 
     protected function configure()
@@ -118,14 +128,13 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         // Run the commands.
         $this->runWaffleCommands($max_threads);
 
-        $cliHelper = new CliHelper($this->io);
         foreach ($this->processes as $path => $process) {
             // Consider changing the way this output is displayed. This is
             // likely already cumbersome to read.
             $this->io->newLine();
             $this->io->writeln('---------------------------------------------');
             $this->io->highlightText('Begin output from running %s on %s', [$cmd, $path]);
-            $this->io->writeln($cliHelper->getOutput($process, false));
+            $this->io->writeln($this->cliHelper->getOutput($process, false));
             $this->io->highlightText('End output from running %s on %s', [$cmd, $path]);
         }
 

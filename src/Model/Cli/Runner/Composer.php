@@ -8,6 +8,7 @@ use Waffle\Model\Cli\BaseCliRunner;
 use Waffle\Model\Cli\Factory\ComposerCommandFactory;
 use Waffle\Model\Cli\Factory\GenericCommandFactory;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class Composer extends BaseCliRunner
 {
@@ -26,19 +27,20 @@ class Composer extends BaseCliRunner
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param ComposerCommandFactory $composerCommandFactory
      * @param GenericCommandFactory $genericCommandFactory
      *
-     * @throws Exception
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         ComposerCommandFactory $composerCommandFactory,
         GenericCommandFactory $genericCommandFactory
     ) {
         $this->composerCommandFactory = $composerCommandFactory;
         $this->genericCommandFactory = $genericCommandFactory;
-        parent::__construct($context);
+        parent::__construct($context, $io);
     }
 
     /**

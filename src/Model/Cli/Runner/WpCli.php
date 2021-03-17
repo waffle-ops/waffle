@@ -10,6 +10,7 @@ use Waffle\Model\Cli\Factory\GenericCommandFactory;
 use Waffle\Model\Cli\Factory\WpCliCommandFactory;
 use Waffle\Model\Cli\WpCliCommand;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class WpCli extends BaseCliRunner
 {
@@ -24,22 +25,31 @@ class WpCli extends BaseCliRunner
     private $wpCliCommandFactory;
 
     /**
+     * @var CliHelper
+     */
+    private $cliHelper;
+
+    /**
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param GenericCommandFactory $genericCommandFactory
      * @param WpCliCommandFactory $wpCliCommandFactory
+     * @param CliHelper $cliHelper
      *
-     * @throws Exception
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         GenericCommandFactory $genericCommandFactory,
-        WpCliCommandFactory $wpCliCommandFactory
+        WpCliCommandFactory $wpCliCommandFactory,
+        CliHelper $cliHelper
     ) {
         $this->genericCommandFactory = $genericCommandFactory;
         $this->wpCliCommandFactory = $wpCliCommandFactory;
-        parent::__construct($context);
+        $this->cliHelper = $cliHelper;
+        parent::__construct($context, $io);
     }
 
     /**
@@ -54,8 +64,7 @@ class WpCli extends BaseCliRunner
 
         $command = $this->genericCommandFactory->create(['which', 'wp']);
         $process = $command->getProcess();
-        $cliHelper = new CliHelper();
-        $output = $cliHelper->getOutput($process);
+        $output = $this->cliHelper->getOutput($process);
         return !empty($output);
     }
 
@@ -74,8 +83,7 @@ class WpCli extends BaseCliRunner
             ]
         );
 
-        $cliHelper = new CliHelper();
-        return trim($cliHelper->getOutput($command->getProcess(), true, false));
+        return trim($this->cliHelper->getOutput($command->getProcess(), true, false));
     }
 
     /**

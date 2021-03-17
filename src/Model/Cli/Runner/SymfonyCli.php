@@ -9,6 +9,7 @@ use Waffle\Model\Cli\BaseCliRunner;
 use Waffle\Model\Cli\Factory\GenericCommandFactory;
 use Waffle\Model\Cli\Factory\SymfonyCliCommandFactory;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class SymfonyCli extends BaseCliRunner
 {
@@ -23,22 +24,31 @@ class SymfonyCli extends BaseCliRunner
     private $symfonyCliCommandFactory;
 
     /**
+     * @var CliHelper
+     */
+    private $cliHelper;
+
+    /**
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param GenericCommandFactory $genericCommandFactory
      * @param SymfonyCliCommandFactory $symfonyCliCommandFactory
+     * @param CliHelper $cliHelper
      *
-     * @throws Exception
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         GenericCommandFactory $genericCommandFactory,
-        SymfonyCliCommandFactory $symfonyCliCommandFactory
+        SymfonyCliCommandFactory $symfonyCliCommandFactory,
+        CliHelper $cliHelper
     ) {
         $this->genericCommandFactory = $genericCommandFactory;
         $this->symfonyCliCommandFactory = $symfonyCliCommandFactory;
-        parent::__construct($context);
+        $this->cliHelper = $cliHelper;
+        parent::__construct($context, $io);
     }
 
     /**
@@ -53,8 +63,7 @@ class SymfonyCli extends BaseCliRunner
 
         $command = $this->genericCommandFactory->create(['which', 'symfony']);
         $process = $command->getProcess();
-        $cliHelper = new CliHelper();
-        $output = $cliHelper->getOutput($process);
+        $output = $this->cliHelper->getOutput($process);
         return !empty($output);
     }
 

@@ -10,6 +10,7 @@ use Waffle\Model\Cli\BaseCliRunner;
 use Waffle\Model\Cli\Factory\DrushCommandFactory;
 use Waffle\Model\Config\Item\Cms;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class Drush extends BaseCliRunner
 {
@@ -49,15 +50,19 @@ class Drush extends BaseCliRunner
      *
      * @param Context $context
      *
+     * @param IOStyle $io
+     * @param WaffleHelper $waffleHelper
+     * @param DrushCommandFactory $drushCommandFactory
      * @throws Exception
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         WaffleHelper $waffleHelper,
         DrushCommandFactory $drushCommandFactory
     ) {
         // Need to call the parent constructor first as we need to set $context.
-        parent::__construct($context);
+        parent::__construct($context, $io);
         $this->waffleHelper = $waffleHelper;
         $this->drushCommandFactory = $drushCommandFactory;
 

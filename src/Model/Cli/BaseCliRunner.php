@@ -3,7 +3,7 @@
 namespace Waffle\Model\Cli;
 
 use Waffle\Model\Context\Context;
-use Waffle\Model\IO\IO;
+use Waffle\Model\IO\IOStyle;
 
 class BaseCliRunner
 {
@@ -21,10 +21,13 @@ class BaseCliRunner
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      */
-    public function __construct(Context $context)
-    {
-        $this->io = IO::getInstance()->getIO();
+    public function __construct(
+        Context $context,
+        IOStyle $io
+    ) {
         $this->context = $context;
+        $this->io = $io;
     }
 }
