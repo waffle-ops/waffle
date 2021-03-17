@@ -41,12 +41,14 @@ services:
     public: true
     arguments:
       - '@Waffle\Model\Context\Context'
+      - '@Waffle\Model\Command\TaskFactory'
       - !tagged tasks
 
   Waffle\Model\Command\RecipeManager:
     public: true
     arguments:
       - '@Waffle\Model\Context\Context'
+      - '@Waffle\Model\Command\RecipeFactory'
       - !tagged recipes
 
   # This gets access to the DiHelper so we can avoid loading services we don't

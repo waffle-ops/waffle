@@ -8,6 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class Task extends BaseCommand
 {
@@ -20,16 +21,18 @@ class Task extends BaseCommand
      * Constructor
      *
      * @param Context $context
+     * @param IOStyle $io
      * @param CliHelper $cliHelper
-     *
-     * @throws Exception
+     * @param string $taskKey
      */
     public function __construct(
         Context $context,
-        CliHelper $cliHelper
+        IOStyle $io,
+        CliHelper $cliHelper,
+        string $taskKey
     ) {
-        $this->$cliHelper = $cliHelper;
-        parent::__construct($context);
+        $this->cliHelper = $cliHelper;
+        parent::__construct($context, $io, $taskKey);
     }
 
     /**

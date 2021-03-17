@@ -2,17 +2,19 @@
 
 namespace Waffle\Model\Command;
 
-use Waffle\Command\Task;
 use Waffle\Model\Context\Context;
 
 class TaskManager
 {
-
-
     /**
      * @var Context
      */
     private $context;
+
+    /**
+     * @var TaskFactory
+     */
+    private $taskFactory;
 
     /**
      * @var array
@@ -24,12 +26,18 @@ class TaskManager
     /**
      * Constructor
      *
+     * @param Context $context
+     * @param TaskFactory $taskFactory
      * @param iterable
      *   Commands configured in the DI container.
      */
-    public function __construct(Context $context, iterable $commands = [])
-    {
+    public function __construct(
+        Context $context,
+        TaskFactory $taskFactory,
+        iterable $commands = []
+    ) {
         $this->context = $context;
+        $this->taskFactory = $taskFactory;
 
         // Loads in commands from the DI container.
         foreach ($commands->getIterator() as $command) {
@@ -74,7 +82,7 @@ class TaskManager
         $user_tasks = [];
 
         foreach ($tasks as $task => $task_list) {
-            $user_tasks[] = new Task($this->context, $task);
+            $user_tasks[] = $this->taskFactory->create($task);
         }
 
         return $user_tasks;
