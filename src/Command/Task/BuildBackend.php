@@ -11,6 +11,7 @@ use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Build\BackendBuildHandlerFactory;
 use Waffle\Model\Config\Item\BuildBackend as BuildBackendConfig;
 use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class BuildBackend extends BaseCommand implements DiscoverableTaskInterface
 {
@@ -25,14 +26,16 @@ class BuildBackend extends BaseCommand implements DiscoverableTaskInterface
      * Constructor
      *
      * @param Context $context
-     * @param BackendBuildHandlerFactory $siteSyncFactory
+     * @param IOStyle $io
+     * @param BackendBuildHandlerFactory $backendBuildHandlerFactory
      */
     public function __construct(
         Context $context,
+        IOStyle $io,
         BackendBuildHandlerFactory $backendBuildHandlerFactory
     ) {
         $this->backendBuildHandlerFactory = $backendBuildHandlerFactory;
-        parent::__construct($context);
+        parent::__construct($context, $io);
     }
 
     protected function configure()
