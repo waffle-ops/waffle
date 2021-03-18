@@ -67,9 +67,10 @@ services:
     arguments:
       - '@di_helper'
 
-  Waffle\Model\Build\Backend\ComposerBackendHandler:
+  Waffle\Model\Build\NullBuildHandler:
     public: true
 
-  Waffle\Model\Build\Backend\NullBackendHandler:
+  Waffle\Model\Build\Backend\ComposerBackendBuildHandler:
     public: true
+
 

@@ -2,10 +2,10 @@
 
 namespace Waffle\Model\Build\Backend;
 
-use Waffle\Model\Build\BackendHandlerInterface;
+use Waffle\Model\Build\BuildHandlerInterface;
 use Waffle\Model\Cli\Runner\Composer;
 
-class ComposerBackendHandler implements BackendHandlerInterface
+class ComposerBackendBuildHandler implements BuildHandlerInterface
 {
     /**
      * @var Composer
@@ -28,7 +28,9 @@ class ComposerBackendHandler implements BackendHandlerInterface
      */
     public function handle()
     {
-        // TODO Pass extra arguments here like --no-dev --prefer-dist.
+        // TODO Pass extra arguments here like --no-dev --prefer-dist when it comes time for CI. When the time comes,
+        // perhaps we can add a 'type' flag or something and pass via Context to control this behavior. Will need to
+        // think through it as options from the command are not passed to Context, so maybe it should work differently.
         $process = $this->composer->install();
         $process->run();
     }

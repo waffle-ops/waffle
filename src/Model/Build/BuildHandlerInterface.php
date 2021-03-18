@@ -2,11 +2,11 @@
 
 namespace Waffle\Model\Build;
 
-interface BackendHandlerInterface
+interface BuildHandlerInterface
 {
 
     /**
-     * Handles the backend build of the project.
+     * Handles build steps of the project.
      *
      * @return void
      */
