@@ -404,6 +404,9 @@ class Drush extends BaseCliRunner
 
         // Attempts a DB connection.
         $this->validateDbAccess();
+
+        // Verifies the site uri has been set. Login / multisites won't work without this.
+        $this->validateSiteUri();
     }
 
     /**
@@ -469,6 +472,28 @@ class Drush extends BaseCliRunner
 
         if (!copy($example_settings, $local_settings)) {
             throw new Exception('Unable to create settings.local.php');
+        }
+    }
+
+    /**
+     * Validates that the site uri is set.
+     *
+     * @throws Exception
+     */
+    function validateSiteUri() {
+        if (
+            empty($this->drush_status_data['uri'])
+            || ($this->drush_status_data['uri'] === 'http://default') // This is the drush default when not set.
+        ) {
+            $error = [
+                'Site uri is not set. You need to set your site\'s uri value. Learn more here:',
+                sprintf(
+                    'https://docs.drush.org/en/%s.x/usage/?q=uri&check_keywords=yes&area=default',
+                    $this->drush_major_version
+                ),
+            ];
+
+            throw new Exception(implode(PHP_EOL, $error));
         }
     }
 
