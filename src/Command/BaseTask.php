@@ -16,12 +16,14 @@ abstract class BaseTask extends BaseCommand
      *
      * @param Context $context
      * @param IOStyle $io
+     * @param string|null $name
      */
     public function __construct(
         Context $context,
-        IOStyle $io
+        IOStyle $io,
+        string $name = null
     ) {
-        parent::__construct($context, $io);
+        parent::__construct($context, $io, $name);
     }
 
     /**

@@ -1,15 +1,16 @@
 <?php
 
-namespace Waffle\Command;
+namespace Waffle\Command\Task;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Process\Process;
+use Waffle\Command\BaseTask;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 
-class Task extends BaseCommand
+class ConfigDefinedTask extends BaseTask
 {
     /**
      * @var CliHelper
@@ -39,10 +40,12 @@ class Task extends BaseCommand
      */
     protected function configure()
     {
+        parent::configure();
+
         // TODO: Help and description are not properly set since these are
         // populated. Consider allow help and description text to be set in
         // config.
-        $help = 'Custom Task -- <comment>See Waffle config file.</comment>';
+        $help = 'Custom ConfigDefinedTask -- <comment>See Waffle config file.</comment>';
         $this->setDescription($help);
         $this->setHelp($help);
     }
@@ -80,7 +83,7 @@ class Task extends BaseCommand
 
             return Command::SUCCESS;
         } else {
-            $this->io->text('<error>Task ' . $task_key . ' returned with an error.</error>');
+            $this->io->text('<error>ConfigDefinedTask ' . $task_key . ' returned with an error.</error>');
             $this->io->text('<error>' . $process->getOutput() . '</error>');
             $this->io->text('<error>' . $process->getErrorOutput() . '</error>');
             return Command::FAILURE;

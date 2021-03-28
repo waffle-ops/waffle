@@ -2,7 +2,7 @@
 
 namespace Waffle\Model\Command;
 
-use Waffle\Command\Task;
+use Waffle\Command\Task\ConfigDefinedTask;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
@@ -43,16 +43,16 @@ class TaskFactory
     }
 
     /**
-     * Creates a new Task.
+     * Creates a new ConfigDefinedTask.
      *
      * @param string $taskKey
      *   The task key.
      *
-     * @return Task
+     * @return ConfigDefinedTask
      */
     public function create(string $taskKey)
     {
-        return new Task(
+        return new ConfigDefinedTask(
             $this->context,
             $this->io,
             $this->cliHelper,
