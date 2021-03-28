@@ -4,7 +4,6 @@ namespace Waffle\Command\Task;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Context\Context;
@@ -46,10 +45,11 @@ class Login extends BaseCommand implements DiscoverableTaskInterface
         // This could be pulled out a level and support dev, stg, prod
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
-        parent::execute($input, $output);
-
         try {
             $sync = $this->siteSyncFactory->getSiteSyncAdapter($this->context->getCms());
             $process = $sync->postSyncLogin();

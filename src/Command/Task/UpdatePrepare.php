@@ -7,7 +7,6 @@ use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Helper\CliHelper;
@@ -103,18 +102,10 @@ class UpdatePrepare extends BaseCommand implements DiscoverableTaskInterface
     }
 
     /**
-     * Runs the command.
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @return int
-     * @throws Exception
+     * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function process(InputInterface $input)
     {
-        parent::execute($input, $output);
-
         $this->masterBranch = $input->getOption('master-branch');
         $this->updateBranch = $input->getOption('update-branch');
         $date = new DateTime();

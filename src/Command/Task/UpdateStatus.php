@@ -5,7 +5,6 @@ namespace Waffle\Command\Task;
 use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Helper\CliHelper;
@@ -92,17 +91,10 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
     }
 
     /**
-     * Runs the command.
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
-     * @throws Exception
+     * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function process(InputInterface $input)
     {
-        parent::execute($input, $output);
-
         switch ($this->context->getCms()) {
             case Cms::OPTION_DRUPAL_8:
                 $this->generateDrupal8Report();

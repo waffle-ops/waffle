@@ -111,7 +111,7 @@ class Application extends SymfonyApplication
      * Overrides the find method to install call get.
      *
      * The default behavior of the application is to call a best guess if it is
-     * reasonibly sure it is correct. For example, if a 'phpcs' command existed
+     * reasonably sure it is correct. For example, if a 'phpcs' command existed
      * and the user only typed 'phpc', the base code is smart enough to run
      * 'phpcs' instead.
      *

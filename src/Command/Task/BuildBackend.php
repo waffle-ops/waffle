@@ -5,7 +5,6 @@ namespace Waffle\Command\Task;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Build\BackendBuildHandlerFactory;
@@ -53,9 +52,14 @@ class BuildBackend extends BaseCommand implements DiscoverableTaskInterface
             'The cms used for this project (drupal7, wordpress, ect...)',
             null
         );
+
+        parent::configure();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
         $strategy = trim($this->getStrategy($input));
 

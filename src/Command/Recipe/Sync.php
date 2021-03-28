@@ -7,7 +7,6 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableRecipeInterface;
 use Waffle\Command\Task\Db;
@@ -46,10 +45,11 @@ class Sync extends BaseCommand implements DiscoverableRecipeInterface
         // TODO Expand the help section.
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
-        parent::execute($input, $output);
-
         $upstream = $input->getOption('upstream');
         $allowed_upstreams = $this->context->getUpstreams();
 
@@ -68,7 +68,7 @@ class Sync extends BaseCommand implements DiscoverableRecipeInterface
 
             $command = $this->getApplication()->find($task);
             $command_args = new ArrayInput($args);
-            $return_code = $command->run($command_args, $output);
+            $return_code = $command->run($command_args, $this->io->getOutput());
 
             if ($return_code !== Command::SUCCESS) {
                 return Command::FAILURE;

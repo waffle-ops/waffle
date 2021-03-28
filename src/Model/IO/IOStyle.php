@@ -6,6 +6,7 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableStyle;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\StyleInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -15,13 +16,25 @@ class IOStyle extends SymfonyStyle implements StyleInterface
     // @todo: Make some pretty output options: https://symfony.com/doc/current/console/coloring.html
 
     /**
+     * @var OutputInterface
+     */
+    protected $output;
+
+    /**
      * Constructor
      */
     public function __construct()
     {
         $input = new ArgvInput();
-        $output = new ConsoleOutput();
-        parent::__construct($input, $output);
+        $this->output = new ConsoleOutput();
+        parent::__construct($input, $this->output);
+    }
+
+    /**
+     * @return OutputInterface
+     */
+    public function getOutput() {
+        return $this->output;
     }
 
     /**

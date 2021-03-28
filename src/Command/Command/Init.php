@@ -5,7 +5,6 @@ namespace Waffle\Command\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
 use Waffle\Application as Waffle;
 use Waffle\Command\BaseCommand;
@@ -48,7 +47,7 @@ class Init extends BaseCommand implements DiscoverableCommandInterface
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function process(InputInterface $input)
     {
         if ($this->hasExistingConfig()) {
             $this->io->warning('Waffle config file already exists. If you continue, it will be overwitten!');

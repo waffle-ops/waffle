@@ -4,7 +4,6 @@ namespace Waffle\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Context\Context;
@@ -51,14 +50,14 @@ class Task extends BaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function process(InputInterface $input)
     {
         // Note: The 'command' argument is defined by the Symfony Command class.
         $task_key = $input->getArgument('command');
 
         $config_tasks = $this->context->getTasks() ?? [];
         $task = isset($config_tasks[$task_key]) ? $config_tasks[$task_key] : '';
-        $output->writeln('<info>Running task <comment>' . $task_key . '</comment>: "' . $task . '"</info>');
+        $this->io->highlightText('Running task %s: %s', [$task_key, $task]);
 
         // TODO: Would be wise to add some sort of validation here.
 
@@ -73,17 +72,17 @@ class Task extends BaseCommand
         // like 'drush pmu' where the '-y' is ommitted?
 
         if ($process->isSuccessful()) {
-            $output->writeln('<info>Task <comment>' . $task_key . '</comment> ran sucessfully</info>');
+            $this->io->highlightText('Task %s ran successfully', [$task_key]);
 
             if (!empty($process->getOutput())) {
-                $output->writeln($this->cliHelper->getOutput($process, false));
+                $this->io->text($this->cliHelper->getOutput($process, false));
             }
 
             return Command::SUCCESS;
         } else {
-            $output->writeln('<error>Task ' . $task_key . ' returned with an error.</error>');
-            $output->writeln('<error>' . $process->getOutput() . '</error>');
-            $output->writeln('<error>' . $process->getErrorOutput() . '</error>');
+            $this->io->text('<error>Task ' . $task_key . ' returned with an error.</error>');
+            $this->io->text('<error>' . $process->getOutput() . '</error>');
+            $this->io->text('<error>' . $process->getErrorOutput() . '</error>');
             return Command::FAILURE;
         }
     }

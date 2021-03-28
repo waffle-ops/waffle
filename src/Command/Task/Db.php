@@ -5,7 +5,6 @@ namespace Waffle\Command\Task;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Context\Context;
@@ -61,10 +60,11 @@ class Db extends BaseCommand implements DiscoverableTaskInterface
         // TODO Validate the upstream option from the config file (in help).
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
-        parent::execute($input, $output);
-
         // TODO Need to check that example settings file is present.
         // TOOD Need to check that DB connection is valid.
 

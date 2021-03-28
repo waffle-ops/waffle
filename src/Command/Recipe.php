@@ -5,7 +5,6 @@ namespace Waffle\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class Recipe extends BaseCommand
 {
@@ -29,7 +28,10 @@ class Recipe extends BaseCommand
         $this->setHelp($help);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
         $this->io->highlightText('Running recipe %s', [$this->config_key]);
 
@@ -67,7 +69,7 @@ class Recipe extends BaseCommand
             $task_command = $this->getApplication()->find($task_key);
 
             $task_arguments = $this->prepareTaskArguments($args);
-            $return_code = $task_command->run($task_arguments, $output);
+            $return_code = $task_command->run($task_arguments, $this->io->getOutput());
 
             if ($return_code !== Command::SUCCESS) {
                 $this->io->highlightText(

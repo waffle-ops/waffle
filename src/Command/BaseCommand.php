@@ -9,7 +9,7 @@ use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 
-class BaseCommand extends Command
+abstract class BaseCommand extends Command
 {
 
     /**
@@ -67,7 +67,15 @@ class BaseCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        return $this->process($input);
     }
+
+    /**
+     * Implementation method of each command. Run and execute were already taken.
+     *
+     * @param InputInterface $input
+     */
+    abstract protected function process(InputInterface $input);
 
     /**
      * {@inheritdoc}

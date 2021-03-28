@@ -5,7 +5,6 @@ namespace Waffle\Command\Task;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Cli\Factory\GenericCommandFactory;
@@ -52,7 +51,10 @@ class Release extends BaseCommand implements DiscoverableTaskInterface
         );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
         $script = $input->getOption('script');
 
