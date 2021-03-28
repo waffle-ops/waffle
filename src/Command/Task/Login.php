@@ -4,13 +4,13 @@ namespace Waffle\Command\Task;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Waffle\Command\BaseCommand;
+use Waffle\Command\BaseTask;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 
-class Login extends BaseCommand implements DiscoverableTaskInterface
+class Login extends BaseTask implements DiscoverableTaskInterface
 {
     public const COMMAND_KEY = 'login';
 
@@ -37,6 +37,7 @@ class Login extends BaseCommand implements DiscoverableTaskInterface
 
     protected function configure()
     {
+        parent::configure();
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Attempts to perform a user login action on the site.');
         $this->setHelp('Attempts to perform a user login action on the site.');

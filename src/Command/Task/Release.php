@@ -5,13 +5,13 @@ namespace Waffle\Command\Task;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Waffle\Command\BaseCommand;
+use Waffle\Command\BaseTask;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Cli\Factory\GenericCommandFactory;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 
-class Release extends BaseCommand implements DiscoverableTaskInterface
+class Release extends BaseTask implements DiscoverableTaskInterface
 {
     public const COMMAND_KEY = 'release-script';
 
@@ -38,6 +38,7 @@ class Release extends BaseCommand implements DiscoverableTaskInterface
 
     protected function configure()
     {
+        parent::configure();
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Runs the release script after syncing from upstream.');
         $this->setHelp('Runs the release script after syncing from upstream.');

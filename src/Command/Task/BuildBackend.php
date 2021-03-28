@@ -5,14 +5,14 @@ namespace Waffle\Command\Task;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Waffle\Command\BaseCommand;
+use Waffle\Command\BaseTask;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Build\BackendBuildHandlerFactory;
 use Waffle\Model\Config\Item\BuildBackend as BuildBackendConfig;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 
-class BuildBackend extends BaseCommand implements DiscoverableTaskInterface
+class BuildBackend extends BaseTask implements DiscoverableTaskInterface
 {
     public const COMMAND_KEY = 'build-backend';
 
@@ -39,6 +39,7 @@ class BuildBackend extends BaseCommand implements DiscoverableTaskInterface
 
     protected function configure()
     {
+        parent::configure();
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Builds the backend of the project.');
         $this->setHelp('Builds the backend of the project.');
@@ -52,8 +53,6 @@ class BuildBackend extends BaseCommand implements DiscoverableTaskInterface
             'The cms used for this project (drupal7, wordpress, ect...)',
             null
         );
-
-        parent::configure();
     }
 
     /**

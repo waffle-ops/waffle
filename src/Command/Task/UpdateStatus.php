@@ -5,7 +5,7 @@ namespace Waffle\Command\Task;
 use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Waffle\Command\BaseCommand;
+use Waffle\Command\BaseTask;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\Runner\Composer;
@@ -16,7 +16,7 @@ use Waffle\Model\Config\Item\Cms;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 
-class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
+class UpdateStatus extends BaseTask implements DiscoverableTaskInterface
 {
     public const COMMAND_KEY = 'update-status';
 
@@ -78,6 +78,7 @@ class UpdateStatus extends BaseCommand implements DiscoverableTaskInterface
      */
     protected function configure()
     {
+        parent::configure();
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Checks the project for any pending updates and generates reports.');
         $this->setHelp('Checks the project for any pending updates and generates reports.');

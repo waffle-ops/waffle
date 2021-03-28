@@ -5,14 +5,14 @@ namespace Waffle\Command\Task;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Waffle\Command\BaseCommand;
+use Waffle\Command\BaseTask;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 use Waffle\Traits\DefaultUpstreamTrait;
 
-class Db extends BaseCommand implements DiscoverableTaskInterface
+class Db extends BaseTask implements DiscoverableTaskInterface
 {
     use DefaultUpstreamTrait;
 
@@ -41,6 +41,7 @@ class Db extends BaseCommand implements DiscoverableTaskInterface
 
     protected function configure()
     {
+        parent::configure();
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Pulls the database down from the specified upstream.');
         $this->setHelp('Pulls the database down from the specified upstream.');
