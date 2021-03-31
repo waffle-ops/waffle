@@ -50,7 +50,7 @@ class BuildFrontend extends BaseTask implements DiscoverableTaskInterface
             BuildFrontendConfig::STRATEGY_KEY,
             null,
             InputArgument::OPTIONAL,
-            'The cms used for this project (drupal7, wordpress, ect...)',
+            'The strategy used for building the frontend (none, gulp, ect...)',
             null
         );
     }

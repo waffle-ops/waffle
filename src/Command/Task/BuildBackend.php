@@ -50,7 +50,7 @@ class BuildBackend extends BaseTask implements DiscoverableTaskInterface
             BuildBackendConfig::STRATEGY_KEY,
             null,
             InputArgument::OPTIONAL,
-            'The cms used for this project (drupal7, wordpress, ect...)',
+            'The strategy used for building the backend (none, composer, ect...)',
             null
         );
     }

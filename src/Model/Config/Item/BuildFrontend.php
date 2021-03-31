@@ -37,6 +37,13 @@ class BuildFrontend extends BaseConfigItem
     public const STRATEGY_GULP = 'gulp';
 
     /**
+     * @var string
+     *
+     * Key for directory option.
+     */
+    public const DIRECTORY_KEY = 'dir';
+
+    /**
      * @var array
      *
      * An array containing a list of avaliable strategy options.
@@ -72,6 +79,7 @@ class BuildFrontend extends BaseConfigItem
                     ->enumNode(self::STRATEGY_KEY)
                         ->values(self::STRATEGY_OPTIONS)
                     ->end()
+                    ->scalarNode(self::DIRECTORY_KEY)->end()
                 ->end();
     }
 }

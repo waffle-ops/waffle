@@ -12,7 +12,6 @@ use Waffle\Model\IO\IOStyle;
 
 class Composer extends BaseCliRunner
 {
-
     /**
      * @var ComposerCommandFactory
      */

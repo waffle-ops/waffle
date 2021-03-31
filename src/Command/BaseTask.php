@@ -45,7 +45,7 @@ abstract class BaseTask extends BaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $directory = $input->getOption('dir');
+        $directory = $this->getDirectory($input);
 
         if (!empty($directory)) {
             $this->context->setTaskWorkingDirectory($directory);
@@ -56,5 +56,28 @@ abstract class BaseTask extends BaseCommand
         $this->context->resetTaskWorkingDirectory();
 
         return $exitCode;
+    }
+
+    /**
+     * Helper method to get the directory option.
+     *
+     * @param InputInterface $input
+     * @return string|null
+     */
+    private function getDirectory(InputInterface $input)
+    {
+        $directory = null;
+
+        $config = $this->context->get($this->getName());
+
+        if (isset($config['dir'])) {
+            $directory = $config['dir'];
+        }
+
+        if (!empty($input->getOption('dir'))) {
+            $directory = $input->getOption('dir');
+        }
+
+        return $directory;
     }
 }
