@@ -6,14 +6,14 @@ use Symfony\Component\Config\Definition\Builder\NodeBuilder;
 use Waffle\Model\Config\BaseConfigItem;
 use Waffle\Model\Config\ConfigItemInterface;
 
-class BuildBackend extends BaseConfigItem
+class BuildFrontend extends BaseConfigItem
 {
     /**
      * @var string
      *
      * The key for this config item.
      */
-    public const KEY = 'build-backend';
+    public const KEY = 'build-frontend';
 
     /**
      * @var string
@@ -25,16 +25,16 @@ class BuildBackend extends BaseConfigItem
     /**
      * @var string
      *
-     * Expected value in cases where no backend strategy is needed.
+     * Expected value in cases where no frontend strategy is needed.
      */
     public const STRATEGY_NONE = 'none';
 
     /**
      * @var string
      *
-     * Expected value in cases where composer backend strategy is needed.
+     * Expected value in cases where gulp frontend strategy is needed.
      */
-    public const STRATEGY_COMPOSER = 'composer';
+    public const STRATEGY_GULP = 'gulp';
 
     /**
      * @var array
@@ -43,7 +43,7 @@ class BuildBackend extends BaseConfigItem
      */
     public const STRATEGY_OPTIONS = [
         self::STRATEGY_NONE,
-        self::STRATEGY_COMPOSER,
+        self::STRATEGY_GULP,
     ];
 
     /**

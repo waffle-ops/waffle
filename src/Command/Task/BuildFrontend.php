@@ -7,33 +7,33 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Waffle\Command\BaseTask;
 use Waffle\Command\DiscoverableTaskInterface;
-use Waffle\Model\Build\BackendBuildHandlerFactory;
-use Waffle\Model\Config\Item\BuildBackend as BuildBackendConfig;
+use Waffle\Model\Build\FrontendBuildHandlerFactory;
+use Waffle\Model\Config\Item\BuildFrontend as BuildFrontendConfig;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 
-class BuildBackend extends BaseTask implements DiscoverableTaskInterface
+class BuildFrontend extends BaseTask implements DiscoverableTaskInterface
 {
-    public const COMMAND_KEY = 'build-backend';
+    public const COMMAND_KEY = 'build-frontend';
 
     /**
-     * @var BackendBuildHandlerFactory
+     * @var FrontendBuildHandlerFactory
      */
-    protected $backendBuildHandlerFactory;
+    protected $frontendBuildHandlerFactory;
 
     /**
      * Constructor
      *
      * @param Context $context
      * @param IOStyle $io
-     * @param BackendBuildHandlerFactory $backendBuildHandlerFactory
+     * @param FrontendBuildHandlerFactory $frontendBuildHandlerFactory
      */
     public function __construct(
         Context $context,
         IOStyle $io,
-        BackendBuildHandlerFactory $backendBuildHandlerFactory
+        FrontendBuildHandlerFactory $frontendBuildHandlerFactory
     ) {
-        $this->backendBuildHandlerFactory = $backendBuildHandlerFactory;
+        $this->frontendBuildHandlerFactory = $frontendBuildHandlerFactory;
         parent::__construct($context, $io);
     }
 
@@ -47,7 +47,7 @@ class BuildBackend extends BaseTask implements DiscoverableTaskInterface
         // TODO Expand the help section.
 
         $this->addOption(
-            BuildBackendConfig::STRATEGY_KEY,
+            BuildFrontendConfig::STRATEGY_KEY,
             null,
             InputArgument::OPTIONAL,
             'The cms used for this project (drupal7, wordpress, ect...)',
@@ -63,16 +63,16 @@ class BuildBackend extends BaseTask implements DiscoverableTaskInterface
         $strategy = trim($this->getStrategy($input));
 
         if (empty($strategy)) {
-            $this->io->styledText('No backend build strategy provided. Skipping build.', 'error');
+            $this->io->styledText('No frontend build strategy provided. Skipping build.', 'error');
             return COMMAND::FAILURE;
         }
 
-        $this->io->highlightText('Running backend build task with strategy %s', [$strategy]);
+        $this->io->highlightText('Running frontend build task with strategy %s', [$strategy]);
 
-        $handler = $this->backendBuildHandlerFactory->getHandler($strategy);
+        $handler = $this->frontendBuildHandlerFactory->getHandler($strategy);
         $handler->handle();
 
-        $this->io->styledText('Backend build task complete.');
+        $this->io->styledText('Frontend build task complete.');
 
         return Command::SUCCESS;
     }
@@ -89,11 +89,11 @@ class BuildBackend extends BaseTask implements DiscoverableTaskInterface
 
         $config = $this->context->get(self::COMMAND_KEY);
 
-        if (isset($config[BuildBackendConfig::STRATEGY_KEY])) {
-            $strategy = $config[BuildBackendConfig::STRATEGY_KEY];
+        if (isset($config[BuildFrontendConfig::STRATEGY_KEY])) {
+            $strategy = $config[BuildFrontendConfig::STRATEGY_KEY];
         }
 
-        $strategyOption = $input->getOption(BuildBackendConfig::STRATEGY_KEY);
+        $strategyOption = $input->getOption(BuildFrontendConfig::STRATEGY_KEY);
 
         if (!empty($strategyOption)) {
             $strategy = $strategyOption;
