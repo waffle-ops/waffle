@@ -4,6 +4,7 @@ namespace Waffle\Model\Build\Frontend;
 
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Build\BuildHandlerInterface;
+use Waffle\Model\Cli\Runner\Gulp;
 use Waffle\Model\Cli\Runner\Npm;
 
 class GulpFrontendBuildHandler implements BuildHandlerInterface
@@ -19,18 +20,26 @@ class GulpFrontendBuildHandler implements BuildHandlerInterface
     private $npm;
 
     /**
+     * @var Gulp
+     */
+    private $gulp;
+
+    /**
      * Constructor
      *
      * @param CliHelper $cliHelper
      * @param Npm $npm
+     * @param Gulp $gulp
      */
     public function __construct(
         CliHelper $cliHelper,
-        Npm $npm
+        Npm $npm,
+        Gulp $gulp
     )
     {
         $this->cliHelper = $cliHelper;
         $this->npm = $npm;
+        $this->gulp = $gulp;
     }
 
     /**
@@ -41,6 +50,7 @@ class GulpFrontendBuildHandler implements BuildHandlerInterface
         $process = $this->npm->install();
         $this->cliHelper->outputOrFail($process, 'Running npm install.');
 
-        // TODO Run 'gulp build'
+        $process = $this->gulp->build();
+        $this->cliHelper->outputOrFail($process, 'Running gulp build.');
     }
 }
