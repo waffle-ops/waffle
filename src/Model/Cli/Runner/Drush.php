@@ -480,11 +480,10 @@ class Drush extends BaseCliRunner
      *
      * @throws Exception
      */
-    function validateSiteUri() {
-        if (
-            empty($this->drush_status_data['uri'])
-            || ($this->drush_status_data['uri'] === 'http://default') // This is the drush default when not set.
-        ) {
+    private function validateSiteUri()
+    {
+        // Checking for empty as well as the drush default.
+        if (empty($this->drush_status_data['uri']) || ($this->drush_status_data['uri'] === 'http://default')) {
             $error = [
                 'Site uri is not set. You need to set your site\'s uri value. Learn more here:',
                 sprintf(

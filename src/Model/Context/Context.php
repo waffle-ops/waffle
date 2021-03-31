@@ -332,7 +332,8 @@ class Context implements ConfigurationInterface
     /**
      * @return string
      */
-    public function getTaskWorkingDirectory() {
+    public function getTaskWorkingDirectory()
+    {
         return $this->taskWorkingDirectory;
     }
 
@@ -340,7 +341,8 @@ class Context implements ConfigurationInterface
      * @param string $directory
      * @throws \Exception
      */
-    public function setTaskWorkingDirectory(string $directory) {
+    public function setTaskWorkingDirectory(string $directory)
+    {
         $path = realpath($directory);
 
         if ($path === false || !is_dir($path)) {
@@ -354,7 +356,8 @@ class Context implements ConfigurationInterface
      * Resets the task working directory. This is needed for recipes that call
      * multiple tasks but may need different task directories.
      */
-    public function resetTaskWorkingDirectory() {
+    public function resetTaskWorkingDirectory()
+    {
         $this->taskWorkingDirectory = null;
     }
 }

@@ -33,7 +33,8 @@ class IOStyle extends SymfonyStyle implements StyleInterface
     /**
      * @return OutputInterface
      */
-    public function getOutput() {
+    public function getOutput()
+    {
         return $this->output;
     }
 
