@@ -35,8 +35,7 @@ class GulpFrontendBuildHandler implements BuildHandlerInterface
         CliHelper $cliHelper,
         Npm $npm,
         Gulp $gulp
-    )
-    {
+    ) {
         $this->cliHelper = $cliHelper;
         $this->npm = $npm;
         $this->gulp = $gulp;
