@@ -41,6 +41,6 @@ class ComposerBackendBuildHandler implements BuildHandlerInterface
         // perhaps we can add a 'type' flag or something and pass via Context to control this behavior. Will need to
         // think through it as options from the command are not passed to Context, so maybe it should work differently.
         $process = $this->composer->install();
-        $this->cliHelper->failIfError($process, 'Running composer install.');
+        $this->cliHelper->outputOrFail($process, 'Running composer install.');
     }
 }
