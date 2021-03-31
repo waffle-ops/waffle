@@ -2,7 +2,7 @@
 
 namespace Waffle\Model\Command;
 
-use Waffle\Command\Recipe;
+use Waffle\Command\Recipe\ConfigDefinedRecipe;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 
@@ -34,16 +34,16 @@ class RecipeFactory
     }
 
     /**
-     * Creates a new Recipe.
+     * Creates a new ConfigDefinedRecipe.
      *
      * @param string $recipeKey
      *   The recipe key.
      *
-     * @return Recipe
+     * @return ConfigDefinedRecipe
      */
     public function create(string $recipeKey)
     {
-        return new Recipe(
+        return new ConfigDefinedRecipe(
             $this->context,
             $this->io,
             $recipeKey
