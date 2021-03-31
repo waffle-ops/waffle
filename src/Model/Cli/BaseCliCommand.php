@@ -45,7 +45,8 @@ class BaseCliCommand
             array_unshift($args, $this->context->getCommandPrefix());
         }
 
-        $this->process = new Process($args);
+        $directory = $this->context->getTaskWorkingDirectory();
+        $this->process = new Process($args, $directory);
 
         /**
          * @todo: Similar to above. Consider revisiting how this works in the
