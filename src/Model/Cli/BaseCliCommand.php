@@ -46,7 +46,8 @@ class BaseCliCommand
         }
 
         $directory = $this->context->getTaskWorkingDirectory();
-        $this->process = new Process($args, $directory);
+        $env = $this->context->getEnvironmentVariables();
+        $this->process = new Process($args, $directory, $env);
 
         /**
          * @todo: Similar to above. Consider revisiting how this works in the

@@ -11,6 +11,7 @@ use Waffle\Model\Config\Item\Cms;
 use Waffle\Model\Config\Item\CommandPrefix;
 use Waffle\Model\Config\Item\ComposerPath;
 use Waffle\Model\Config\Item\DefaultUpstream;
+use Waffle\Model\Config\Item\EnvironmentVariables;
 use Waffle\Model\Config\Item\Host;
 use Waffle\Model\Config\Item\LocalSettingsFilename;
 use Waffle\Model\Config\Item\Recipes;
@@ -359,5 +360,15 @@ class Context implements ConfigurationInterface
     public function resetTaskWorkingDirectory()
     {
         $this->taskWorkingDirectory = null;
+    }
+
+    /**
+     * Gets environment variables as defined in config.
+     *
+     * @return array
+     */
+    public function getEnvironmentVariables()
+    {
+        return $this->get(EnvironmentVariables::KEY);
     }
 }
