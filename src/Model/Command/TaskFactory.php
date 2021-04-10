@@ -4,6 +4,7 @@ namespace Waffle\Model\Command;
 
 use Waffle\Command\Task\ConfigDefinedTask;
 use Waffle\Helper\CliHelper;
+use Waffle\Model\Cli\Factory\GenericCommandFactory;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 
@@ -20,6 +21,11 @@ class TaskFactory
     private $io;
 
     /**
+     * @var GenericCommandFactory
+     */
+    private $genericCommandFactory;
+
+    /**
      * @var CliHelper
      */
     private $cliHelper;
@@ -29,16 +35,19 @@ class TaskFactory
      *
      * @param Context $context
      * @param IOStyle $io
+     * @param GenericCommandFactory $genericCommandFactory
      * @param CliHelper $cliHelper
      *
      */
     public function __construct(
         Context $context,
         IOStyle $io,
+        GenericCommandFactory $genericCommandFactory,
         CliHelper $cliHelper
     ) {
         $this->context = $context;
         $this->io = $io;
+        $this->genericCommandFactory = $genericCommandFactory;
         $this->cliHelper = $cliHelper;
     }
 
@@ -55,6 +64,7 @@ class TaskFactory
         return new ConfigDefinedTask(
             $this->context,
             $this->io,
+            $this->genericCommandFactory,
             $this->cliHelper,
             $taskKey
         );

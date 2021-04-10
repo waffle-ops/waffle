@@ -4,14 +4,19 @@ namespace Waffle\Command\Task;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Process\Process;
 use Waffle\Command\BaseTask;
 use Waffle\Helper\CliHelper;
+use Waffle\Model\Cli\Factory\GenericCommandFactory;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 
 class ConfigDefinedTask extends BaseTask
 {
+    /**
+     * @var GenericCommandFactory
+     */
+    private $genericCommandFactory;
+
     /**
      * @var CliHelper
      */
@@ -22,15 +27,18 @@ class ConfigDefinedTask extends BaseTask
      *
      * @param Context $context
      * @param IOStyle $io
+     * @param GenericCommandFactory $genericCommandFactory
      * @param CliHelper $cliHelper
      * @param string $taskKey
      */
     public function __construct(
         Context $context,
         IOStyle $io,
+        GenericCommandFactory $genericCommandFactory,
         CliHelper $cliHelper,
         string $taskKey
     ) {
+        $this->genericCommandFactory = $genericCommandFactory;
         $this->cliHelper = $cliHelper;
         parent::__construct($context, $io, $taskKey);
     }
@@ -64,15 +72,8 @@ class ConfigDefinedTask extends BaseTask
 
         // TODO: Would be wise to add some sort of validation here.
 
-        // TODO: I'm not a huge fan of using the shell command line method.
-        // Would be better id this used an input array.
-        $process = Process::fromShellCommandline($task);
-        $process->setTimeout($this->context->getTimeout());
+        $process = $this->genericCommandFactory->create([$task])->getProcess();
         $process->run();
-
-        // TODO Handle output. Can it be streamed? Or do we actually have to
-        // wait until process completes? What happens in the case of something
-        // like 'drush pmu' where the '-y' is ommitted?
 
         if ($process->isSuccessful()) {
             $this->io->highlightText('Task %s ran successfully', [$task_key]);
