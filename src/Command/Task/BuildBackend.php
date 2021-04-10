@@ -37,6 +37,9 @@ class BuildBackend extends BaseTask implements DiscoverableTaskInterface
         parent::__construct($context, $io);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function configure()
     {
         parent::configure();
