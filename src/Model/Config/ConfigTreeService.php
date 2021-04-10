@@ -69,7 +69,7 @@ class ConfigTreeService
     {
         $treeBuilder = new TreeBuilder(ConfigItemInterface::SCOPE_GLOBAL);
 
-        $children = $treeBuilder->getRootNode()->children();
+        $children = $treeBuilder->getRootNode()->normalizeKeys(false)->children();
 
         foreach ($this->globalConfigItems as $item) {
             $children->append($item->getDefinition());
@@ -89,7 +89,7 @@ class ConfigTreeService
     {
         $treeBuilder = new TreeBuilder(ConfigItemInterface::SCOPE_PROJECT);
 
-        $children = $treeBuilder->getRootNode()->children();
+        $children = $treeBuilder->getRootNode()->normalizeKeys(false)->children();
 
         foreach ($this->projectConfigItems as $item) {
             $children->append($item->getDefinition());
@@ -109,7 +109,7 @@ class ConfigTreeService
     {
         $treeBuilder = new TreeBuilder(ConfigItemInterface::SCOPE_LOCAL);
 
-        $children = $treeBuilder->getRootNode()->children();
+        $children = $treeBuilder->getRootNode()->normalizeKeys(false)->children();
 
         foreach ($this->localConfigItems as $item) {
             $children->append($item->getDefinition());
@@ -129,7 +129,7 @@ class ConfigTreeService
     {
         $treeBuilder = new TreeBuilder(ConfigItemInterface::SCOPE_APPLICATION);
 
-        $children = $treeBuilder->getRootNode()->children();
+        $children = $treeBuilder->getRootNode()->normalizeKeys(false)->children();
 
         foreach ($this->applicationConfigItems as $item) {
             $children->append($item->getDefinition());

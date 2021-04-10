@@ -6,7 +6,6 @@ use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
@@ -93,7 +92,10 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         // like --filter=cms:drupal8 to only touch Drupal 8 projects.
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
         // While testing this, I noticed that Symfony does not behave quite as
         // expected. For example 'wfl global:iterate "--version"' will never

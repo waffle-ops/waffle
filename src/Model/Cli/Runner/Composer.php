@@ -12,7 +12,6 @@ use Waffle\Model\IO\IOStyle;
 
 class Composer extends BaseCliRunner
 {
-
     /**
      * @var ComposerCommandFactory
      */
@@ -155,14 +154,19 @@ class Composer extends BaseCliRunner
     /**
      * Install composer dependencies.
      *
+     * @param string $directory
      * @return Process
-     * @throws Exception
      */
-    public function install(): Process
+    public function install(string $directory = ''): Process
     {
+        if (empty($directory)) {
+            $directory = $this->context->getComposerPath();
+        }
+
         $command = $this->composerCommandFactory->create(
             [
                 'install',
+                "--working-dir={$directory}",
             ]
         );
 

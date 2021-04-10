@@ -17,7 +17,7 @@ class CliHelper
     /**
      * Creates a new CliHelper instance.
      *
-     * @param IO $io
+     * @param IOStyle $io
      */
     public function __construct(IOStyle $io)
     {

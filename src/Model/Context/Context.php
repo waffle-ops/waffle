@@ -11,6 +11,7 @@ use Waffle\Model\Config\Item\Cms;
 use Waffle\Model\Config\Item\CommandPrefix;
 use Waffle\Model\Config\Item\ComposerPath;
 use Waffle\Model\Config\Item\DefaultUpstream;
+use Waffle\Model\Config\Item\EnvironmentVariables;
 use Waffle\Model\Config\Item\Host;
 use Waffle\Model\Config\Item\LocalSettingsFilename;
 use Waffle\Model\Config\Item\Recipes;
@@ -63,19 +64,26 @@ class Context implements ConfigurationInterface
     protected $localConfig;
 
     /**
-     * The combined config from all avaliable contexts.
+     * The combined config from all available contexts.
      *
      * @var array
      */
     protected $config;
 
     /**
+     * The directory in which the current task needs to run.
+     *
+     * @var string
+     */
+    protected $taskWorkingDirectory;
+
+    /**
      * Constructor
      *
-     * @param ConfigTreeService
-     * @param GlobalContext
-     * @param ProjectContext
-     * @param LocalContext
+     * @param ConfigTreeService $configTreeService
+     * @param GlobalContext $globalContext
+     * @param ProjectContext $projectContext
+     * @param LocalContext $localContext
      */
     public function __construct(
         ConfigTreeService $configTreeService,
@@ -83,7 +91,6 @@ class Context implements ConfigurationInterface
         ProjectContext $projectContext,
         LocalContext $localContext
     ) {
-
         $this->configTreeService = $configTreeService;
 
         $this->globalConfig = $globalContext->getConfig();
@@ -102,6 +109,8 @@ class Context implements ConfigurationInterface
             $this,
             $configs
         );
+
+        $this->resetTaskWorkingDirectory();
     }
 
     /**
@@ -137,7 +146,7 @@ class Context implements ConfigurationInterface
      *
      * @return string|array
      */
-    private function get($key)
+    public function get($key)
     {
         if (isset($this->config[$key])) {
             return $this->config[$key];
@@ -319,5 +328,47 @@ class Context implements ConfigurationInterface
         }
 
         return $time;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTaskWorkingDirectory()
+    {
+        return $this->taskWorkingDirectory;
+    }
+
+    /**
+     * @param string $directory
+     * @throws \Exception
+     */
+    public function setTaskWorkingDirectory(string $directory)
+    {
+        $path = realpath($directory);
+
+        if ($path === false || !is_dir($path)) {
+            throw new \Exception(sprintf('Directory with path %s does not exist.', $directory));
+        }
+
+        $this->taskWorkingDirectory = $path;
+    }
+
+    /**
+     * Resets the task working directory. This is needed for recipes that call
+     * multiple tasks but may need different task directories.
+     */
+    public function resetTaskWorkingDirectory()
+    {
+        $this->taskWorkingDirectory = null;
+    }
+
+    /**
+     * Gets environment variables as defined in config.
+     *
+     * @return array
+     */
+    public function getEnvironmentVariables()
+    {
+        return $this->get(EnvironmentVariables::KEY);
     }
 }

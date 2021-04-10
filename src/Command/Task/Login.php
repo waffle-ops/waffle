@@ -4,14 +4,13 @@ namespace Waffle\Command\Task;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Waffle\Command\BaseCommand;
+use Waffle\Command\BaseTask;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
 
-class Login extends BaseCommand implements DiscoverableTaskInterface
+class Login extends BaseTask implements DiscoverableTaskInterface
 {
     public const COMMAND_KEY = 'login';
 
@@ -38,6 +37,7 @@ class Login extends BaseCommand implements DiscoverableTaskInterface
 
     protected function configure()
     {
+        parent::configure();
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Attempts to perform a user login action on the site.');
         $this->setHelp('Attempts to perform a user login action on the site.');
@@ -46,17 +46,16 @@ class Login extends BaseCommand implements DiscoverableTaskInterface
         // This could be pulled out a level and support dev, stg, prod
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
-        parent::execute($input, $output);
-
         try {
             $sync = $this->siteSyncFactory->getSiteSyncAdapter($this->context->getCms());
             $process = $sync->postSyncLogin();
             $url = $process->getOutput();
             $this->io->success(sprintf('User Login: %s', $url));
-            // TODO: Attempt to open the url with the browser. Drush has
-            // already solved this problem. Check to see how they solved it.
         } catch (\Exception $e) {
             $this->io->error($e->getMessage());
             return Command::FAILURE;

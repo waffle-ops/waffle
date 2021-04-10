@@ -7,8 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Waffle\Command\BaseCommand;
+use Waffle\Command\BaseTask;
 use Waffle\Command\DiscoverableTaskInterface;
 use Waffle\Helper\CliHelper;
 use Waffle\Model\Cli\Runner\Composer;
@@ -19,7 +18,7 @@ use Waffle\Model\Config\Item\Cms;
 use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 
-class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
+class UpdateApply extends BaseTask implements DiscoverableTaskInterface
 {
     public const COMMAND_KEY = 'update-apply';
 
@@ -158,6 +157,7 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
      */
     protected function configure()
     {
+        parent::configure();
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Applies any pending site updates.');
         $this->setHelp('Applies any pending site updates.');
@@ -247,17 +247,10 @@ class UpdateApply extends BaseCommand implements DiscoverableTaskInterface
     }
 
     /**
-     * Runs the command.
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int
-     * @throws Exception
+     * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function process(InputInterface $input)
     {
-        parent::execute($input, $output);
-
         $this->gitPrefix = $input->getOption('git-prefix');
         $this->gitPostfix = $input->getOption('git-postfix');
         $this->skipGit = $input->getOption('skip-git');

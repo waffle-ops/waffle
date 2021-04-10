@@ -1,13 +1,13 @@
 <?php
 
-namespace Waffle\Command;
+namespace Waffle\Command\Recipe;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Waffle\Command\BaseCommand;
 
-class Recipe extends BaseCommand
+class ConfigDefinedRecipe extends BaseCommand
 {
     /**
      * @var string
@@ -24,12 +24,15 @@ class Recipe extends BaseCommand
         // TODO: Help and description are not properly set since these are
         // populated. Consider allow help and description text to be set in
         // config.
-        $help = 'Custom Recipe -- <comment>See Waffle config file.</comment>';
+        $help = 'Custom ConfigDefinedRecipe -- <comment>See Waffle config file.</comment>';
         $this->setDescription($help);
         $this->setHelp($help);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
         $this->io->highlightText('Running recipe %s', [$this->config_key]);
 
@@ -67,11 +70,11 @@ class Recipe extends BaseCommand
             $task_command = $this->getApplication()->find($task_key);
 
             $task_arguments = $this->prepareTaskArguments($args);
-            $return_code = $task_command->run($task_arguments, $output);
+            $return_code = $task_command->run($task_arguments, $this->io->getOutput());
 
             if ($return_code !== Command::SUCCESS) {
                 $this->io->highlightText(
-                    '[Recipe %s] Failed while running task %s',
+                    '[ConfigDefinedRecipe %s] Failed while running task %s',
                     [$this->config_key, $task_key],
                     'error',
                     'none'
@@ -81,7 +84,7 @@ class Recipe extends BaseCommand
             }
         }
 
-        $this->io->highlightText('Recipe %s complete!', [$this->config_key]);
+        $this->io->highlightText('ConfigDefinedRecipe %s complete!', [$this->config_key]);
 
         return Command::SUCCESS;
     }

@@ -5,7 +5,6 @@ namespace Waffle\Command\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Application as Waffle;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
@@ -57,7 +56,7 @@ class Docs extends BaseCommand implements DiscoverableCommandInterface
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function process(InputInterface $input)
     {
         $skipBrowser = $input->getOption('no-browser');
 
