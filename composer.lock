@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0632e371f2cbe8d12c346175b76a2cb5",
+    "content-hash": "a68bc026b822af68b113195f9d075e7b",
     "packages": [
         {
             "name": "consolidation/self-update",
@@ -1086,6 +1086,15 @@
         }
     ],
     "packages-dev": [
+        {
+            "name": "bats-core/bats-core",
+            "version": "1.3.0",
+            "dist": {
+                "type": "zip",
+                "url": "https://github.com/bats-core/bats-core/archive/refs/tags/v1.3.0.zip"
+            },
+            "type": "library"
+        },
         {
             "name": "squizlabs/php_codesniffer",
             "version": "3.5.8",
