@@ -4,8 +4,10 @@ host: custom
 tasks:
   # Defining a task to run the phpcs script.
   test-phpcs: ./scripts/tests/phpcs.sh
+  test-bats: "./vendor/bats-core/bats-core/bin/bats tests/bats/bats"
 
 recipes:
   # Defining a ci recipe.
   ci:
     - test-phpcs: {}
+    - test-bats: {}
