@@ -64,15 +64,16 @@ class ConfigDefinedTask extends BaseTask
     protected function process(InputInterface $input)
     {
         // Note: The 'command' argument is defined by the Symfony Command class.
-        $task_key = $input->getArgument('command');
+        $task_key = trim($input->getArgument('command'));
 
         $config_tasks = $this->context->getTasks() ?? [];
-        $task = isset($config_tasks[$task_key]) ? $config_tasks[$task_key] : '';
+        $task = isset($config_tasks[$task_key]) ? trim($config_tasks[$task_key]) : '';
         $this->io->highlightText('Running task %s: %s', [$task_key, $task]);
 
         // TODO: Would be wise to add some sort of validation here.
 
-        $process = $this->genericCommandFactory->create([$task])->getProcess();
+        $task_array = explode(' ', $task);
+        $process = $this->genericCommandFactory->create($task_array)->getProcess();
         $process->run();
 
         if ($process->isSuccessful()) {
