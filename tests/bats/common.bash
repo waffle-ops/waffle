@@ -15,3 +15,26 @@ _common_setup() {
     load "$VENDOR/bats-support/load.bash"
     load "$VENDOR/bats-assert/load.bash"
 }
+
+_phar_setup() {
+    WAFFLE_PHAR=dist/waffle.phar
+
+    if [[ -e $WAFFLE_PHAR ]]; then
+      rm $WAFFLE_PHAR
+    fi
+
+    # Assumes _common_setup() already called.
+    BUILD_PHAR=$PROJECT_ROOT/scripts/build/phar.php
+    php $BUILD_PHAR
+
+    WAFFLE_PHAR=dist/waffle.phar
+    chmod 755 $WAFFLE_PHAR
+}
+
+_phar_teardown() {
+    WAFFLE_PHAR=dist/waffle.phar
+
+    if [[ -e $WAFFLE_PHAR ]]; then
+      rm $WAFFLE_PHAR
+    fi
+}
