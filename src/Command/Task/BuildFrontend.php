@@ -41,8 +41,8 @@ class BuildFrontend extends BaseTask implements DiscoverableTaskInterface
     {
         parent::configure();
         $this->setName(self::COMMAND_KEY);
-        $this->setDescription('Builds the backend of the project.');
-        $this->setHelp('Builds the backend of the project.');
+        $this->setDescription('Builds the frontend of the project.');
+        $this->setHelp('Builds the frontend of the project.');
 
         // TODO Expand the help section.
 
