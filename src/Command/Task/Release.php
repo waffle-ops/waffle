@@ -48,7 +48,7 @@ class Release extends BaseTask implements DiscoverableTaskInterface
             null,
             InputArgument::OPTIONAL,
             'The script to execute.',
-            '../private/scripts/release.sh'
+            '../private/releases/release.sh'
         );
     }
 
@@ -57,7 +57,7 @@ class Release extends BaseTask implements DiscoverableTaskInterface
      */
     protected function process(InputInterface $input)
     {
-        $script = $input->getOption('script');
+        $script = trim($input->getOption('script'));
 
         if (!file_exists($script)) {
             $this->io->warning(sprintf('Script %s not found. Skipping.', $script));
