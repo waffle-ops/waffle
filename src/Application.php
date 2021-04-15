@@ -88,7 +88,11 @@ class Application extends SymfonyApplication
     {
         $this->addCommands($this->commandLoader->getCommands());
 
-        $exitCode = parent::run();
+        try {
+            $exitCode = parent::run();
+        } catch (\Exception $e) {
+            $this->io->error($e->getMessage());
+        }
 
         // TODO -- Consider absorbing this into the list command.
         if (!$this->context->hasProjectConfig()) {
