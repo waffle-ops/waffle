@@ -2,3 +2,6 @@
 
 # Ignore dev specific files
 .idea/
+
+# Ignore phpunit output
+.phpunit.result.cache
