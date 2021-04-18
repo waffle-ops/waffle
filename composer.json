@@ -27,7 +27,14 @@
         "psr-4": {
             "Waffle\\": "src"
         },
-        "classmap": ["src"]
+        "classmap": [
+            "src"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Waffle\\Tests\\": "tests"
+        }
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.5",
