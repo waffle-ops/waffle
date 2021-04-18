@@ -57,6 +57,9 @@ class Application extends SymfonyApplication
 
         // Prevent auto exiting (so we can run extra code).
         $this->setAutoExit(false);
+
+        // Load commands.
+        $this->addCommands($this->commandLoader->getCommands());
     }
 
     /**
@@ -86,10 +89,8 @@ class Application extends SymfonyApplication
      */
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
-        $this->addCommands($this->commandLoader->getCommands());
-
         try {
-            $exitCode = parent::run();
+            $exitCode = parent::run($input, $output);
         } catch (\Exception $e) {
             $this->io->error($e->getMessage());
         }
