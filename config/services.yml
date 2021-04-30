@@ -5,6 +5,8 @@ services:
     public: false
 
   _instanceof:
+    Waffle\Model\Audit\AuditCheckInterface:
+      tags: ['audit_checks']
     Waffle\Model\Config\ConfigItemInterface:
       tags: ['config_items']
     Waffle\Command\DiscoverableCommandInterface:
@@ -29,6 +31,16 @@ services:
 
   Waffle\Model\IO\IOStyle:
     public: true
+
+  Waffle\Model\Audit\AuditService:
+    public: true
+    arguments:
+      - '@di_helper'
+
+  Waffle\Model\Audit\AuditManager:
+    public: true
+    arguments:
+      - !tagged audit_checks
 
   Waffle\Model\Config\ConfigTreeService:
     public: true
