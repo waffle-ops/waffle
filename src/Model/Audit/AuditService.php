@@ -61,12 +61,6 @@ class AuditService
             }
 
             $report[$key] = $success;
-
-            // if ($auditCheck->validate()) {
-            //     $report[] = $auditCheck->getDescription();
-            // } else {
-            //     $report[] = $auditCheck->getResolution();
-            // }
         }
 
         return $report;
