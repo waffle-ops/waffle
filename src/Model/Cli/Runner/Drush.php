@@ -406,7 +406,12 @@ class Drush extends BaseCliRunner
         $this->validateDbAccess();
 
         // Verifies the site uri has been set. Login / multisites won't work without this.
-        $this->validateSiteUri();
+        try {
+            $this->validateSiteUri();
+        } catch (Exception $e) {
+            // TODO -- Remove this try/catch to let the exception bubble upstream.
+            $this->io->warning($e->getMessage());
+        }
     }
 
     /**
@@ -485,11 +490,13 @@ class Drush extends BaseCliRunner
         // Checking for empty as well as the drush default.
         if (empty($this->drush_status_data['uri']) || ($this->drush_status_data['uri'] === 'http://default')) {
             $error = [
-                'Site uri is not set. You need to set your site\'s uri value. Learn more here:',
+                'Site uri is not set (Drush). You need to set your site\'s uri value. Learn more here:',
                 sprintf(
                     'https://docs.drush.org/en/%s.x/usage/?q=uri&check_keywords=yes&area=default',
                     $this->drush_major_version
                 ),
+                // TODO Remove the next line once the update has been made.
+                "\nFuture releases of Waffle will require the site uri to be set to run Drush commands."
             ];
 
             throw new Exception(implode(PHP_EOL, $error));
