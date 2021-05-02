@@ -31,4 +31,13 @@ interface AuditCheckInterface
      * Gets the resolution reason for a failed audit check.
      */
     public function getResolution(): string;
+
+    /**
+     * Checks if a audit check is required to pass.
+     *
+     * Returns true if required, false otherwise.
+     *
+     * @return bool
+     */
+    public function isRequired(): bool;
 }
