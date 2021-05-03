@@ -75,6 +75,10 @@ class TrustedHostPatterns extends BaseAuditCheck
      */
     public function getResolution(): string
     {
-        return "Add trusted_host_patterns in settings.php.\nSee https://www.drupal.org/docs/installing-drupal/trusted-host-settings.";
+        return sprintf(
+            "%s\n%s",
+            'Add trusted_host_patterns in settings.php.',
+            'See https://www.drupal.org/docs/installing-drupal/trusted-host-settings.'
+        );
     }
 }
