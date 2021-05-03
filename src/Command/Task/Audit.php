@@ -70,44 +70,48 @@ class Audit extends BaseTask implements DiscoverableTaskInterface
         $recommendedFailures = $this->doRecommendedAuditChecks();
         $this->io->newLine();
 
-        // Displays failed required audit checks and provides details on how
-        // to resolve the issues.
-        $this->io->section('Required Audit Check Results:');
-        $requiredResolution = $this->getResolutionTable($requiredFailures);
-        if (!empty($requiredResolution)) {
-            $this->io->table(
-                [
-                    $this->io->styleText('Failed Required Audit Check', 'status_error'),
-                    $this->io->styleText('Resolution', 'status_success'),
-                ],
-                $requiredResolution,
-                'box'
-            );
+        if (!empty($this->requiredAuditChecks)) {
+            // Displays failed required audit checks and provides details on how
+            // to resolve the issues (if needed).
+            $this->io->section('Required Audit Check Results:');
+            $requiredResolution = $this->getResolutionTable($requiredFailures);
+            if (!empty($requiredResolution)) {
+                $this->io->table(
+                    [
+                        $this->io->styleText('Failed Required Audit Check', 'status_error'),
+                        $this->io->styleText('Resolution', 'status_success'),
+                    ],
+                    $requiredResolution,
+                    'box'
+                );
 
-            $this->io->error('Required audit checks failed! Please resolve the issues displayed above.');
-        } else {
-            $this->io->success('All required audit checks have passed!');
+                $this->io->error('Required audit checks failed! Please resolve the issues displayed above.');
+            } else {
+                $this->io->success('All required audit checks have passed!');
+            }
         }
 
-        // Displays failed recommended audit checks and provides details on how
-        // to resolve the issues.
-        $this->io->section('Recommended Audit Check Results:');
-        $recommendedResolution = $this->getResolutionTable($recommendedFailures);
-        if (!empty($recommendedResolution)) {
-            $this->io->table(
-                [
-                    $this->io->styleText('Failed Recommended Audit Check', 'status_error'),
-                    $this->io->styleText('Resolution', 'status_success'),
-                ],
-                $recommendedResolution,
-                'box'
-            );
+        if (!empty($this->recommendedAuditChecks)) {
+            // Displays failed recommended audit checks and provides details on how
+            // to resolve the issues (if needed).
+            $this->io->section('Recommended Audit Check Results:');
+            $recommendedResolution = $this->getResolutionTable($recommendedFailures);
+            if (!empty($recommendedResolution)) {
+                $this->io->table(
+                    [
+                        $this->io->styleText('Failed Recommended Audit Check', 'status_error'),
+                        $this->io->styleText('Resolution', 'status_success'),
+                    ],
+                    $recommendedResolution,
+                    'box'
+                );
 
-            $this->io->error(
-                'Recommended audit checks failed! It is recommended that you address the issues displayed above.'
-            );
-        } else {
-            $this->io->success('All recommended audit checks have passed!');
+                $this->io->error(
+                    'Recommended audit checks failed! It is recommended that you address the issues displayed above.'
+                );
+            } else {
+                $this->io->success('All recommended audit checks have passed!');
+            }
         }
 
         // Adding a new line because it looks better in the output.
