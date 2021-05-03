@@ -106,7 +106,7 @@ class Audit extends BaseTask implements DiscoverableTaskInterface
                     'box'
                 );
 
-                $this->io->error(
+                $this->io->warning(
                     'Recommended audit checks failed! It is recommended that you address the issues displayed above.'
                 );
             } else {
