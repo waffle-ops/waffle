@@ -522,4 +522,21 @@ class Drush extends BaseCliRunner
 
         return $patching_enabled;
     }
+
+    /**
+     * Passes and runs code through drush php-eval.
+     *
+     * @param string $php
+     *   PHP code to be passed to the drush php-eval command.
+     *
+     * @return Process
+     * @throws Exception
+     */
+    public function phpEval($php)
+    {
+        $phpEval = $this->drushCommandFactory->create(['php-eval', $php]);
+        $process = $phpEval->getProcess();
+        $process->run();
+        return $process;
+    }
 }
