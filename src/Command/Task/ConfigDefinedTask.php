@@ -53,7 +53,7 @@ class ConfigDefinedTask extends BaseTask
         // TODO: Help and description are not properly set since these are
         // populated. Consider allow help and description text to be set in
         // config.
-        $help = 'Custom ConfigDefinedTask -- <comment>See Waffle config file.</comment>';
+        $help = 'Custom Task -- <comment>See Waffle config file.</comment>';
         $this->setDescription($help);
         $this->setHelp($help);
     }
@@ -85,7 +85,7 @@ class ConfigDefinedTask extends BaseTask
 
             return Command::SUCCESS;
         } else {
-            $this->io->text('<error>ConfigDefinedTask ' . $task_key . ' returned with an error.</error>');
+            $this->io->text('<error>Task ' . $task_key . ' returned with an error.</error>');
             $this->io->text('<error>' . $process->getOutput() . '</error>');
             $this->io->text('<error>' . $process->getErrorOutput() . '</error>');
             return Command::FAILURE;

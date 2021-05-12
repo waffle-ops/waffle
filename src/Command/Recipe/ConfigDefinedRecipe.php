@@ -24,7 +24,7 @@ class ConfigDefinedRecipe extends BaseCommand
         // TODO: Help and description are not properly set since these are
         // populated. Consider allow help and description text to be set in
         // config.
-        $help = 'Custom ConfigDefinedRecipe -- <comment>See Waffle config file.</comment>';
+        $help = 'Custom Recipe -- <comment>See Waffle config file.</comment>';
         $this->setDescription($help);
         $this->setHelp($help);
     }
@@ -74,7 +74,7 @@ class ConfigDefinedRecipe extends BaseCommand
 
             if ($return_code !== Command::SUCCESS) {
                 $this->io->highlightText(
-                    '[ConfigDefinedRecipe %s] Failed while running task %s',
+                    '[Recipe %s] Failed while running task %s',
                     [$this->config_key, $task_key],
                     'error',
                     'none'
@@ -84,7 +84,7 @@ class ConfigDefinedRecipe extends BaseCommand
             }
         }
 
-        $this->io->highlightText('ConfigDefinedRecipe %s complete!', [$this->config_key]);
+        $this->io->highlightText('Recipe %s complete!', [$this->config_key]);
 
         return Command::SUCCESS;
     }
