@@ -5,25 +5,28 @@ namespace Waffle;
 use Symfony\Component\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Waffle\Exception\Config\MissingConfigFileException;
 use Waffle\Exception\UpdateCheckException;
 use Waffle\Helper\GitHubHelper;
 use Waffle\Helper\PharHelper;
 use Waffle\Helper\WaffleHelper;
 use Waffle\Model\Command\CommandLoader;
-use Waffle\Model\IO\IO;
+use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
-use Waffle\Model\Validate\Preflight\PreflightValidator;
 
 class Application extends SymfonyApplication
 {
     public const NAME = 'Waffle';
 
-    public const VERSION = 'v0.0.3-alpha';
+    public const VERSION = 'v0.0.4-alpha';
 
     public const REPOSITORY = 'waffle-ops/waffle';
 
     public const DOCS_URL = 'https://github.com/waffle-ops/waffle/wiki';
+
+    /**
+     * @var Context
+     */
+    private $context;
 
     /**
      * @var CommandLoader
@@ -33,8 +36,6 @@ class Application extends SymfonyApplication
     private $commandLoader;
 
     /**
-     * Defines the Input/Output helper object.
-     *
      * @var IOStyle
      */
     protected $io;
@@ -42,13 +43,16 @@ class Application extends SymfonyApplication
     /**
      * Constructor
      *
+     * @param Context $context
+     * @param IOStyle $io
      * @param CommandLoader $commandLoader
      */
-    public function __construct(CommandLoader $commandLoader)
+    public function __construct(Context $context, IOStyle $io, CommandLoader $commandLoader)
     {
         parent::__construct(self::NAME, self::VERSION);
 
-        $this->io = IO::getInstance()->getIO();
+        $this->context = $context;
+        $this->io = $io;
         $this->commandLoader = $commandLoader;
 
         // Prevent auto exiting (so we can run extra code).
@@ -82,22 +86,16 @@ class Application extends SymfonyApplication
      */
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
-        $missing_config = false;
+        $this->addCommands($this->commandLoader->getCommands());
 
         try {
-            $validator = new PreflightValidator();
-            $validator->runChecks();
-        } catch (MissingConfigFileException $e) {
-            $missing_config = true;
+            $exitCode = parent::run();
         } catch (\Exception $e) {
             $this->io->error($e->getMessage());
         }
 
-        $this->addCommands($this->commandLoader->getCommands());
-
-        $exitCode = parent::run();
-
-        if ($missing_config) {
+        // TODO -- Consider absorbing this into the list command.
+        if (!$this->context->hasProjectConfig()) {
             $notice = [
                 'Looks like you are using Waffle without a .waffle.yml file!',
                 'To take full advantage of Waffle with your project, try running the \'init\' command.',
@@ -117,7 +115,7 @@ class Application extends SymfonyApplication
      * Overrides the find method to install call get.
      *
      * The default behavior of the application is to call a best guess if it is
-     * reasonibly sure it is correct. For example, if a 'phpcs' command existed
+     * reasonably sure it is correct. For example, if a 'phpcs' command existed
      * and the user only typed 'phpc', the base code is smart enough to run
      * 'phpcs' instead.
      *

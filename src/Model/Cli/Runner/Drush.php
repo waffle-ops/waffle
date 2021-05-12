@@ -6,9 +6,13 @@ use Exception;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\WaffleHelper;
-use Waffle\Model\Cli\DrushCommand;
+use Waffle\Model\Cli\BaseCliRunner;
+use Waffle\Model\Cli\Factory\DrushCommandFactory;
+use Waffle\Model\Config\Item\Cms;
+use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
-class Drush extends BaseRunner
+class Drush extends BaseCliRunner
 {
 
     /**
@@ -37,19 +41,45 @@ class Drush extends BaseRunner
     private $waffleHelper;
 
     /**
-     *  Constructor
+     * @var DrushCommandFactory
+     */
+    private $drushCommandFactory;
+
+    /**
+     * Constructor
      *
+     * @param Context $context
+     *
+     * @param IOStyle $io
+     * @param WaffleHelper $waffleHelper
+     * @param DrushCommandFactory $drushCommandFactory
      * @throws Exception
      */
-    public function __construct()
-    {
-        parent::__construct();
+    public function __construct(
+        Context $context,
+        IOStyle $io,
+        WaffleHelper $waffleHelper,
+        DrushCommandFactory $drushCommandFactory
+    ) {
+        // Need to call the parent constructor first as we need to set $context.
+        parent::__construct($context, $io);
+        $this->waffleHelper = $waffleHelper;
+        $this->drushCommandFactory = $drushCommandFactory;
 
-        $this->waffleHelper = new WaffleHelper();
+        // Exiting early if the context does not apply. This is necessary
+        // because we are using DI, but not using lazy loading on the commands.
+        $validCms = [
+            Cms::OPTION_DRUPAL_7,
+            Cms::OPTION_DRUPAL_8,
+        ];
+
+        if (!in_array($this->context->getCms(), $validCms)) {
+            return;
+        }
 
         // Calling 'drush status --format=json' will give us a json blob that
         // we can parse to get info about the site.
-        $status = new DrushCommand(['status', '--format=json']);
+        $status = $this->drushCommandFactory->create(['status', '--format=json']);
         $process = $status->getProcess();
         $process->run();
         $json = $process->getOutput();
@@ -127,7 +157,7 @@ class Drush extends BaseRunner
      */
     private function resetDatabase()
     {
-        $db_reset = new DrushCommand(['sql-create', '-y']);
+        $db_reset = $this->drushCommandFactory->create(['sql-create', '-y']);
         $process = $db_reset->getProcess();
         $process->run();
         return $process;
@@ -144,7 +174,7 @@ class Drush extends BaseRunner
         $dump = $this->waffleHelper->getTempFilePath($fname);
 
         // Using DrushCommand to build as it will handle prefixes in the future.
-        $drush =  new DrushCommand([$alias, 'sql-dump']);
+        $drush =  $this->drushCommandFactory->create([$alias, 'sql-dump']);
         $export = $drush->getProcess()->getCommandLine();
 
         // This is a hack. The --result-file flag is sent to the upstream, so
@@ -168,7 +198,7 @@ class Drush extends BaseRunner
     private function importDatabase($dump)
     {
         // Using DrushCommand to build as it will handle prefixes in the future.
-        $drush = new DrushCommand(['sql-cli']);
+        $drush = $this->drushCommandFactory->create(['sql-cli']);
         $import = $drush->getProcess()->getCommandLine();
 
         // Feeding the dump file in with <.
@@ -203,7 +233,7 @@ class Drush extends BaseRunner
      */
     public function syncFiles($alias)
     {
-        $file_sync = new DrushCommand(['-y', 'core-rsync', $alias, 'sites/default/files']);
+        $file_sync = $this->drushCommandFactory->create(['-y', 'core-rsync', $alias, 'sites/default/files']);
         $process = $file_sync->getProcess();
         $process->run();
         return $process;
@@ -216,7 +246,7 @@ class Drush extends BaseRunner
      */
     public function userLogin()
     {
-        $uli = new DrushCommand(['uli']);
+        $uli = $this->drushCommandFactory->create(['uli']);
         $process = $uli->getProcess();
         $process->run();
         return $process;
@@ -244,7 +274,7 @@ class Drush extends BaseRunner
                 );
         }
 
-        $cache_clear = new DrushCommand($cc);
+        $cache_clear = $this->drushCommandFactory->create($cc);
         $process = $cache_clear->getProcess();
         $process->run();
         return $process;
@@ -276,7 +306,7 @@ class Drush extends BaseRunner
                 );
         }
 
-        $pm_security = new DrushCommand($args);
+        $pm_security = $this->drushCommandFactory->create($args);
         $process = $pm_security->getProcess();
         $process->run();
         return $process;
@@ -301,7 +331,7 @@ class Drush extends BaseRunner
             );
         }
 
-        $command = new DrushCommand(['upc', $module, '--check-disabled', '-y']);
+        $command = $this->drushCommandFactory->create(['upc', $module, '--check-disabled', '-y']);
         $process = $command->getProcess();
         $process->run();
         return $process;
@@ -315,7 +345,7 @@ class Drush extends BaseRunner
      */
     public function updateDatabase()
     {
-        $updb = new DrushCommand(['updb', '-y']);
+        $updb = $this->drushCommandFactory->create(['updb', '-y']);
         $process = $updb->getProcess();
         $process->run();
         return $process;
@@ -336,7 +366,7 @@ class Drush extends BaseRunner
             );
         }
 
-        $cex = new DrushCommand(['cex', '-y', $config_key]);
+        $cex = $this->drushCommandFactory->create(['cex', '-y', $config_key]);
         $process = $cex->getProcess();
         $process->run();
         return $process;
@@ -355,7 +385,7 @@ class Drush extends BaseRunner
             return false;
         }
 
-        $command = new DrushCommand(['pp', $module, '-y']);
+        $command = $this->drushCommandFactory->create(['pp', $module, '-y']);
         $process = $command->getProcess();
         $process->run();
         return $process;
@@ -374,6 +404,14 @@ class Drush extends BaseRunner
 
         // Attempts a DB connection.
         $this->validateDbAccess();
+
+        // Verifies the site uri has been set. Login / multisites won't work without this.
+        try {
+            $this->validateSiteUri();
+        } catch (Exception $e) {
+            // TODO -- Remove this try/catch to let the exception bubble upstream.
+            $this->io->warning($e->getMessage());
+        }
     }
 
     /**
@@ -384,7 +422,7 @@ class Drush extends BaseRunner
      */
     private function validateDbAccess()
     {
-        $status = new DrushCommand(['sql:query', 'select 1']);
+        $status = $this->drushCommandFactory->create(['sql:query', 'select 1']);
         $process = $status->getProcess();
         $process->run();
         $output = $process->getOutput();
@@ -410,7 +448,7 @@ class Drush extends BaseRunner
         $finder = new Finder();
         $finder->files();
         $finder->in(getcwd());
-        $filename = $this->config->getLocalSettingsFilename();
+        $filename = $this->context->getLocalSettingsFilename();
         $finder->name($filename);
 
         if ($finder->hasResults()) {
@@ -443,6 +481,29 @@ class Drush extends BaseRunner
     }
 
     /**
+     * Validates that the site uri is set.
+     *
+     * @throws Exception
+     */
+    private function validateSiteUri()
+    {
+        // Checking for empty as well as the drush default.
+        if (empty($this->drush_status_data['uri']) || ($this->drush_status_data['uri'] === 'http://default')) {
+            $error = [
+                'Site uri is not set (Drush). You need to set your site\'s uri value. Learn more here:',
+                sprintf(
+                    'https://docs.drush.org/en/%s.x/usage/?q=uri&check_keywords=yes&area=default',
+                    $this->drush_major_version
+                ),
+                // TODO Remove the next line once the update has been made.
+                "\nFuture releases of Waffle will require the site uri to be set to run Drush commands."
+            ];
+
+            throw new Exception(implode(PHP_EOL, $error));
+        }
+    }
+
+    /**
      * Checks if Drush patching is available.
      *
      * @return boolean
@@ -454,7 +515,7 @@ class Drush extends BaseRunner
             return false;
         }
 
-        $status = new DrushCommand(['help', 'patch-status']);
+        $status = $this->drushCommandFactory->create(['help', 'patch-status']);
         $process = $status->getProcess();
         $process->run();
 

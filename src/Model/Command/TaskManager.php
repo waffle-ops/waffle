@@ -2,13 +2,19 @@
 
 namespace Waffle\Model\Command;
 
-use Waffle\Command\Task;
-use Waffle\Exception\Config\MissingConfigFileException;
-use Waffle\Traits\ConfigTrait;
+use Waffle\Model\Context\Context;
 
 class TaskManager
 {
-    use ConfigTrait;
+    /**
+     * @var Context
+     */
+    private $context;
+
+    /**
+     * @var TaskFactory
+     */
+    private $taskFactory;
 
     /**
      * @var array
@@ -20,11 +26,19 @@ class TaskManager
     /**
      * Constructor
      *
+     * @param Context $context
+     * @param TaskFactory $taskFactory
      * @param iterable
      *   Commands configured in the DI container.
      */
-    public function __construct(iterable $commands = [])
-    {
+    public function __construct(
+        Context $context,
+        TaskFactory $taskFactory,
+        iterable $commands = []
+    ) {
+        $this->context = $context;
+        $this->taskFactory = $taskFactory;
+
         // Loads in commands from the DI container.
         foreach ($commands->getIterator() as $command) {
             // Adding as a keyed array so we can override later if needed.
@@ -63,18 +77,12 @@ class TaskManager
      */
     private function getUserDefinedTasks()
     {
-
-        try {
-            $tasks = $this->getConfig()->getTasks() ?? [];
-        } catch (MissingConfigFileException $e) {
-            return [];
-        }
+        $tasks = $this->context->getTasks() ?? [];
 
         $user_tasks = [];
 
-
         foreach ($tasks as $task => $task_list) {
-            $user_tasks[] = new Task($task);
+            $user_tasks[] = $this->taskFactory->create($task);
         }
 
         return $user_tasks;

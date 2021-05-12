@@ -5,19 +5,53 @@ namespace Waffle\Model\Cli\Runner;
 use Exception;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
-use Waffle\Model\Cli\BaseCliCommand;
+use Waffle\Model\Cli\BaseCliRunner;
+use Waffle\Model\Cli\Factory\GenericCommandFactory;
+use Waffle\Model\Cli\Factory\WpCliCommandFactory;
 use Waffle\Model\Cli\WpCliCommand;
+use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
-class WpCli extends BaseRunner
+class WpCli extends BaseCliRunner
 {
     /**
-     * Constructor
+     * @var GenericCommandFactory
      */
-    public function __construct()
-    {
-        parent::__construct();
+    private $genericCommandFactory;
+
+    /**
+     * @var WpCliCommandFactory
+     */
+    private $wpCliCommandFactory;
+
+    /**
+     * @var CliHelper
+     */
+    private $cliHelper;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param IOStyle $io
+     * @param GenericCommandFactory $genericCommandFactory
+     * @param WpCliCommandFactory $wpCliCommandFactory
+     * @param CliHelper $cliHelper
+     *
+     */
+    public function __construct(
+        Context $context,
+        IOStyle $io,
+        GenericCommandFactory $genericCommandFactory,
+        WpCliCommandFactory $wpCliCommandFactory,
+        CliHelper $cliHelper
+    ) {
+        $this->genericCommandFactory = $genericCommandFactory;
+        $this->wpCliCommandFactory = $wpCliCommandFactory;
+        $this->cliHelper = $cliHelper;
+        parent::__construct($context, $io);
     }
-    
+
     /**
      * Checks if WP CLI is installed.
      *
@@ -27,14 +61,13 @@ class WpCli extends BaseRunner
     public function isInstalled(): bool
     {
         // @todo: run this on construct and/or cache the result?
-        
-        $command = new BaseCliCommand(['which', 'wp']);
+
+        $command = $this->genericCommandFactory->create(['which', 'wp']);
         $process = $command->getProcess();
-        $cliHelper = new CliHelper();
-        $output = $cliHelper->getOutput($process);
+        $output = $this->cliHelper->getOutput($process);
         return !empty($output);
     }
-    
+
     /**
      * Gets the current WP core version.
      *
@@ -43,17 +76,16 @@ class WpCli extends BaseRunner
      */
     public function coreVersion(): string
     {
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'core',
                 'version',
             ]
         );
-        
-        $cliHelper = new CliHelper();
-        return trim($cliHelper->getOutput($command->getProcess(), true, false));
+
+        return trim($this->cliHelper->getOutput($command->getProcess(), true, false));
     }
-    
+
     /**
      * Checks for any updates for Wordpress core.
      *
@@ -65,17 +97,17 @@ class WpCli extends BaseRunner
     public function coreCheckUpdate($format = 'table'): Process
     {
         // @todo: table output is not showing table borders.
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'core',
                 'check-update',
                 "--format={$format}",
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Gets a list of available plugin updates.
      *
@@ -87,7 +119,7 @@ class WpCli extends BaseRunner
     public function pluginListAvailable($format = 'table'): Process
     {
         // @todo: table output is not showing table borders.
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'plugin',
                 'list',
@@ -96,10 +128,10 @@ class WpCli extends BaseRunner
                 "--format={$format}",
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Gets a list of available theme updates.
      *
@@ -111,7 +143,7 @@ class WpCli extends BaseRunner
     public function themeListAvailable($format = 'table'): Process
     {
         // @todo: table output is not showing table borders.
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'theme',
                 'list',
@@ -120,12 +152,12 @@ class WpCli extends BaseRunner
                 "--format={$format}",
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     //wp theme list --fields="name,status,version,update_version" --update="available"
-    
+
     /**
      * Updates core, plugin, or theme.
      *
@@ -150,8 +182,8 @@ class WpCli extends BaseRunner
         }
         return false;
     }
-    
-    
+
+
     /**
      * Updates Wordpress core.
      *
@@ -166,16 +198,16 @@ class WpCli extends BaseRunner
             'core',
             'update',
         ];
-        
+
         if (!empty($version)) {
             $args[] = "--version={$version}";
         }
-        
-        $command = new WpCliCommand($args);
-        
+
+        $command = $this->wpCliCommandFactory->create($args);
+
         return $command->getProcess();
     }
-    
+
     /**
      * Updates a Wordpress plugin by name.
      *
@@ -186,17 +218,17 @@ class WpCli extends BaseRunner
      */
     public function pluginUpdate($name): Process
     {
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'plugin',
                 'update',
                 $name,
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Updates a Wordpress theme by name.
      *
@@ -207,17 +239,17 @@ class WpCli extends BaseRunner
      */
     public function themeUpdate($name): Process
     {
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'theme',
                 'update',
                 $name,
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Clears the Wordpress cache.
      *
@@ -226,16 +258,16 @@ class WpCli extends BaseRunner
      */
     public function cacheFlush(): Process
     {
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'cache',
                 'flush',
             ]
         );
-        
+
         return $command->getProcess();
     }
-    
+
     /**
      * Updates Wordpress database.
      *
@@ -244,13 +276,13 @@ class WpCli extends BaseRunner
      */
     public function updateDatabase(): Process
     {
-        $command = new WpCliCommand(
+        $command = $this->wpCliCommandFactory->create(
             [
                 'core',
                 'update-db',
             ]
         );
-        
+
         return $command->getProcess();
     }
 }

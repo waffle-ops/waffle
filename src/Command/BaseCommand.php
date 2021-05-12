@@ -3,17 +3,21 @@
 namespace Waffle\Command;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Process\Process;
 use Waffle\Exception\Config\MissingConfigFileException;
-use Waffle\Helper\CliHelper;
-use Waffle\Model\IO\IO;
+use Waffle\Model\Context\Context;
 use Waffle\Model\IO\IOStyle;
 
-class BaseCommand extends Command
+abstract class BaseCommand extends Command
 {
+
+    /**
+     * Defines the Input/Output helper object.
+     *
+     * @var Command
+     */
+    protected $context;
 
     /**
      * Defines the Input/Output helper object.
@@ -23,15 +27,6 @@ class BaseCommand extends Command
     protected $io;
 
     /**
-     * A reference to the project config.
-     *
-     * @todo Remove this from the base class and inject where needed.
-     *
-     * @var CliHelper
-     */
-    protected $cliHelper;
-
-    /**
      * A boolean to indicate that this command is enabled.
      *
      * @var bool
@@ -39,14 +34,18 @@ class BaseCommand extends Command
     protected $isEnabled = true;
 
     /**
+     * @param Context $context
+     * @param IOStyle $io
      * @param string|null $name The name of the command; passing null means it must be set in configure()
      *
-     * @throws LogicException When the command name is empty
      */
-    public function __construct(string $name = null)
-    {
-        $this->io = IO::getInstance()->getIO();
-        $this->cliHelper = new CliHelper($this->io);
+    public function __construct(
+        Context $context,
+        IOStyle $io,
+        string $name = null
+    ) {
+        $this->context = $context;
+        $this->io = $io;
 
         // We don't want to automatically load config for all commands. We can,
         // however assume they will attempt to load config in the configure()
@@ -68,17 +67,15 @@ class BaseCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        return $this->process($input);
     }
 
     /**
-     * Defines a utility function to dump all relevant process information for debugging.
+     * Implementation method of each command. Run and execute were already taken.
      *
-     * @param Process $process
+     * @param InputInterface $input
      */
-    protected function dumpProcess(Process $process)
-    {
-        $this->cliHelper->dumpProcess($process);
-    }
+    abstract protected function process(InputInterface $input);
 
     /**
      * {@inheritdoc}

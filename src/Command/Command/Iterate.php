@@ -6,20 +6,51 @@ use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Waffle\Command\BaseCommand;
 use Waffle\Command\DiscoverableCommandInterface;
 use Waffle\Helper\CliHelper;
-use Waffle\Model\Cli\WaffleCommand;
-use Waffle\Model\Config\ProjectConfig;
+use Waffle\Model\Cli\Factory\WaffleCommandFactory;
+use Waffle\Model\Config\Loader\ProjectConfigLoader;
+use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
 class Iterate extends BaseCommand implements DiscoverableCommandInterface
 {
     public const COMMAND_KEY = 'iterate';
 
     private $processes = [];
+
+     /**
+     * @var WaffleCommandFactory
+     */
+    private $waffleCommandFactory;
+
+    /**
+     * @var CliHelper
+     */
+    private $cliHelper;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param IOStyle $io
+     * @param WaffleCommandFactory $waffleCommandFactory
+     * @param CliHelper $cliHelper
+     *
+     */
+    public function __construct(
+        Context $context,
+        IOStyle $io,
+        WaffleCommandFactory $waffleCommandFactory,
+        CliHelper $cliHelper
+    ) {
+        $this->waffleCommandFactory = $waffleCommandFactory;
+        $this->cliHelper = $cliHelper;
+        parent::__construct($context, $io);
+    }
 
     protected function configure()
     {
@@ -61,7 +92,10 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         // like --filter=cms:drupal8 to only touch Drupal 8 projects.
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
         // While testing this, I noticed that Symfony does not behave quite as
         // expected. For example 'wfl global:iterate "--version"' will never
@@ -96,14 +130,13 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         // Run the commands.
         $this->runWaffleCommands($max_threads);
 
-        $cliHelper = new CliHelper($this->io);
         foreach ($this->processes as $path => $process) {
             // Consider changing the way this output is displayed. This is
             // likely already cumbersome to read.
             $this->io->newLine();
             $this->io->writeln('---------------------------------------------');
             $this->io->highlightText('Begin output from running %s on %s', [$cmd, $path]);
-            $this->io->writeln($cliHelper->getOutput($process, false));
+            $this->io->writeln($this->cliHelper->getOutput($process, false));
             $this->io->highlightText('End output from running %s on %s', [$cmd, $path]);
         }
 
@@ -127,7 +160,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
         $finder->files();
         $finder->in($directory);
         $finder->depth('<= ' . $max_depth);
-        $finder->name(ProjectConfig::CONFIG_FILE);
+        $finder->name(ProjectConfigLoader::CONFIG_FILE);
 
         return $finder->getIterator();
     }
@@ -147,7 +180,7 @@ class Iterate extends BaseCommand implements DiscoverableCommandInterface
     {
         // This is super basic and may need to be updated to support
         // arguments and options.
-        $wfl_cmd = new WaffleCommand([$cmd]);
+        $wfl_cmd = $this->waffleCommandFactory->create([$cmd]);
         $process = $wfl_cmd->getProcess();
         $process->setWorkingDirectory($path);
         return $process;

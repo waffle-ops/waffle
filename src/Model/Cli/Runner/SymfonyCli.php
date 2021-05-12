@@ -5,19 +5,52 @@ namespace Waffle\Model\Cli\Runner;
 use Exception;
 use Symfony\Component\Process\Process;
 use Waffle\Helper\CliHelper;
-use Waffle\Model\Cli\BaseCliCommand;
-use Waffle\Model\Cli\SymfonyCliCommand;
+use Waffle\Model\Cli\BaseCliRunner;
+use Waffle\Model\Cli\Factory\GenericCommandFactory;
+use Waffle\Model\Cli\Factory\SymfonyCliCommandFactory;
+use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 
-class SymfonyCli extends BaseRunner
+class SymfonyCli extends BaseCliRunner
 {
     /**
-     * Constructor
+     * @var GenericCommandFactory
      */
-    public function __construct()
-    {
-        parent::__construct();
+    private $genericCommandFactory;
+
+    /**
+     * @var SymfonyCliCommandFactory
+     */
+    private $symfonyCliCommandFactory;
+
+    /**
+     * @var CliHelper
+     */
+    private $cliHelper;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param IOStyle $io
+     * @param GenericCommandFactory $genericCommandFactory
+     * @param SymfonyCliCommandFactory $symfonyCliCommandFactory
+     * @param CliHelper $cliHelper
+     *
+     */
+    public function __construct(
+        Context $context,
+        IOStyle $io,
+        GenericCommandFactory $genericCommandFactory,
+        SymfonyCliCommandFactory $symfonyCliCommandFactory,
+        CliHelper $cliHelper
+    ) {
+        $this->genericCommandFactory = $genericCommandFactory;
+        $this->symfonyCliCommandFactory = $symfonyCliCommandFactory;
+        $this->cliHelper = $cliHelper;
+        parent::__construct($context, $io);
     }
-    
+
     /**
      * Checks if symfony CLI is installed.
      *
@@ -27,14 +60,13 @@ class SymfonyCli extends BaseRunner
     public function isInstalled(): bool
     {
         // @todo: run this on construct and/or cache the result?
-        
-        $command = new BaseCliCommand(['which', 'symfony']);
+
+        $command = $this->genericCommandFactory->create(['which', 'symfony']);
         $process = $command->getProcess();
-        $cliHelper = new CliHelper();
-        $output = $cliHelper->getOutput($process);
+        $output = $this->cliHelper->getOutput($process);
         return !empty($output);
     }
-    
+
     /**
      * Runs security:check for a composer.lock.
      *
@@ -46,16 +78,16 @@ class SymfonyCli extends BaseRunner
     public function securityCheck($directory = ''): Process
     {
         if (empty($directory)) {
-            $directory = $this->config->getComposerPath();
+            $directory = $this->context->getComposerPath();
         }
-        
-        $command = new SymfonyCliCommand(
+
+        $command = $this->symfonyCliCommandFactory->create(
             [
                 'security:check',
                 '--dir=' . $directory,
             ]
         );
-        
+
         return $command->getProcess();
     }
 }

@@ -5,22 +5,43 @@ namespace Waffle\Command\Task;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Waffle\Command\BaseCommand;
+use Waffle\Command\BaseTask;
 use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
-use Waffle\Traits\ConfigTrait;
 use Waffle\Traits\DefaultUpstreamTrait;
 
-class Db extends BaseCommand implements DiscoverableTaskInterface
+class Db extends BaseTask implements DiscoverableTaskInterface
 {
     use DefaultUpstreamTrait;
-    use ConfigTrait;
 
     public const COMMAND_KEY = 'sync-db';
 
+    /**
+     * @var SiteSyncFactory
+     */
+    protected $siteSyncFactory;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param IOStyle $io
+     * @param SiteSyncFactory $siteSyncFactory
+     */
+    public function __construct(
+        Context $context,
+        IOStyle $io,
+        SiteSyncFactory $siteSyncFactory
+    ) {
+        $this->siteSyncFactory = $siteSyncFactory;
+        parent::__construct($context, $io);
+    }
+
     protected function configure()
     {
+        parent::configure();
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Pulls the database down from the specified upstream.');
         $this->setHelp('Pulls the database down from the specified upstream.');
@@ -40,17 +61,17 @@ class Db extends BaseCommand implements DiscoverableTaskInterface
         // TODO Validate the upstream option from the config file (in help).
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
-        parent::execute($input, $output);
-
         // TODO Need to check that example settings file is present.
         // TOOD Need to check that DB connection is valid.
 
-        $config = $this->getConfig();
         $upstream = $input->getOption('upstream');
-        $allowed_upstreams = $config->getUpstreams();
-        $remote_alias = sprintf('@%s.%s', $config->getAlias(), $upstream);
+        $allowed_upstreams = $this->context->getUpstreams();
+        $remote_alias = sprintf('@%s.%s', $this->context->getAlias(), $upstream);
 
         // Ensure upstream is valid.
         if (!in_array($upstream, $allowed_upstreams)) {
@@ -61,8 +82,7 @@ class Db extends BaseCommand implements DiscoverableTaskInterface
         }
 
         try {
-            $factory = new SiteSyncFactory();
-            $sync = $factory->getSiteSyncAdapter($config->getCms());
+            $sync = $this->siteSyncFactory->getSiteSyncAdapter($this->context->getCms());
             $sync->syncDatabase($remote_alias);
             $this->io->success('Database Sync');
             // TODO Write to the console with more general status updates.

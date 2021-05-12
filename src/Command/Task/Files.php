@@ -5,22 +5,43 @@ namespace Waffle\Command\Task;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Waffle\Command\BaseCommand;
+use Waffle\Command\BaseTask;
 use Waffle\Command\DiscoverableTaskInterface;
+use Waffle\Model\Context\Context;
+use Waffle\Model\IO\IOStyle;
 use Waffle\Model\Site\Sync\SiteSyncFactory;
-use Waffle\Traits\ConfigTrait;
 use Waffle\Traits\DefaultUpstreamTrait;
 
-class Files extends BaseCommand implements DiscoverableTaskInterface
+class Files extends BaseTask implements DiscoverableTaskInterface
 {
     use DefaultUpstreamTrait;
-    use ConfigTrait;
 
     public const COMMAND_KEY = 'sync-files';
 
+    /**
+     * @var SiteSyncFactory
+     */
+    protected $siteSyncFactory;
+
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @param IOStyle $io
+     * @param SiteSyncFactory $siteSyncFactory
+     */
+    public function __construct(
+        Context $context,
+        IOStyle $io,
+        SiteSyncFactory $siteSyncFactory
+    ) {
+        $this->siteSyncFactory = $siteSyncFactory;
+        parent::__construct($context, $io);
+    }
+
     protected function configure()
     {
+        parent::configure();
         $this->setName(self::COMMAND_KEY);
         $this->setDescription('Pulls the files down from the specified upstream.');
         $this->setHelp('Pulls the files down from the specified upstream.');
@@ -40,13 +61,13 @@ class Files extends BaseCommand implements DiscoverableTaskInterface
         // TODO Validate the opstream option from the config file (in help).
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * {@inheritdoc}
+     */
+    protected function process(InputInterface $input)
     {
-        parent::execute($input, $output);
-
-        $config = $this->getConfig();
         $upstream = $input->getOption('upstream');
-        $allowed_upstreams = $config->getUpstreams();
+        $allowed_upstreams = $this->context->getUpstreams();
 
         // Ensure upstream is valid.
         if (!in_array($upstream, $allowed_upstreams)) {
@@ -56,11 +77,10 @@ class Files extends BaseCommand implements DiscoverableTaskInterface
             return Command::FAILURE;
         }
 
-        $remote_alias = sprintf('@%s.%s:%%files/', $config->getAlias(), $upstream);
+        $remote_alias = sprintf('@%s.%s:%%files/', $this->context->getAlias(), $upstream);
 
         try {
-            $factory = new SiteSyncFactory();
-            $sync = $factory->getSiteSyncAdapter($config->getCms());
+            $sync = $this->siteSyncFactory->getSiteSyncAdapter($this->context->getCms());
             $sync->syncFiles($remote_alias);
             $this->io->success('Files Sync');
         } catch (\Exception $e) {

@@ -30,7 +30,7 @@ class CommandLoader
      *
      * @param CommandManager
      *   A CommandManager that has been preloaded with Waffle commands.
-     * @param CommandManager
+     * @param TaskManager
      *   A TaskManager that has been preloaded with Waffle tasks.
      * @param RecipeManager
      *   A RecipeManager that has been preloaded with Waffle recipes.
@@ -50,7 +50,7 @@ class CommandLoader
      *
      * Gets a list of all Waffle commands.
      *
-     * @return CommandManager
+     * @return array
      */
     public function getCommands()
     {
@@ -59,9 +59,9 @@ class CommandLoader
         $recipes = $this->recipeManager->getCommands();
 
         return array_merge(
-            $recipes, // Recipes can be overidden by tasks, so they go first.
+            $recipes, // Recipes can be overridden by tasks, so they go first.
             $tasks,
-            $commands, // Commands should go last so they cannot be overridden.
+            $commands // Commands should go last so they cannot be overridden.
         );
     }
 

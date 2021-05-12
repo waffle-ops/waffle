@@ -2,10 +2,27 @@
 
 namespace Waffle\Model\Site\Sync;
 
-use Waffle\Model\Config\ProjectConfig;
+use Waffle\Helper\DiHelper;
+use Waffle\Model\Config\Item\Cms;
 
 class SiteSyncFactory
 {
+
+    /**
+     * @var DiHelper
+     */
+    private $diHelper;
+
+    /**
+     * Constructor
+     *
+     * @param DiHelper $diHelper
+     */
+    public function __construct(
+        DiHelper $diHelper
+    ) {
+        $this->diHelper = $diHelper;
+    }
 
     /**
      * Gets the site sync adapter.
@@ -15,9 +32,9 @@ class SiteSyncFactory
     public function getSiteSyncAdapter($cms)
     {
         switch ($cms) {
-            case ProjectConfig::CMS_DRUPAL_7:
-            case ProjectConfig::CMS_DRUPAL_8:
-                return new DrushSiteSync();
+            case Cms::OPTION_DRUPAL_7:
+            case Cms::OPTION_DRUPAL_8:
+                return $this->diHelper->getContainer()->get(DrushSiteSync::class);
 
             default:
                 throw new \Exception(sprintf('Site sync adapter for %s not supported.', $cms));

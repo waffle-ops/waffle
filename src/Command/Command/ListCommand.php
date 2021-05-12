@@ -8,7 +8,7 @@ use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Command\DiscoverableCommandInterface;
-use Waffle\Model\IO\IO;
+use Waffle\Model\IO\IOStyle;
 
 class ListCommand extends ParentListCommand implements DiscoverableCommandInterface
 {
@@ -21,9 +21,14 @@ class ListCommand extends ParentListCommand implements DiscoverableCommandInterf
      */
     protected $io;
 
-    public function __construct()
+    /**
+     * Constructor
+     *
+     * @param IOStyle $io
+     */
+    public function __construct(IOStyle $io)
     {
-        $this->io = IO::getInstance()->getIO();
+        $this->io = $io;
         parent::__construct();
     }
 
@@ -34,6 +39,9 @@ class ListCommand extends ParentListCommand implements DiscoverableCommandInterf
         $this->setDescription('Lists commands, tasks, and recipes.');
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $application = $this->getApplication();
@@ -45,9 +53,9 @@ class ListCommand extends ParentListCommand implements DiscoverableCommandInterf
         global $argv;
         $waffle_bin = basename(realpath($argv[0]));
 
-        $this->io->styledText(' Usage:', 'comment');
+        $this->io->styledText('Usage:', 'comment');
         $this->io->writeln(sprintf(
-            '   %s [command|task|recipe] [options] [arguments]',
+            '  %s [command|task|recipe] [options] [arguments]',
             $waffle_bin
         ));
 
@@ -66,9 +74,9 @@ class ListCommand extends ParentListCommand implements DiscoverableCommandInterf
         $recipes = $recipeManager->getCommands();
 
         $lists = [
-            $this->buildList($commands, 'Avaliable commands:'),
-            $this->buildList($tasks, 'Avaliable tasks:'),
-            $this->buildList($recipes, 'Avaliable recipes:'),
+            $this->buildList($commands, 'Available commands:'),
+            $this->buildList($tasks, 'Available tasks:'),
+            $this->buildList($recipes, 'Available recipes:'),
         ];
 
         $rows = $this->buildRows($lists);
@@ -117,7 +125,7 @@ class ListCommand extends ParentListCommand implements DiscoverableCommandInterf
             }
 
             $data[] = [
-                sprintf('  <info>%s</info>', $commandKey),
+                sprintf('<info>%s</info>', $commandKey),
                 $command->getDescription()
             ];
         }
