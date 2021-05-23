@@ -7,6 +7,7 @@ use Symfony\Component\Config\Definition\Processor;
 use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Config\ConfigTreeService;
 use Waffle\Model\Config\Item\Alias;
+use Waffle\Model\Config\Item\Bin;
 use Waffle\Model\Config\Item\Cms;
 use Waffle\Model\Config\Item\CommandPrefix;
 use Waffle\Model\Config\Item\ComposerPath;
@@ -370,5 +371,16 @@ class Context implements ConfigurationInterface
     public function getEnvironmentVariables()
     {
         return $this->get(EnvironmentVariables::KEY);
+    }
+
+    /**
+     * Gets the configured binary for use with external tools.
+     *
+     * Returns $bin in the event that no override is found.
+     *
+     * @return string
+     */
+    public function getBin($bin){
+        return $this->config[Bin::KEY][$bin] ?? $bin;
     }
 }
