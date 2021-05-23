@@ -32,6 +32,13 @@ class Bin extends BaseConfigItem
     /**
      * @var string
      *
+     * Config key for the git binary.
+     */
+    public const BIN_GIT = 'git';
+
+    /**
+     * @var string
+     *
      * Config key for the gulp binary.
      */
     public const BIN_GULP = 'gulp';
@@ -50,6 +57,12 @@ class Bin extends BaseConfigItem
      */
     public const BIN_SYMFONY = 'symfony';
 
+    /**
+     * @var string
+     *
+     * Config key for the wp-cli binary.
+     */
+    public const BIN_WP_CLI = 'wp';
 
     /**
      * Constructor
@@ -76,9 +89,11 @@ class Bin extends BaseConfigItem
             ->children()
                 ->scalarNode(self::BIN_COMPOSER)->end()
                 ->scalarNode(self::BIN_DRUSH)->end()
+                ->scalarNode(self::BIN_GIT)->end()
                 ->scalarNode(self::BIN_GULP)->end()
                 ->scalarNode(self::BIN_NPM)->end()
                 ->scalarNode(self::BIN_SYMFONY)->end()
+                ->scalarNode(self::BIN_WP_CLI)->end()
             ->end();
     }
 }
