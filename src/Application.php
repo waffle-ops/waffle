@@ -57,6 +57,9 @@ class Application extends SymfonyApplication
 
         // Prevent auto exiting (so we can run extra code).
         $this->setAutoExit(false);
+
+        // Adding some mechanism to watch out for deprecated code.
+        $this->initalizeDeprecationCatcher();
     }
 
     /**
@@ -229,5 +232,32 @@ class Application extends SymfonyApplication
         }
 
         return $latest;
+    }
+
+    /**
+     * Sets an error handler that listens for user deprecated code.
+     */
+    private function initalizeDeprecationCatcher()
+    {
+        // TODO -- This is a start, but this will only work once Waffle has
+        // bootstrapped for the most part. We may need to do something similar
+        // earlier in the application lifecycle before this can take over.
+        $that = $this;
+
+        set_error_handler(function (...$args) use ($that) {
+            $that->handleDeprecation(...$args);
+        }, \E_USER_DEPRECATED);
+    }
+
+    /**
+     * Helper method to emit warnings to users when deprecated code is called.
+     */
+    private function handleDeprecation($err_no, $err_msg, $filename, $linenum)
+    {
+        // TODO - These may be easy to lose in the output. Perhaps we should
+        // store a list of these and print them out before we exit.
+
+        // Not much we need to do here. Just emitting a warning for now.
+        $this->io->warning($err_msg);
     }
 }
