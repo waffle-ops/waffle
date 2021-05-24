@@ -269,14 +269,22 @@ class Context implements ConfigurationInterface
      */
     public function getCommandPrefix()
     {
-        /**
-         * @todo The code below is part of the previous implementation of this,
-         * that needs to be re-implemented.
-         *
-         * See src/Model/Config/Item/CommandPrefix.php
-         */
+        // See src/Model/Config/Item/CommandPrefix.php
+        $prefix = $this->get(CommandPrefix::KEY);
 
-        return $this->get(CommandPrefix::KEY);
+        if (!is_null($prefix)) {
+            trigger_deprecation(
+                'waffle-ops/waffle',
+                'v0.1.0',
+                sprintf(
+                    'The "%s" configuration item is deprecated and will be removed'
+                    . ' before v1.0.0. Use the "bin" configuration item instead.',
+                    CommandPrefix::KEY
+                )
+            );
+        }
+
+        return $prefix;
     }
 
     /**
@@ -380,7 +388,8 @@ class Context implements ConfigurationInterface
      *
      * @return string
      */
-    public function getBin($bin){
+    public function getBin($bin)
+    {
         return $this->config[Bin::KEY][$bin] ?? $bin;
     }
 }
