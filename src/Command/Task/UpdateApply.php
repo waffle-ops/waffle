@@ -311,6 +311,19 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      */
     protected function applyDrupal8Updates()
     {
+        // Fail if there are any pending config changes before starting.
+        if ($this->includeConfig) {
+            $cc = $this->drush->clearCaches();
+            $this->cliHelper->outputOrFail($cc, 'Error when clearing Drupal cache for config check.');
+
+            $hasPending = $this->drush->hasPendingConfigChanges();
+            if ($hasPending) {
+                throw new Exception(
+                    'You have pending changes in your config. Resolve these before attempting to run this command.'
+                );
+            }
+        }
+
         $this->io->title('Applying Drupal 8 Pending Updates');
 
         if (empty($this->context->getComposerPath())) {
