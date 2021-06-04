@@ -269,8 +269,9 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
 
     /**
      * {@inheritdoc}
+     * @throws Exception
      */
-    protected function process(InputInterface $input)
+    protected function process(InputInterface $input): int
     {
         $this->gitPrefix = $input->getOption('git-prefix');
         $this->gitPostfix = $input->getOption('git-postfix');
@@ -397,7 +398,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             return;
         }
 
-        foreach ($updates as $module => $update) {
+        foreach ($updates as $update) {
             if (in_array($update['name'], $this->ignore)) {
                 $this->io->warning("Skipping ignored package: {$update['name']}");
                 continue;
@@ -473,13 +474,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
                     // Attempt to fail gracefully and skip.
                     if ($this->skipOnFail) {
                         $this->gitReset();
-                        $failed = [
-                            $name,
-                            $from,
-                            $to,
-                            'Unable to reapply patch',
-                        ];
-                        $this->failedPackages[] = $failed;
+                        $this->addFailedPackage($name, $from, $to, 'Unable to reapply patch');
                         $this->io->warning("Skipping {$name} because of failed patches. ({$from} => {$to})");
                     } else {
                         exit(1);
@@ -509,6 +504,9 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      */
     protected function updateMinorComposerDependencies()
     {
+        // Ensure installed composer dependencies are up to date with composer.lock before checking pending updates.
+        $this->cliHelper->outputOrFail($this->composer->install(), 'Error installing composer dependencies.');
+
         $pending_updates =
             $this->cliHelper->getOutput($this->composer->getMinorVersionUpdates('', 'json'), true, false);
         $pending_updates = json_decode($pending_updates, true);
@@ -552,6 +550,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         foreach ($priority as $package) {
             if (in_array($package['name'], $this->ignore)) {
                 $this->io->warning("Skipping ignored package: {$package['name']}");
+                $this->addFailedPackage($package['name'], '', '', 'Skipping ignored package');
                 continue;
             }
             $this->updateMinorComposerDependency($package);
@@ -560,6 +559,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         foreach ($non_priority as $package) {
             if (in_array($package['name'], $this->ignore)) {
                 $this->io->warning("Skipping ignored package: {$package['name']}");
+                $this->addFailedPackage($package['name'], '', '', 'Skipping ignored package');
                 continue;
             }
             $this->updateMinorComposerDependency($package);
@@ -578,6 +578,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         $from = $package['version'];
         $to = $package['latest'];
 
+        // @todo: Fix how packages are pulled to filter out deprecated items by this point.
         if ($from == $to) {
             $this->io->warning("Skipping {$name} because old and new version are the same. ({$from})");
             return;
@@ -602,13 +603,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             // Attempt to fail gracefully and skip.
             if ($this->skipOnFail) {
                 $this->gitReset();
-                $failed = [
-                    $name,
-                    $from,
-                    $to,
-                    'Unable to reapply patch',
-                ];
-                $this->failedPackages[] = $failed;
+                $this->addFailedPackage($name, $from, $to, 'Unable to reapply patch');
                 $this->io->warning("Skipping {$name} because of failed patches. ({$from} => {$to})");
             } else {
                 exit(1);
@@ -630,13 +625,21 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         $updb = $this->drush->updateDatabase();
         $this->cliHelper->outputOrFail($updb, 'Error when running pending Drupal DB updates.');
 
-        if (!$this->git->hasPendingChanges()) {
-            $this->io->warning("No git changes found for: {$name} ({$from} => {$to})");
-            // No need to attempt to commit or export config if there are no changes.
-            return;
+        // Check if the $to version is accurate and update commit message if not.
+        $installed = $this->composer->getPackageInstalledVersion($name);
+        $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
+        if ($installed === $from) {
+            // Version wasn't updated, but sub-dependencies may have updated.
+            $message = "{$this->gitPrefix}Updated dependencies for {$name} " . "({$from}){$this->gitPostfix}";
+            $this->addFailedPackage($name, $from, $to, "Unable to update version. Check `composer why`.");
+            $to = $installed;
+        } elseif ($installed !== $to) {
+            // Version was updated, but not to the latest expected version.
+            $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
+            $this->addFailedPackage($name, $from, $to, "Unable to update to latest version. Check `composer why`.");
+            $to = $installed;
         }
 
-        $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
         $this->gitCommitChanges($message);
 
         if ($this->includeConfig) {
@@ -798,6 +801,25 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             $this->io->writeln('Completed update. Review and commit the changes when ready.');
             exit(0);
         }
+    }
+
+    /**
+     * Helper function to quickly add a failed package to the tracker.
+     *
+     * @param $name
+     * @param $from
+     * @param $to
+     * @param $message
+     */
+    protected function addFailedPackage($name, $from, $to, $message)
+    {
+        $failed = [
+            $name,
+            $from,
+            $to,
+            $message,
+        ];
+        $this->failedPackages[] = $failed;
     }
 
     /**
