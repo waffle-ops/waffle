@@ -200,4 +200,26 @@ class Git extends BaseCliRunner
         $process = $command->getProcess();
         return trim($this->cliHelper->getOutput($process));
     }
+
+    /**
+     * Do a hard reset on git repo.
+     *
+     * @return Process
+     */
+    public function resetHard(): Process
+    {
+        $command = $this->gitCommandFactory->create(['reset', '--hard']);
+        return $command->getProcess();
+    }
+
+    /**
+     * Clean the git repo.
+     *
+     * @return Process
+     */
+    public function clean(): Process
+    {
+        $command = $this->gitCommandFactory->create(['clean', '-fd']);
+        return $command->getProcess();
+    }
 }

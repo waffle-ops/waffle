@@ -100,6 +100,13 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
     protected $priorityPackages = ['drupal/core-recommended', 'drupal/core'];
 
     /**
+     * Whether or not the updater should attempt to continue on failure.
+     *
+     * @var bool
+     */
+    protected $skipOnFail = false;
+
+    /**
      * @var Git
      */
     protected $git;
@@ -123,6 +130,13 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      * @var CliHelper
      */
     protected $cliHelper;
+
+    /**
+     * List of failed packages to report at end of updater.
+     *
+     * @var array
+     */
+    protected $failedPackages = [];
 
     /**
      * Constructor
@@ -240,6 +254,13 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             ''
         );
 
+        $this->addOption(
+            'skip-on-fail',
+            null,
+            null,
+            'Whether or not the updater should attempt to continue on update failure for an item.'
+        );
+
         // @todo: add an option to set the git commit message format template
 
         // Attempting to load config. Parent class will catch exception if we
@@ -258,6 +279,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         $this->includeConfig = $input->getOption('include-config');
         $this->forceYes = $input->getOption('yes');
         $this->timeout = $input->getOption('timeout');
+        $this->skipOnFail = $input->getOption('skip-on-fail');
         $packages = str_replace(' ', '', $input->getOption('packages'));
         if (!empty($packages)) {
             $this->packages = str_getcsv($packages);
@@ -299,6 +321,10 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
                 break;
             default:
                 throw new Exception('Platform not implemented yet.');
+        }
+
+        if (!empty($this->failedPackages)) {
+            $this->outputFailedPackages();
         }
 
         return Command::SUCCESS;
@@ -426,10 +452,25 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             $pp = $this->drush->patchApply($name);
             if (!empty($pp->getExitCode())) {
                 $pp_output = $this->cliHelper->getOutput($pp);
+                // Patcher does not throw a standard error code, so we check string for the only success message. If
+                // the output is not a success, then we assume it was a failure.
                 if (strpos($pp_output, 'There are no patches') === false) {
                     $this->io->error('Unable to reapply patch.');
                     $this->cliHelper->dumpProcess($pp);
-                    exit(1);
+                    // Attempt to fail gracefully and skip.
+                    if ($this->skipOnFail) {
+                        $this->gitReset();
+                        $failed = [
+                            $name,
+                            $from,
+                            $to,
+                            'Unable to reapply patch',
+                        ];
+                        $this->failedPackages[] = $failed;
+                        $this->io->warning("Skipping {$name} because of failed patches. ({$from} => {$to})");
+                    } else {
+                        exit(1);
+                    }
                 }
             }
             $this->io->writeln($this->cliHelper->getOutput($pp));
@@ -442,8 +483,9 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
 
         // If we are skipping git commits then don't continue to the next one.
         if ($this->skipGit) {
+            $this->outputFailedPackages();
             $this->io->writeln('Completed update. Review and commit the changes when ready.');
-            exit(1);
+            exit(0);
         }
     }
 
@@ -528,7 +570,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             return;
         }
 
-        $this->io->section("Updating {$package['name']} from {$package['version']} to {$package['latest']} ...");
+        $this->io->section("Updating {$name} from {$from} to {$to} ...");
 
         $update_process = $this->composer->updatePackage($package['name'], $this->timeout);
         $update_output = $this->cliHelper->getOutput($update_process);
@@ -544,7 +586,20 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         if (strpos($update_output, 'Could not apply patch!') !== false) {
             $this->io->error('Composer patching failed with error.');
             $this->cliHelper->dumpProcess($update_process);
-            exit(1);
+            // Attempt to fail gracefully and skip.
+            if ($this->skipOnFail) {
+                $this->gitReset();
+                $failed = [
+                    $name,
+                    $from,
+                    $to,
+                    'Unable to reapply patch',
+                ];
+                $this->failedPackages[] = $failed;
+                $this->io->warning("Skipping {$name} because of failed patches. ({$from} => {$to})");
+            } else {
+                exit(1);
+            }
         }
 
         // For some reason Composer puts the "error" output before the normal output.
@@ -592,8 +647,9 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
 
         // If we are skipping git commits then don't continue to the next one.
         if ($this->skipGit) {
+            $this->outputFailedPackages();
             $this->io->writeln('Completed update. Review and commit the changes when ready.');
-            exit(1);
+            exit(0);
         }
     }
 
@@ -725,9 +781,29 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
 
         // If we are skipping git commits then don't continue to the next one.
         if ($this->skipGit) {
+            $this->outputFailedPackages();
             $this->io->writeln('Completed update. Review and commit the changes when ready.');
-            exit(1);
+            exit(0);
         }
+    }
+
+    /**
+     * Helper function to dump the list of failed packages.
+     */
+    protected function outputFailedPackages()
+    {
+        $this->io->section('Failed packages');
+        $headers = ['Package', 'From', 'To', 'Reason'];
+        $this->io->table($headers, $this->failedPackages);
+    }
+
+    /**
+     * Helper utility function that does all the processing needed for resetting the git repo.
+     */
+    protected function gitReset()
+    {
+        $this->cliHelper->outputOrFail($this->git->resetHard(), 'Error: Unable to hard reset git repo.');
+        $this->cliHelper->outputOrFail($this->git->clean(), 'Error: Unable to clean the git repo.');
     }
 
     /**
