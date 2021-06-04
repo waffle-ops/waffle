@@ -424,7 +424,15 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             "Error updating item {$name} ({$from} => {$to})"
         );
 
-        // @todo: If htaccess was updated, output a warning.
+        $process = $this->git->statusShort();
+        $process->run();
+        $output = $process->getOutput();
+
+        if (strpos($output, '.htaccess') !== false) {
+            $message = ".htaccess file was updated!";
+            $this->io->warning($message);
+            $this->addFailedPackage($name, $from, $to, $message);
+        }
 
         $this->io->section('Clearing Drupal cache');
         $this->cliHelper->outputOrFail($this->drush->clearCaches(), 'Error when clearing Drupal cache.');
