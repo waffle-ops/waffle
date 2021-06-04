@@ -416,6 +416,11 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
     {
         $name = $package['name'];
         $from = $package['existing_version'];
+        if (empty($package['latest_version'])) {
+            $this->io->warning("Skipping {$name} because old and new version are the same. ({$from})");
+            return;
+        }
+
         $to = $package['latest_version'];
 
         $this->io->section("Updating {$name} from {$from} to {$to} ...");
