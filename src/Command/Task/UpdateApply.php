@@ -97,7 +97,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      *
      * @var string[]
      */
-    protected $priorityPackages = ['drupal/core-recommended', 'drupal/core'];
+    protected $priorityPackages = ['drupal/core-recommended', 'drupal/core', 'drupal/core-dev'];
 
     /**
      * Whether or not the updater should attempt to continue on failure.
