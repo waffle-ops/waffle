@@ -574,7 +574,19 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      */
     protected function updateMinorComposerDependency($package)
     {
+        if (empty($package['name'])) {
+            $this->io->warning("Skipping because of empty package name");
+            $this->addFailedPackage('?', '?', '?', 'Empty package name');
+            return;
+        }
+
         $name = $package['name'];
+        if (empty($from) || empty($to)) {
+            $this->io->warning("Skipping {$name} because of invalid versions");
+            $this->addFailedPackage($name, '?', '?', 'Invalid versions');
+            return;
+        }
+
         $from = $package['version'];
         $to = $package['latest'];
 
@@ -593,7 +605,15 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         if (!empty($update_process->getExitCode())) {
             $this->io->error('Composer update failed with error.');
             $this->cliHelper->dumpProcess($update_process);
-            exit(1);
+            // Attempt to fail gracefully and skip.
+            if ($this->skipOnFail) {
+                $this->gitReset();
+                $this->addFailedPackage($name, $from, $to, 'Composer failure');
+                $this->io->warning("Skipping {$name} because of composer failure. ({$from} => {$to})");
+                return;
+            } else {
+                exit(1);
+            }
         }
 
         // Check to see if there was a patch that did not reapply cleanly.
@@ -603,8 +623,9 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             // Attempt to fail gracefully and skip.
             if ($this->skipOnFail) {
                 $this->gitReset();
-                $this->addFailedPackage($name, $from, $to, 'Unable to reapply patch');
+                $this->addFailedPackage($name, $from, $to, 'Failed patch');
                 $this->io->warning("Skipping {$name} because of failed patches. ({$from} => {$to})");
+                return;
             } else {
                 exit(1);
             }
