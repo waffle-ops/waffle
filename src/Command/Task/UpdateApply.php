@@ -581,7 +581,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         }
 
         $name = $package['name'];
-        if (empty($from) || empty($to)) {
+        if (empty($package['version']) || empty($package['latest'])) {
             $this->io->warning("Skipping {$name} because of invalid versions");
             $this->addFailedPackage($name, '?', '?', 'Invalid versions');
             return;
