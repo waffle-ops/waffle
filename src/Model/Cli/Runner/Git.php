@@ -187,7 +187,7 @@ class Git extends BaseCliRunner
         $command = $this->gitCommandFactory->create(['log', "HEAD..{$upstream}/{$branch}", '--oneline']);
         $process = $command->getProcess();
         $output = $this->cliHelper->getOutput($process);
-        return !empty($output);
+        return !empty(trim($output));
     }
 
     /**
