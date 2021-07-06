@@ -39,6 +39,13 @@ class BuildFrontend extends BaseConfigItem
     /**
      * @var string
      *
+     * Expected value in cases where compass frontend strategy is needed.
+     */
+    public const STRATEGY_COMPASS = 'compass';
+
+    /**
+     * @var string
+     *
      * Key for directory option.
      */
     public const DIRECTORY_KEY = 'dir';
@@ -46,11 +53,12 @@ class BuildFrontend extends BaseConfigItem
     /**
      * @var array
      *
-     * An array containing a list of avaliable strategy options.
+     * An array containing a list of available strategy options.
      */
     public const STRATEGY_OPTIONS = [
         self::STRATEGY_NONE,
         self::STRATEGY_GULP,
+        self::STRATEGY_COMPASS
     ];
 
     /**

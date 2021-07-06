@@ -85,3 +85,6 @@ services:
 
   Waffle\Model\Build\Frontend\GulpFrontendBuildHandler:
     public: true
+
+  Waffle\Model\Build\Frontend\CompassFrontendBuildHandler:
+    public: true

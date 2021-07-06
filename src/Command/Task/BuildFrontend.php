@@ -50,7 +50,7 @@ class BuildFrontend extends BaseTask implements DiscoverableTaskInterface
             BuildFrontendConfig::STRATEGY_KEY,
             null,
             InputArgument::OPTIONAL,
-            'The strategy used for building the frontend (none, gulp, ect...)',
+            'The strategy used for building the frontend (none, gulp, compass, etc...)',
             null
         );
     }
