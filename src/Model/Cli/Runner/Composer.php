@@ -119,7 +119,7 @@ class Composer extends BaseCliRunner
      * @return Process
      * @throws Exception
      */
-    public function updatePackage($package, $timeout, $directory = ''): Process
+    public function updatePackage($package, $timeout, string $directory = ''): Process
     {
         if (empty($package)) {
             throw new Exception(
@@ -145,10 +145,54 @@ class Composer extends BaseCliRunner
         $process = $command->getProcess();
 
         if (isset($timeout)) {
+            // @todo: Remove hardcoded timeout and use global timeout instead.
             $process->setTimeout($timeout);
         }
 
         return $process;
+    }
+
+    /**
+     * Get the currently installed version number for a composer package.
+     *
+     * @param $package
+     * @param string $directory
+     *
+     * @return string
+     * @throws Exception
+     */
+    public function getPackageInstalledVersion($package, string $directory = ''): string
+    {
+        if (empty($package)) {
+            throw new Exception(
+                'You must pass a package name to check.'
+            );
+        }
+
+        if (empty($directory)) {
+            $directory = $this->context->getComposerPath();
+        }
+
+        $command = $this->composerCommandFactory->create(
+            [
+                'show',
+                "--format=json",
+                "--working-dir={$directory}",
+                $package,
+            ]
+        );
+
+        $process = $command->getProcess();
+        $process->run();
+        $output = $process->getOutput();
+        $info = json_decode($output, true);
+
+        if (empty(trim($info['versions'][0]))) {
+            // @todo: log as error?
+            return '';
+        }
+
+        return trim($info['versions'][0]);
     }
 
     /**
