@@ -86,9 +86,6 @@ class UpdateStatus extends BaseTask implements DiscoverableTaskInterface
         // @todo Add support for arguments: --format, ...?
 
         // @todo: Add parameter to output full report to file instead of screen
-
-        // Attempting to load config. Parent class will catch exception if we
-        // are unable to load it.
     }
 
     /**
@@ -127,7 +124,7 @@ class UpdateStatus extends BaseTask implements DiscoverableTaskInterface
         } else {
             // @todo: Add a report on what packages are required by composer but not currently installed by Drupal
 
-            $this->generateComposerReport();
+            $this->generateComposerReport('drupal/*');
         }
 
         $this->cliHelper->message('Checking Drupal core and contrib via drush', $this->drush->pmSecurity());
@@ -165,18 +162,23 @@ class UpdateStatus extends BaseTask implements DiscoverableTaskInterface
      *
      * @throws Exception
      */
-    protected function generateComposerReport()
+    protected function generateComposerReport($secondaryPackageFilter = '')
     {
-        $this->cliHelper->message(
-            'Checking minor version composer updates',
-            $this->composer->getMinorVersionUpdates()
-        );
+        $this->io->highlightText('Minor version composer updates (direct/primary)');
+        $minor = $this->composer->getMinorVersionUpdatesTable();
+        $this->io->table($minor['headers'], $minor['rows']);
 
-        // @todo: low priority: this is only showing the 2nd grep command in output b/c of the grep filtering.
-        $this->cliHelper->message(
-            'Checking major version composer updates',
-            $this->composer->getMajorVersionUpdates()
-        );
+        $this->io->newLine();
+
+        $this->io->highlightText('Minor version composer updates (non-direct/secondary)');
+        $minor = $this->composer->getMinorSecondaryVersionUpdatesTable($secondaryPackageFilter);
+        $this->io->table($minor['headers'], $minor['rows']);
+
+        $this->io->newLine();
+
+        $this->io->highlightText('Major version composer updates');
+        $major = $this->composer->getMajorVersionUpdatesTable();
+        $this->io->table($major['headers'], $major['rows']);
 
         if (!$this->symfonyCli->isInstalled()) {
             $this->io->warning('Unable to generate Symfony security reports: Missing Symfony CLI installation.');
