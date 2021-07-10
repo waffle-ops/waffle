@@ -4,8 +4,17 @@ host: custom
 tasks:
   # Defining a task to run the phpcs script.
   test-phpcs: ./scripts/tests/phpcs.sh
+  test-psalm: ./scripts/tests/psalm.sh
+  test-phpunit: ./scripts/tests/phpunit.sh
+  test-behat: ./scripts/tests/behat.sh
 
 recipes:
+  tests:
+    - test-phpcs: {}
+    - test-psalm: {}
+    - test-phpunit: {}
+    - test-behat: {}
+
   # Defining a ci recipe.
   ci:
     - test-phpcs: {}
