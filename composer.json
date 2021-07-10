@@ -1,5 +1,5 @@
 {
-    "name": "daceej/waffle",
+    "name": "waffle-ops/waffle",
     "description": "A tool to prevent waffling!",
     "type": "project",
     "authors": [
@@ -10,14 +10,14 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "symfony/console": "^5.1",
-        "symfony/yaml": "^5.1",
-        "symfony/process": "^5.1",
         "ext-json": "*",
-        "symfony/finder": "^5.1",
-        "symfony/dependency-injection": "^5.2",
+        "consolidation/self-update": "^1.2",
         "symfony/config": "^5.2",
-        "consolidation/self-update": "^1.2"
+        "symfony/console": "^5.2",
+        "symfony/dependency-injection": "^5.2",
+        "symfony/finder": "^5.2",
+        "symfony/process": "^5.2",
+        "symfony/yaml": "^5.2"
     },
     "bin": [
         "bin/waffle",
@@ -27,9 +27,14 @@
         "psr-4": {
             "Waffle\\": "src"
         },
-        "classmap": ["src"]
+        "classmap": [
+            "src"
+        ]
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.5"
+    },
+    "config": {
+        "sort-packages": true
     }
 }
