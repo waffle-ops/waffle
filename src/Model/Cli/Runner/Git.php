@@ -177,15 +177,17 @@ class Git extends BaseCliRunner
     /**
      * Check if there are pending commits that should be pulled down.
      *
+     * @param $upstream
+     * @param $branch
+     *
      * @return bool
-     * @throws Exception
      */
-    public function hasUpstreamPending(): bool
+    public function hasUpstreamPending($upstream, $branch): bool
     {
-        $command = $this->gitCommandFactory->create(['rev-list', 'HEAD...', '--count']);
+        $command = $this->gitCommandFactory->create(['log', "HEAD..{$upstream}/{$branch}", '--oneline']);
         $process = $command->getProcess();
-        $output = (int) $this->cliHelper->getOutput($process);
-        return !empty($output);
+        $output = $this->cliHelper->getOutput($process);
+        return !empty(trim($output));
     }
 
     /**

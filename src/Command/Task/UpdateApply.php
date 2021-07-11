@@ -411,6 +411,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      * Updates a single Drupal 7 module/core package.
      *
      * @param $package
+     *
      * @throws Exception
      */
     protected function updateDrupal7Item($package)
@@ -508,25 +509,35 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         $this->cliHelper->outputOrFail($this->composer->install(), 'Error installing composer dependencies.');
 
         $pending_updates =
-            $this->cliHelper->getOutput($this->composer->getMinorVersionUpdates('', 'json'), true, false);
+            $this->cliHelper->getOutput($this->composer->getMinorVersionUpdates('json'), true, false);
         $pending_updates = json_decode($pending_updates, true);
-        if (empty($pending_updates['installed'])) {
-            $this->io->section('No pending updates found.');
+
+        if (!empty($this->packages)) {
+            $direct = $this->composer->getDirectDependencyList();
+            foreach ($this->packages as $specific_package) {
+                if (!in_array($specific_package, $direct)) {
+                    // Provided packages need to be at least be in the list of direct dependencies.
+                    $this->io->warning(
+                        "Package {$specific_package} not found in list of composer direct dependencies."
+                    );
+                    continue;
+                }
+
+                // Attempt to get package info from existing array.
+                $key = array_search($specific_package, array_column($pending_updates['installed'], 'name'));
+                if ($key === false) {
+                    // Package info not found in existing array - we need to get it separately.
+                    $package = $this->composer->getPackageInfo($specific_package);
+                } else {
+                    $package = $pending_updates['installed'][$key];
+                }
+                $this->updateMinorComposerDependency($package, true);
+            }
             return;
         }
 
-        // If updating a specific package, then search for it in the pending list.
-        // @todo: Should we refactor this to allow non-pending items?
-        if (!empty($this->packages)) {
-            foreach ($this->packages as $specific_package) {
-                $key = array_search($specific_package, array_column($pending_updates['installed'], 'name'));
-                if ($key === false) {
-                    $this->io->warning("Package {$specific_package} not found in list of pending composer updates.");
-                    continue;
-                }
-                $package = $pending_updates['installed'][$key];
-                $this->updateMinorComposerDependency($package);
-            }
+        if (empty($pending_updates['installed'])) {
+            $this->io->section('No pending updates found.');
             return;
         }
 
@@ -570,9 +581,10 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      * Updates a single composer dependency minor update.
      *
      * @param $package
+     *
      * @throws Exception
      */
-    protected function updateMinorComposerDependency($package)
+    protected function updateMinorComposerDependency($package, $forceUpdate = false)
     {
         if (empty($package['name'])) {
             $this->io->warning("Skipping because of empty package name");
@@ -591,7 +603,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         $to = $package['latest'];
 
         // @todo: Fix how packages are pulled to filter out deprecated items by this point.
-        if ($from == $to) {
+        if ($from == $to && !$forceUpdate) {
             $this->io->warning("Skipping {$name} because old and new version are the same. ({$from})");
             return;
         }
@@ -728,7 +740,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
                     'name' => 'core',
                     'type' => 'core',
                     'version' => $core_version,
-                    'update_version' => $core_update['version']
+                    'update_version' => $core_update['version'],
                 ];
             }
 
@@ -737,7 +749,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
                 $updates['core'] = [
                     'name' => 'core',
                     'version' => $core_version,
-                    'update_version' => $core_update['version']
+                    'update_version' => $core_update['version'],
                 ];
             }
         }
@@ -781,6 +793,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      * Updates a single Wordpress plugin/theme/core item.
      *
      * @param $package
+     *
      * @throws Exception
      */
     protected function updateWordpressItem($package)

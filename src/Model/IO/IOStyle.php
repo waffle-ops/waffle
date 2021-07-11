@@ -79,7 +79,7 @@ class IOStyle extends SymfonyStyle implements StyleInterface
      * @param string $highlightStyle
      *   The style for the highlighted portion of text.
      */
-    public function highlightText($text, $replacements, $baseStyle = 'info', $highlightStyle = 'comment')
+    public function highlightText($text, $replacements = [], $baseStyle = 'info', $highlightStyle = 'comment')
     {
         $message = $this->styleText($text, $baseStyle);
         $tokens = [];
