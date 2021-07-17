@@ -27,6 +27,9 @@ class HelpTest extends TestCase
         $output = $tester->getDisplay();
 
         $this->assertStringContainsString('Opens a web browser to the Waffle documentation', $output);
-        $this->assertStringContainsString('Prevents Waffle from attempting to open a browser tab to the docs page', $output);
+        $this->assertStringContainsString(
+            'Prevents Waffle from attempting to open a browser tab to the docs page',
+            $output
+        );
     }
 }
