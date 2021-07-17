@@ -2,6 +2,7 @@
 
 namespace Waffle\Helper;
 
+use Exception;
 use Symfony\Component\Yaml\Yaml;
 
 class WaffleHelper
