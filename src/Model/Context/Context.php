@@ -7,6 +7,7 @@ use Symfony\Component\Config\Definition\Processor;
 use Waffle\Model\Cli\Runner\Composer;
 use Waffle\Model\Config\ConfigTreeService;
 use Waffle\Model\Config\Item\Alias;
+use Waffle\Model\Config\Item\Bin;
 use Waffle\Model\Config\Item\Cms;
 use Waffle\Model\Config\Item\CommandPrefix;
 use Waffle\Model\Config\Item\ComposerPath;
@@ -268,14 +269,22 @@ class Context implements ConfigurationInterface
      */
     public function getCommandPrefix()
     {
-        /**
-         * @todo The code below is part of the previous implementation of this,
-         * that needs to be re-implemented.
-         *
-         * See src/Model/Config/Item/CommandPrefix.php
-         */
+        // See src/Model/Config/Item/CommandPrefix.php
+        $prefix = $this->get(CommandPrefix::KEY);
 
-        return $this->get(CommandPrefix::KEY);
+        if (!is_null($prefix)) {
+            trigger_deprecation(
+                'waffle-ops/waffle',
+                'v0.1.0',
+                sprintf(
+                    'The "%s" configuration item is deprecated and will be removed'
+                    . ' before v1.0.0. Use the "bin" configuration item instead.',
+                    CommandPrefix::KEY
+                )
+            );
+        }
+
+        return $prefix;
     }
 
     /**
@@ -370,5 +379,17 @@ class Context implements ConfigurationInterface
     public function getEnvironmentVariables()
     {
         return $this->get(EnvironmentVariables::KEY);
+    }
+
+    /**
+     * Gets the configured binary for use with external tools.
+     *
+     * Returns $bin in the event that no override is found.
+     *
+     * @return string
+     */
+    public function getBin($bin)
+    {
+        return $this->config[Bin::KEY][$bin] ?? $bin;
     }
 }

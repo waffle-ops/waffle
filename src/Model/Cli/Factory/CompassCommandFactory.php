@@ -3,10 +3,11 @@
 namespace Waffle\Model\Cli\Factory;
 
 use Waffle\Model\Cli\BaseCliCommandFactory;
-use Waffle\Model\Cli\Command\SymfonyCliCommand;
+use Waffle\Model\Cli\Command\CompassCommand;
 use Waffle\Model\Context\Context;
+use Exception;
 
-class SymfonyCliCommandFactory extends BaseCliCommandFactory
+class CompassCommandFactory extends BaseCliCommandFactory
 {
 
     /**
@@ -25,14 +26,15 @@ class SymfonyCliCommandFactory extends BaseCliCommandFactory
     }
 
     /**
-     * Creates a new SymfonyCliCommand instance.
+     * Creates a new ComposerCommand instance.
      *
      * @param string[] $args
      *
-     * @return SymfonyCliCommand
+     * @return CompassCommand
+     * @throws Exception
      */
-    public function create(array $args)
+    public function create(array $args): CompassCommand
     {
-        return new SymfonyCliCommand($this->context, $args);
+        return new CompassCommand($this->context, $args);
     }
 }

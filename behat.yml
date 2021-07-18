@@ -1,0 +1,5 @@
+default:
+    suites:
+        cli:
+            paths: [ '%paths.base%/tests/behat/features/cli' ]
+            contexts: [ Waffle\Tests\Behat\Context\CliContext ]

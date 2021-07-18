@@ -3,9 +3,19 @@ host: custom
 # Defining CI tasks for Waffle here instead of implementing via a workflow.
 tasks:
   # Defining a task to run the phpcs script.
-  test-phpcs: ./scripts/tests/phpcs.sh
+  test-phpcs: ./vendor/bin/phpcs
+  test-psalm: ./vendor/bin/psalm
+  test-phpunit: ./vendor/bin/phpunit
+  test-behat: ./vendor/bin/behat
+  util-phpcbf: ./vendor/bin/phpcbf
 
 recipes:
+  tests:
+    - test-phpcs: {}
+    - test-psalm: {}
+    - test-phpunit: {}
+    - test-behat: {}
+
   # Defining a ci recipe.
   ci:
     - test-phpcs: {}

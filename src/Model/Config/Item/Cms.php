@@ -32,6 +32,13 @@ class Cms extends BaseConfigItem
     /**
      * @var string
      *
+     * Expected value for a Drupal 9 site.
+     */
+    public const OPTION_DRUPAL_9 = 'drupal9';
+
+    /**
+     * @var string
+     *
      * Expected value for a WordPress site.
      */
     public const OPTION_WORDPRESS = 'wordpress';
@@ -52,6 +59,7 @@ class Cms extends BaseConfigItem
     public const OPTIONS = [
         self::OPTION_DRUPAL_7,
         self::OPTION_DRUPAL_8,
+        self::OPTION_DRUPAL_9,
         self::OPTION_WORDPRESS,
         self::OPTION_OTHER,
     ];

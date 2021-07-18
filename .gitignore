@@ -2,3 +2,6 @@
 
 # Ignore dev specific files
 .idea/
+
+# Ignore phpunit files we want to keep out of git.
+.phpunit.result.cache

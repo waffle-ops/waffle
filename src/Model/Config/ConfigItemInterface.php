@@ -2,6 +2,8 @@
 
 namespace Waffle\Model\Config;
 
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+
 interface ConfigItemInterface
 {
     /**

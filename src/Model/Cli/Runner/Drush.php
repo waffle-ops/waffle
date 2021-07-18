@@ -71,6 +71,7 @@ class Drush extends BaseCliRunner
         $validCms = [
             Cms::OPTION_DRUPAL_7,
             Cms::OPTION_DRUPAL_8,
+            Cms::OPTION_DRUPAL_9,
         ];
 
         if (!in_array($this->context->getCms(), $validCms)) {
@@ -266,6 +267,7 @@ class Drush extends BaseCliRunner
                 $cc = ['cc', 'all'];
                 break;
             case '8':
+            case '9':
                 $cc = ['cr'];
                 break;
             default:
@@ -365,14 +367,56 @@ class Drush extends BaseCliRunner
                 sprintf('Exporting config with Drush for Drupal %s not supported.', $this->drupal_major_version)
             );
         }
-
+    
         $cex = $this->drushCommandFactory->create(['cex', '-y', $config_key]);
         $process = $cex->getProcess();
         $process->run();
         return $process;
     }
-
+    
     /**
+     * Display status of configuration (differences between the filesystem configuration and database configuration).
+     *
+     * @param string $format
+     *
+     * @return Process
+     * @throws Exception
+     */
+    public function configStatus(string $format = 'json'): Process
+    {
+        if ($this->drupal_major_version <= 7) {
+            throw new Exception(
+                sprintf('Config import/export with Drush for Drupal %s not supported.', $this->drupal_major_version)
+            );
+        }
+        
+        $cex = $this->drushCommandFactory->create(['cst', "--format={$format}"]);
+        $process = $cex->getProcess();
+        $process->run();
+        return $process;
+    }
+    
+    /**
+     * Checks if there are any pending config changes that have not been exported.
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public function hasPendingConfigChanges(): bool
+    {
+        $process = $this->configStatus();
+        
+        if (!$process->isSuccessful()) {
+            throw new Exception('Unable to check the status of site config.');
+        }
+        
+        $output = $process->getOutput();
+        $pending = json_decode($output, true);
+        return !empty($pending);
+    }
+    
+    /**
+     * Attempts to apply any pending patches for a module.
      *
      * @param $module
      *
@@ -382,6 +426,10 @@ class Drush extends BaseCliRunner
     public function patchApply($module)
     {
         if (!$this->getDrushPatchingEnabled()) {
+            return false;
+        }
+        
+        if (empty($module)) {
             return false;
         }
 

@@ -36,6 +36,13 @@ class UpdatePrepare extends BaseTask implements DiscoverableTaskInterface
     protected $updateBranch = 'updates/{MM}-{YYYY}';
 
     /**
+     * The name of the upstream remote.
+     *
+     * @var string
+     */
+    protected $upstream = 'origin';
+
+    /**
      * @var Git
      */
     protected $git;
@@ -91,6 +98,14 @@ class UpdatePrepare extends BaseTask implements DiscoverableTaskInterface
         );
 
         $this->addOption(
+            'upstream',
+            null,
+            InputArgument::OPTIONAL,
+            'The name of the upstream remote.',
+            'origin'
+        );
+
+        $this->addOption(
             'update-branch',
             null,
             InputArgument::OPTIONAL,
@@ -108,6 +123,7 @@ class UpdatePrepare extends BaseTask implements DiscoverableTaskInterface
     protected function process(InputInterface $input)
     {
         $this->masterBranch = $input->getOption('master-branch');
+        $this->upstream = $input->getOption('upstream');
         $this->updateBranch = $input->getOption('update-branch');
         $date = new DateTime();
         $this->updateBranch = str_replace('{MM}', $date->format('m'), $this->updateBranch);
@@ -157,8 +173,6 @@ class UpdatePrepare extends BaseTask implements DiscoverableTaskInterface
             );
         }
 
-
-
         $checkout = $this->git->checkout($this->masterBranch);
         $this->cliHelper->outputOrFail($checkout, 'Error when attempting to change branches.');
 
@@ -167,9 +181,9 @@ class UpdatePrepare extends BaseTask implements DiscoverableTaskInterface
         $fetch = $this->git->fetch();
         $this->cliHelper->outputOrFail($fetch, 'Error when attempting to fetch from upstream.');
 
-        if ($this->git->hasUpstreamPending()) {
+        if ($this->git->hasUpstreamPending($this->upstream, $this->masterBranch)) {
             throw new Exception(
-                "The main branch ({$this->updateBranch}) is behind upstream and needs to be updated."
+                "The main branch ({$this->masterBranch}) is behind upstream and needs to be updated."
             );
         }
 

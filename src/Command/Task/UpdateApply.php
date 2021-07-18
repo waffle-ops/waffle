@@ -97,7 +97,14 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      *
      * @var string[]
      */
-    protected $priorityPackages = ['drupal/core-recommended', 'drupal/core'];
+    protected $priorityPackages = ['drupal/core-recommended', 'drupal/core', 'drupal/core-dev'];
+
+    /**
+     * Whether or not the updater should attempt to continue on failure.
+     *
+     * @var bool
+     */
+    protected $skipOnFail = false;
 
     /**
      * @var Git
@@ -123,6 +130,13 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      * @var CliHelper
      */
     protected $cliHelper;
+
+    /**
+     * List of failed packages to report at end of updater.
+     *
+     * @var array
+     */
+    protected $failedPackages = [];
 
     /**
      * Constructor
@@ -240,6 +254,13 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             ''
         );
 
+        $this->addOption(
+            'skip-on-fail',
+            null,
+            null,
+            'Whether or not the updater should attempt to continue on update failure for an item.'
+        );
+
         // @todo: add an option to set the git commit message format template
 
         // Attempting to load config. Parent class will catch exception if we
@@ -248,8 +269,9 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
 
     /**
      * {@inheritdoc}
+     * @throws Exception
      */
-    protected function process(InputInterface $input)
+    protected function process(InputInterface $input): int
     {
         $this->gitPrefix = $input->getOption('git-prefix');
         $this->gitPostfix = $input->getOption('git-postfix');
@@ -258,6 +280,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         $this->includeConfig = $input->getOption('include-config');
         $this->forceYes = $input->getOption('yes');
         $this->timeout = $input->getOption('timeout');
+        $this->skipOnFail = $input->getOption('skip-on-fail');
         $packages = str_replace(' ', '', $input->getOption('packages'));
         if (!empty($packages)) {
             $this->packages = str_getcsv($packages);
@@ -289,6 +312,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
 
         switch ($this->context->getCms()) {
             case Cms::OPTION_DRUPAL_8:
+            case Cms::OPTION_DRUPAL_9:
                 $this->applyDrupal8Updates();
                 break;
             case Cms::OPTION_DRUPAL_7:
@@ -301,6 +325,10 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
                 throw new Exception('Platform not implemented yet.');
         }
 
+        if (!empty($this->failedPackages)) {
+            $this->outputFailedPackages();
+        }
+
         return Command::SUCCESS;
     }
 
@@ -311,6 +339,19 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      */
     protected function applyDrupal8Updates()
     {
+        // Fail if there are any pending config changes before starting.
+        if ($this->includeConfig) {
+            $cc = $this->drush->clearCaches();
+            $this->cliHelper->outputOrFail($cc, 'Error when clearing Drupal cache for config check.');
+
+            $hasPending = $this->drush->hasPendingConfigChanges();
+            if ($hasPending) {
+                throw new Exception(
+                    'You have pending changes in your config. Resolve these before attempting to run this command.'
+                );
+            }
+        }
+
         $this->io->title('Applying Drupal 8 Pending Updates');
 
         if (empty($this->context->getComposerPath())) {
@@ -358,7 +399,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             return;
         }
 
-        foreach ($updates as $module => $update) {
+        foreach ($updates as $update) {
             if (in_array($update['name'], $this->ignore)) {
                 $this->io->warning("Skipping ignored package: {$update['name']}");
                 continue;
@@ -371,12 +412,18 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      * Updates a single Drupal 7 module/core package.
      *
      * @param $package
+     *
      * @throws Exception
      */
     protected function updateDrupal7Item($package)
     {
         $name = $package['name'];
         $from = $package['existing_version'];
+        if (empty($package['latest_version'])) {
+            $this->io->warning("Skipping {$name} because old and new version are the same. ({$from})");
+            return;
+        }
+
         $to = $package['latest_version'];
 
         $this->io->section("Updating {$name} from {$from} to {$to} ...");
@@ -385,7 +432,15 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             "Error updating item {$name} ({$from} => {$to})"
         );
 
-        // @todo: If htaccess was updated, output a warning.
+        $process = $this->git->statusShort();
+        $process->run();
+        $output = $process->getOutput();
+
+        if (strpos($output, '.htaccess') !== false) {
+            $message = ".htaccess file was updated!";
+            $this->io->warning($message);
+            $this->addFailedPackage($name, $from, $to, $message);
+        }
 
         $this->io->section('Clearing Drupal cache');
         $this->cliHelper->outputOrFail($this->drush->clearCaches(), 'Error when clearing Drupal cache.');
@@ -413,10 +468,19 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             $pp = $this->drush->patchApply($name);
             if (!empty($pp->getExitCode())) {
                 $pp_output = $this->cliHelper->getOutput($pp);
+                // Patcher does not throw a standard error code, so we check string for the only success message. If
+                // the output is not a success, then we assume it was a failure.
                 if (strpos($pp_output, 'There are no patches') === false) {
                     $this->io->error('Unable to reapply patch.');
                     $this->cliHelper->dumpProcess($pp);
-                    exit(1);
+                    // Attempt to fail gracefully and skip.
+                    if ($this->skipOnFail) {
+                        $this->gitReset();
+                        $this->addFailedPackage($name, $from, $to, 'Unable to reapply patch');
+                        $this->io->warning("Skipping {$name} because of failed patches. ({$from} => {$to})");
+                    } else {
+                        exit(1);
+                    }
                 }
             }
             $this->io->writeln($this->cliHelper->getOutput($pp));
@@ -429,8 +493,9 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
 
         // If we are skipping git commits then don't continue to the next one.
         if ($this->skipGit) {
+            $this->outputFailedPackages();
             $this->io->writeln('Completed update. Review and commit the changes when ready.');
-            exit(1);
+            exit(0);
         }
     }
 
@@ -441,26 +506,39 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      */
     protected function updateMinorComposerDependencies()
     {
+        // Ensure installed composer dependencies are up to date with composer.lock before checking pending updates.
+        $this->cliHelper->outputOrFail($this->composer->install(), 'Error installing composer dependencies.');
+
         $pending_updates =
-            $this->cliHelper->getOutput($this->composer->getMinorVersionUpdates('', 'json'), true, false);
+            $this->cliHelper->getOutput($this->composer->getMinorVersionUpdates('json'), true, false);
         $pending_updates = json_decode($pending_updates, true);
-        if (empty($pending_updates['installed'])) {
-            $this->io->section('No pending updates found.');
+
+        if (!empty($this->packages)) {
+            $direct = $this->composer->getDirectDependencyList();
+            foreach ($this->packages as $specific_package) {
+                if (!in_array($specific_package, $direct)) {
+                    // Provided packages need to be at least be in the list of direct dependencies.
+                    $this->io->warning(
+                        "Package {$specific_package} not found in list of composer direct dependencies."
+                    );
+                    continue;
+                }
+
+                // Attempt to get package info from existing array.
+                $key = array_search($specific_package, array_column($pending_updates['installed'], 'name'));
+                if ($key === false) {
+                    // Package info not found in existing array - we need to get it separately.
+                    $package = $this->composer->getPackageInfo($specific_package);
+                } else {
+                    $package = $pending_updates['installed'][$key];
+                }
+                $this->updateMinorComposerDependency($package, true);
+            }
             return;
         }
 
-        // If updating a specific package, then search for it in the pending list.
-        // @todo: Should we refactor this to allow non-pending items?
-        if (!empty($this->packages)) {
-            foreach ($this->packages as $specific_package) {
-                $key = array_search($specific_package, array_column($pending_updates['installed'], 'name'));
-                if ($key === false) {
-                    $this->io->warning("Package {$specific_package} not found in list of pending composer updates.");
-                    continue;
-                }
-                $package = $pending_updates['installed'][$key];
-                $this->updateMinorComposerDependency($package);
-            }
+        if (empty($pending_updates['installed'])) {
+            $this->io->section('No pending updates found.');
             return;
         }
 
@@ -484,6 +562,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         foreach ($priority as $package) {
             if (in_array($package['name'], $this->ignore)) {
                 $this->io->warning("Skipping ignored package: {$package['name']}");
+                $this->addFailedPackage($package['name'], '', '', 'Skipping ignored package');
                 continue;
             }
             $this->updateMinorComposerDependency($package);
@@ -492,6 +571,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         foreach ($non_priority as $package) {
             if (in_array($package['name'], $this->ignore)) {
                 $this->io->warning("Skipping ignored package: {$package['name']}");
+                $this->addFailedPackage($package['name'], '', '', 'Skipping ignored package');
                 continue;
             }
             $this->updateMinorComposerDependency($package);
@@ -502,20 +582,34 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      * Updates a single composer dependency minor update.
      *
      * @param $package
+     *
      * @throws Exception
      */
-    protected function updateMinorComposerDependency($package)
+    protected function updateMinorComposerDependency($package, $forceUpdate = false)
     {
+        if (empty($package['name'])) {
+            $this->io->warning("Skipping because of empty package name");
+            $this->addFailedPackage('?', '?', '?', 'Empty package name');
+            return;
+        }
+
         $name = $package['name'];
+        if (empty($package['version']) || empty($package['latest'])) {
+            $this->io->warning("Skipping {$name} because of invalid versions");
+            $this->addFailedPackage($name, '?', '?', 'Invalid versions');
+            return;
+        }
+
         $from = $package['version'];
         $to = $package['latest'];
 
-        if ($from == $to) {
+        // @todo: Fix how packages are pulled to filter out deprecated items by this point.
+        if ($from == $to && !$forceUpdate) {
             $this->io->warning("Skipping {$name} because old and new version are the same. ({$from})");
             return;
         }
 
-        $this->io->section("Updating {$package['name']} from {$package['version']} to {$package['latest']} ...");
+        $this->io->section("Updating {$name} from {$from} to {$to} ...");
 
         $update_process = $this->composer->updatePackage($package['name'], $this->timeout);
         $update_output = $this->cliHelper->getOutput($update_process);
@@ -524,14 +618,30 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         if (!empty($update_process->getExitCode())) {
             $this->io->error('Composer update failed with error.');
             $this->cliHelper->dumpProcess($update_process);
-            exit(1);
+            // Attempt to fail gracefully and skip.
+            if ($this->skipOnFail) {
+                $this->gitReset();
+                $this->addFailedPackage($name, $from, $to, 'Composer failure');
+                $this->io->warning("Skipping {$name} because of composer failure. ({$from} => {$to})");
+                return;
+            } else {
+                exit(1);
+            }
         }
 
         // Check to see if there was a patch that did not reapply cleanly.
         if (strpos($update_output, 'Could not apply patch!') !== false) {
             $this->io->error('Composer patching failed with error.');
             $this->cliHelper->dumpProcess($update_process);
-            exit(1);
+            // Attempt to fail gracefully and skip.
+            if ($this->skipOnFail) {
+                $this->gitReset();
+                $this->addFailedPackage($name, $from, $to, 'Failed patch');
+                $this->io->warning("Skipping {$name} because of failed patches. ({$from} => {$to})");
+                return;
+            } else {
+                exit(1);
+            }
         }
 
         // For some reason Composer puts the "error" output before the normal output.
@@ -549,13 +659,21 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
         $updb = $this->drush->updateDatabase();
         $this->cliHelper->outputOrFail($updb, 'Error when running pending Drupal DB updates.');
 
-        if (!$this->git->hasPendingChanges()) {
-            $this->io->warning("No git changes found for: {$name} ({$from} => {$to})");
-            // No need to attempt to commit or export config if there are no changes.
-            return;
+        // Check if the $to version is accurate and update commit message if not.
+        $installed = $this->composer->getPackageInstalledVersion($name);
+        $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
+        if ($installed === $from) {
+            // Version wasn't updated, but sub-dependencies may have updated.
+            $message = "{$this->gitPrefix}Updated dependencies for {$name} " . "({$from}){$this->gitPostfix}";
+            $this->addFailedPackage($name, $from, $to, "Unable to update version. Check `composer why`.");
+            $to = $installed;
+        } elseif ($installed !== $to) {
+            // Version was updated, but not to the latest expected version.
+            $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
+            $this->addFailedPackage($name, $from, $to, "Unable to update to latest version. Check `composer why`.");
+            $to = $installed;
         }
 
-        $message = "{$this->gitPrefix}Updated {$name} " . "({$from} => {$to}){$this->gitPostfix}";
         $this->gitCommitChanges($message);
 
         if ($this->includeConfig) {
@@ -579,8 +697,9 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
 
         // If we are skipping git commits then don't continue to the next one.
         if ($this->skipGit) {
+            $this->outputFailedPackages();
             $this->io->writeln('Completed update. Review and commit the changes when ready.');
-            exit(1);
+            exit(0);
         }
     }
 
@@ -622,7 +741,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
                     'name' => 'core',
                     'type' => 'core',
                     'version' => $core_version,
-                    'update_version' => $core_update['version']
+                    'update_version' => $core_update['version'],
                 ];
             }
 
@@ -631,7 +750,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
                 $updates['core'] = [
                     'name' => 'core',
                     'version' => $core_version,
-                    'update_version' => $core_update['version']
+                    'update_version' => $core_update['version'],
                 ];
             }
         }
@@ -675,6 +794,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
      * Updates a single Wordpress plugin/theme/core item.
      *
      * @param $package
+     *
      * @throws Exception
      */
     protected function updateWordpressItem($package)
@@ -712,9 +832,48 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
 
         // If we are skipping git commits then don't continue to the next one.
         if ($this->skipGit) {
+            $this->outputFailedPackages();
             $this->io->writeln('Completed update. Review and commit the changes when ready.');
-            exit(1);
+            exit(0);
         }
+    }
+
+    /**
+     * Helper function to quickly add a failed package to the tracker.
+     *
+     * @param $name
+     * @param $from
+     * @param $to
+     * @param $message
+     */
+    protected function addFailedPackage($name, $from, $to, $message)
+    {
+        $failed = [
+            $name,
+            $from,
+            $to,
+            $message,
+        ];
+        $this->failedPackages[] = $failed;
+    }
+
+    /**
+     * Helper function to dump the list of failed packages.
+     */
+    protected function outputFailedPackages()
+    {
+        $this->io->section('Failed packages');
+        $headers = ['Package', 'From', 'To', 'Reason'];
+        $this->io->table($headers, $this->failedPackages);
+    }
+
+    /**
+     * Helper utility function that does all the processing needed for resetting the git repo.
+     */
+    protected function gitReset()
+    {
+        $this->cliHelper->outputOrFail($this->git->resetHard(), 'Error: Unable to hard reset git repo.');
+        $this->cliHelper->outputOrFail($this->git->clean(), 'Error: Unable to clean the git repo.');
     }
 
     /**
