@@ -155,20 +155,20 @@ class Application extends SymfonyApplication
             return;
         }
 
-        $this->io->title('Update Avaliable!');
+        $this->io->title('Update Available!');
 
         $notice = 'You are using an outdated version of Waffle!';
         $notice .= str_repeat(PHP_EOL, 2);
         $notice .= sprintf('You can upgrade to the latest release (%s) by ', $latest);
 
         if (PharHelper::isPhar()) {
-            $notice .= 'running the \'self:update\' command.';
+            $notice .= 'running the \'self-update\' command.';
         } else {
             $notice .= 'pulling latest copy of the code and following the install instructions ';
             $notice .= 'or by installing the .phar file.';
             $notice .= str_repeat(PHP_EOL, 2);
 
-            $notice .= 'Installing via the .phar file is recommended as you can use the \'self:update\' ';
+            $notice .= 'Installing via the .phar file is recommended as you can use the \'self-update\' ';
             $notice .= 'command for future updates.';
         }
 
@@ -176,7 +176,7 @@ class Application extends SymfonyApplication
 
         // TODO Add changelogs? It may entice some users to upgrade.
 
-        // TODO: Running self:update instead of emitting a warning may be wise
+        // TODO: Running self-update instead of emitting a warning may be wise
         // in the future (stable release time). I like the idea of the tool
         // installing an update when found. That would force adoption. Before
         // going down that road, we should define api versions or something so
