@@ -1,8 +1,5 @@
 default:
     suites:
-        # core? - things like the config system
-        # commands? - commands, tasks, recipes
-        # end_to_end? - things like a d7 site? is this out of scope? SHould we just check the commands that ran?
         cli:
             paths: [ '%paths.base%/tests/behat/features/cli' ]
             contexts: [ Waffle\Tests\Behat\Context\CliContext ]
