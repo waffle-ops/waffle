@@ -312,6 +312,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
 
         switch ($this->context->getCms()) {
             case Cms::OPTION_DRUPAL_8:
+            case Cms::OPTION_DRUPAL_9:
                 $this->applyDrupal8Updates();
                 break;
             case Cms::OPTION_DRUPAL_7:
