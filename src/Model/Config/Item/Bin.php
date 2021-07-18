@@ -46,6 +46,13 @@ class Bin extends BaseConfigItem
     /**
      * @var string
      *
+     * Config key for the compass binary.
+     */
+    public const BIN_COMPASS = 'compass';
+
+    /**
+     * @var string
+     *
      * Config key for the npm binary.
      */
     public const BIN_NPM = 'npm';

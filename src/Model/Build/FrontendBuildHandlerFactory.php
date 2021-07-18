@@ -4,6 +4,7 @@ namespace Waffle\Model\Build;
 
 use Waffle\Helper\DiHelper;
 use Waffle\Model\Build\Frontend\GulpFrontendBuildHandler;
+use Waffle\Model\Build\Frontend\CompassFrontendBuildHandler;
 use Waffle\Model\Config\Item\BuildFrontend;
 
 class FrontendBuildHandlerFactory
@@ -40,11 +41,16 @@ class FrontendBuildHandlerFactory
             case BuildFrontend::STRATEGY_GULP:
                 return $this->diHelper->getContainer()->get(GulpFrontendBuildHandler::class);
 
+            case BuildFrontend::STRATEGY_COMPASS:
+                return $this->diHelper->getContainer()->get(CompassFrontendBuildHandler::class);
+
             default:
-                throw new \Exception(sprintf(
-                    'Frontend build strategy \'%s\' not implemented.',
-                    $strategy
-                ));
+                throw new \Exception(
+                    sprintf(
+                        'Frontend build strategy \'%s\' not implemented.',
+                        $strategy
+                    )
+                );
         }
     }
 }
