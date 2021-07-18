@@ -19,7 +19,7 @@ class Application extends SymfonyApplication
 {
     public const NAME = 'Waffle';
 
-    public const VERSION = 'v0.0.4-alpha';
+    public const VERSION = 'v0.0.5-alpha';
 
     public const REPOSITORY = 'waffle-ops/waffle';
 
