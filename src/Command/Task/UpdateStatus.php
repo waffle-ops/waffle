@@ -98,6 +98,7 @@ class UpdateStatus extends BaseTask implements DiscoverableTaskInterface
     {
         switch ($this->context->getCms()) {
             case Cms::OPTION_DRUPAL_8:
+            case Cms::OPTION_DRUPAL_9:
                 $this->generateDrupal8Report();
                 break;
             case Cms::OPTION_DRUPAL_7:

@@ -71,6 +71,7 @@ class Drush extends BaseCliRunner
         $validCms = [
             Cms::OPTION_DRUPAL_7,
             Cms::OPTION_DRUPAL_8,
+            Cms::OPTION_DRUPAL_9,
         ];
 
         if (!in_array($this->context->getCms(), $validCms)) {
@@ -266,6 +267,7 @@ class Drush extends BaseCliRunner
                 $cc = ['cc', 'all'];
                 break;
             case '8':
+            case '9':
                 $cc = ['cr'];
                 break;
             default:

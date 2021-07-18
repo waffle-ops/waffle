@@ -34,6 +34,7 @@ class SiteSyncFactory
         switch ($cms) {
             case Cms::OPTION_DRUPAL_7:
             case Cms::OPTION_DRUPAL_8:
+            case Cms::OPTION_DRUPAL_9:
                 return $this->diHelper->getContainer()->get(DrushSiteSync::class);
 
             default:
