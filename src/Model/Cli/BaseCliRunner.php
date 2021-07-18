@@ -8,7 +8,7 @@ use Waffle\Model\IO\IOStyle;
 class BaseCliRunner
 {
     /**
-     * @var IO
+     * @var IOStyle
      */
     protected $io;
 

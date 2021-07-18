@@ -2,6 +2,7 @@
 
 namespace Waffle\Model\Command;
 
+use Symfony\Component\Console\Command\Command;
 use Waffle\Model\Context\Context;
 
 class TaskManager

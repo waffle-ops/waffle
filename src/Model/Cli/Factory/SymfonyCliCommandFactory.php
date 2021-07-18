@@ -25,11 +25,11 @@ class SymfonyCliCommandFactory extends BaseCliCommandFactory
     }
 
     /**
-     * Creates a new SymfonyCommand instance.
+     * Creates a new SymfonyCliCommand instance.
      *
      * @param string[] $args
      *
-     * @return SymfonyCommand
+     * @return SymfonyCliCommand
      */
     public function create(array $args)
     {

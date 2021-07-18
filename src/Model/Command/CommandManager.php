@@ -2,9 +2,10 @@
 
 namespace Waffle\Model\Command;
 
+use Symfony\Component\Console\Command\Command;
+
 class CommandManager
 {
-
     /**
      * @var array
      *

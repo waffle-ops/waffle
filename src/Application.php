@@ -3,6 +3,8 @@
 namespace Waffle;
 
 use Symfony\Component\Console\Application as SymfonyApplication;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Waffle\Exception\UpdateCheckException;
@@ -60,6 +62,9 @@ class Application extends SymfonyApplication
 
         // Adding some mechanism to watch out for deprecated code.
         $this->initalizeDeprecationCatcher();
+
+        // Load commands.
+        $this->addCommands($this->commandLoader->getCommands());
     }
 
     /**
@@ -89,10 +94,8 @@ class Application extends SymfonyApplication
      */
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
-        $this->addCommands($this->commandLoader->getCommands());
-
         try {
-            $exitCode = parent::run();
+            $exitCode = parent::run($input, $output);
         } catch (\Exception $e) {
             $this->io->error($e->getMessage());
         }
