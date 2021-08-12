@@ -749,6 +749,7 @@ class UpdateApply extends BaseTask implements DiscoverableTaskInterface
             if ($core_update['update_type'] == 'major') {
                 $updates['core'] = [
                     'name' => 'core',
+                    'type' => 'core',
                     'version' => $core_version,
                     'update_version' => $core_update['version'],
                 ];
