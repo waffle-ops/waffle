@@ -25,24 +25,20 @@ services:
     public: true
 
   Waffle\Model\Config\ConfigTreeService:
-    public: true
     arguments:
       - !tagged config_items
 
   Waffle\Model\Command\CommandManager:
-    public: true
     arguments:
       - !tagged commands
 
   Waffle\Model\Command\TaskManager:
-    public: true
     arguments:
       - '@Waffle\Model\Context\Context'
       - '@Waffle\Model\Command\TaskFactory'
       - !tagged tasks
 
   Waffle\Model\Command\RecipeManager:
-    public: true
     arguments:
       - '@Waffle\Model\Context\Context'
       - '@Waffle\Model\Command\RecipeFactory'
