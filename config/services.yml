@@ -14,12 +14,6 @@ services:
     Waffle\Command\DiscoverableRecipeInterface:
       tags: ['recipes']
 
-  di_helper:
-    public: true
-    class: 'Waffle\Helper\DiHelper'
-    calls:
-        - [ setContainer, [ '@service_container' ]]
-
   Waffle\:
     resource: '../src'
     lazy: true
