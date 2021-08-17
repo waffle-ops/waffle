@@ -2,7 +2,6 @@
 
 namespace Waffle\Model\Build;
 
-use Waffle\Helper\DiHelper;
 use Waffle\Model\Build\Frontend\GulpFrontendBuildHandler;
 use Waffle\Model\Build\Frontend\CompassFrontendBuildHandler;
 use Waffle\Model\Config\Item\BuildFrontend;
@@ -10,19 +9,27 @@ use Waffle\Model\Config\Item\BuildFrontend;
 class FrontendBuildHandlerFactory
 {
     /**
-     * @var DiHelper
+     * @var GulpFrontendBuildHandler
      */
-    private $diHelper;
+    private $gulpFrontendBuildHandler;
+
+    /**
+     * @var CompassFrontendBuildHandler
+     */
+    private $compassFrontendBuildHandler;
 
     /**
      * Constructor
      *
-     * @param DiHelper $diHelper
+     * @param GulpFrontendBuildHandler $gulpFrontendBuildHandler
+     * @param CompassFrontendBuildHandler $compassFrontendBuildHandler
      */
     public function __construct(
-        DiHelper $diHelper
+        GulpFrontendBuildHandler $gulpFrontendBuildHandler,
+        CompassFrontendBuildHandler $compassFrontendBuildHandler
     ) {
-        $this->diHelper = $diHelper;
+        $this->gulpFrontendBuildHandler = $gulpFrontendBuildHandler;
+        $this->compassFrontendBuildHandler = $compassFrontendBuildHandler;
     }
 
     /**
@@ -36,13 +43,13 @@ class FrontendBuildHandlerFactory
     {
         switch ($strategy) {
             case BuildFrontend::STRATEGY_NONE:
-                return $this->diHelper->getContainer()->get(NullBuildHandler::class);
+                return new NullBuildHandler();
 
             case BuildFrontend::STRATEGY_GULP:
-                return $this->diHelper->getContainer()->get(GulpFrontendBuildHandler::class);
+                return $this->gulpFrontendBuildHandler;
 
             case BuildFrontend::STRATEGY_COMPASS:
-                return $this->diHelper->getContainer()->get(CompassFrontendBuildHandler::class);
+                return $this->compassFrontendBuildHandler;
 
             default:
                 throw new \Exception(

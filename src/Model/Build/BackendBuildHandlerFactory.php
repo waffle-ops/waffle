@@ -2,7 +2,6 @@
 
 namespace Waffle\Model\Build;
 
-use Waffle\Helper\DiHelper;
 use Waffle\Model\Build\Backend\ComposerBackendBuildHandler;
 use Waffle\Model\Config\Item\BuildBackend;
 
@@ -10,19 +9,19 @@ class BackendBuildHandlerFactory
 {
 
     /**
-     * @var DiHelper
+     * @var ComposerBackendBuildHandler
      */
-    private $diHelper;
+    private $composerHandler;
 
     /**
      * Constructor
      *
-     * @param DiHelper $diHelper
+     * @param ComposerBackendBuildHandler $composerHandler
      */
     public function __construct(
-        DiHelper $diHelper
+        ComposerBackendBuildHandler $composerHandler
     ) {
-        $this->diHelper = $diHelper;
+        $this->composerHandler = $composerHandler;
     }
 
     /**
@@ -36,10 +35,10 @@ class BackendBuildHandlerFactory
     {
         switch ($strategy) {
             case BuildBackend::STRATEGY_NONE:
-                return $this->diHelper->getContainer()->get(NullBuildHandler::class);
+                return new NullBuildHandler();
 
             case BuildBackend::STRATEGY_COMPOSER:
-                return $this->diHelper->getContainer()->get(ComposerBackendBuildHandler::class);
+                return $this->composerHandler;
 
             default:
                 throw new \Exception(sprintf(
