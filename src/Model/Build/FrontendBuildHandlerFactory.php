@@ -2,34 +2,41 @@
 
 namespace Waffle\Model\Build;
 
+use Psr\Container\ContainerInterface;
+use Symfony\Contracts\Service\ServiceSubscriberInterface;
 use Waffle\Model\Build\Frontend\GulpFrontendBuildHandler;
 use Waffle\Model\Build\Frontend\CompassFrontendBuildHandler;
 use Waffle\Model\Config\Item\BuildFrontend;
 
-class FrontendBuildHandlerFactory
+class FrontendBuildHandlerFactory implements ServiceSubscriberInterface
 {
     /**
-     * @var GulpFrontendBuildHandler
-     */
-    private $gulpFrontendBuildHandler;
-
-    /**
-     * @var CompassFrontendBuildHandler
-     */
-    private $compassFrontendBuildHandler;
-
-    /**
-     * Constructor
+     * Service locator.
      *
-     * @param GulpFrontendBuildHandler $gulpFrontendBuildHandler
-     * @param CompassFrontendBuildHandler $compassFrontendBuildHandler
+     * @var ContainerInterface
      */
-    public function __construct(
-        GulpFrontendBuildHandler $gulpFrontendBuildHandler,
-        CompassFrontendBuildHandler $compassFrontendBuildHandler
-    ) {
-        $this->gulpFrontendBuildHandler = $gulpFrontendBuildHandler;
-        $this->compassFrontendBuildHandler = $compassFrontendBuildHandler;
+    private $locator;
+
+    /**
+     * Constructor for BackendBuildHandlerFactory
+     *
+     * @param ContainerInterface $locator
+     */
+    public function __construct(ContainerInterface $locator)
+    {
+        $this->locator = $locator;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public static function getSubscribedServices(): array
+    {
+        return [
+            BuildFrontend::STRATEGY_NONE => NullBuildHandler::class,
+            BuildFrontend::STRATEGY_GULP => GulpFrontendBuildHandler::class,
+            BuildFrontend::STRATEGY_COMPASS => CompassFrontendBuildHandler::class,
+        ];
     }
 
     /**
@@ -41,23 +48,15 @@ class FrontendBuildHandlerFactory
      */
     public function getHandler(string $strategy)
     {
-        switch ($strategy) {
-            case BuildFrontend::STRATEGY_NONE:
-                return new NullBuildHandler();
-
-            case BuildFrontend::STRATEGY_GULP:
-                return $this->gulpFrontendBuildHandler;
-
-            case BuildFrontend::STRATEGY_COMPASS:
-                return $this->compassFrontendBuildHandler;
-
-            default:
-                throw new \Exception(
-                    sprintf(
-                        'Frontend build strategy \'%s\' not implemented.',
-                        $strategy
-                    )
-                );
+        if ($this->locator->has($strategy)) {
+            return $this->locator->get($strategy);
         }
+
+        throw new \Exception(
+            sprintf(
+                'Frontend build strategy \'%s\' not implemented.',
+                $strategy
+            )
+        );
     }
 }

@@ -50,3 +50,7 @@ services:
   Waffle\Model\Build\BackendBuildHandlerFactory:
     tags:
       - { name: 'container.service_subscriber'}
+
+  Waffle\Model\Build\FrontendBuildHandlerFactory:
+    tags:
+      - { name: 'container.service_subscriber'}
