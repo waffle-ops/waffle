@@ -2,27 +2,14 @@
 
 namespace Waffle\Model\Build;
 
+use Symfony\Contracts\Service\ServiceSubscriberInterface;
+use Symfony\Contracts\Service\ServiceSubscriberTrait;
 use Waffle\Model\Build\Backend\ComposerBackendBuildHandler;
 use Waffle\Model\Config\Item\BuildBackend;
 
-class BackendBuildHandlerFactory
+class BackendBuildHandlerFactory implements ServiceSubscriberInterface
 {
-
-    /**
-     * @var ComposerBackendBuildHandler
-     */
-    private $composerHandler;
-
-    /**
-     * Constructor
-     *
-     * @param ComposerBackendBuildHandler $composerHandler
-     */
-    public function __construct(
-        ComposerBackendBuildHandler $composerHandler
-    ) {
-        $this->composerHandler = $composerHandler;
-    }
+    use ServiceSubscriberTrait;
 
     /**
      * Gets a instance of a backend builder.
@@ -35,10 +22,10 @@ class BackendBuildHandlerFactory
     {
         switch ($strategy) {
             case BuildBackend::STRATEGY_NONE:
-                return new NullBuildHandler();
+                return $this->none();
 
             case BuildBackend::STRATEGY_COMPOSER:
-                return $this->composerHandler;
+                return $this->composer();
 
             default:
                 throw new \Exception(sprintf(
@@ -46,5 +33,31 @@ class BackendBuildHandlerFactory
                     $strategy
                 ));
         }
+    }
+
+    /**
+     * Gets the 'none' backend build handler.
+     *
+     * The method name is intentional.
+     * See https://symfony.com/doc/current/service_container/service_subscribers_locators.html#service-subscriber-trait
+     *
+     * @return NullBuildHandler
+     */
+    private function none(): NullBuildHandler
+    {
+        return $this->container->get(__METHOD__);
+    }
+
+    /**
+     * Gets the 'composer' backend build handler.
+     *
+     * The method name is intentional.
+     * See https://symfony.com/doc/current/service_container/service_subscribers_locators.html#service-subscriber-trait
+     *
+     * @return ComposerBackendBuildHandler
+     */
+    private function composer(): ComposerBackendBuildHandler
+    {
+        return $this->container->get(__METHOD__);
     }
 }

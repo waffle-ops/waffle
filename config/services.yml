@@ -16,7 +16,6 @@ services:
 
   Waffle\:
     resource: '../src'
-    lazy: true
 
   Waffle\Application:
     public: true
@@ -44,3 +43,10 @@ services:
       - '@Waffle\Model\Command\RecipeFactory'
       - !tagged recipes
 
+  # The following services get tagged as service subscribers because they either
+  # need to load an unknown service or they need to load a heavy service. Each
+  # of these subscribe to the specific services that they need acces to in the
+  # PHP code.
+  Waffle\Model\Build\BackendBuildHandlerFactory:
+    tags:
+      - { name: 'container.service_subscriber'}
