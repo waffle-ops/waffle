@@ -3,11 +3,10 @@
 namespace Waffle\Tests;
 
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
-use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Waffle\Application;
+use Waffle\DependencyInjection\ContainerCompiler;
 
 class TestCase extends PHPUnitTestCase
 {
@@ -38,10 +37,9 @@ class TestCase extends PHPUnitTestCase
     protected static function getContainer(): ContainerBuilder
     {
         if (empty(static::$container)) {
-            static::$container = new ContainerBuilder();
-            $loader = new YamlFileLoader(static::$container, new FileLocator());
-            $loader->load(__DIR__ . '/../../config/services.yml');
-            static::$container->compile();
+            // Load and compile the DI container.
+            $compiler = new ContainerCompiler();
+            static::$container = $compiler->getContainer();
         }
 
         return static::$container;

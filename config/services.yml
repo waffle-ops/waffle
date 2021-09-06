@@ -16,6 +16,8 @@ services:
 
   Waffle\:
     resource: '../src'
+    exclude:
+      - '../src/DependencyInjection'
 
   Waffle\Application:
     public: true
