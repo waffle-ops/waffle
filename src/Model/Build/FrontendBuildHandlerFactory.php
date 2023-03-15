@@ -2,27 +2,41 @@
 
 namespace Waffle\Model\Build;
 
-use Waffle\Helper\DiHelper;
+use Psr\Container\ContainerInterface;
+use Symfony\Contracts\Service\ServiceSubscriberInterface;
 use Waffle\Model\Build\Frontend\GulpFrontendBuildHandler;
 use Waffle\Model\Build\Frontend\CompassFrontendBuildHandler;
 use Waffle\Model\Config\Item\BuildFrontend;
 
-class FrontendBuildHandlerFactory
+class FrontendBuildHandlerFactory implements ServiceSubscriberInterface
 {
     /**
-     * @var DiHelper
+     * Service locator.
+     *
+     * @var ContainerInterface
      */
-    private $diHelper;
+    private $locator;
 
     /**
-     * Constructor
+     * Constructor for BackendBuildHandlerFactory
      *
-     * @param DiHelper $diHelper
+     * @param ContainerInterface $locator
      */
-    public function __construct(
-        DiHelper $diHelper
-    ) {
-        $this->diHelper = $diHelper;
+    public function __construct(ContainerInterface $locator)
+    {
+        $this->locator = $locator;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public static function getSubscribedServices(): array
+    {
+        return [
+            BuildFrontend::STRATEGY_NONE => NullBuildHandler::class,
+            BuildFrontend::STRATEGY_GULP => GulpFrontendBuildHandler::class,
+            BuildFrontend::STRATEGY_COMPASS => CompassFrontendBuildHandler::class,
+        ];
     }
 
     /**
@@ -34,23 +48,15 @@ class FrontendBuildHandlerFactory
      */
     public function getHandler(string $strategy)
     {
-        switch ($strategy) {
-            case BuildFrontend::STRATEGY_NONE:
-                return $this->diHelper->getContainer()->get(NullBuildHandler::class);
-
-            case BuildFrontend::STRATEGY_GULP:
-                return $this->diHelper->getContainer()->get(GulpFrontendBuildHandler::class);
-
-            case BuildFrontend::STRATEGY_COMPASS:
-                return $this->diHelper->getContainer()->get(CompassFrontendBuildHandler::class);
-
-            default:
-                throw new \Exception(
-                    sprintf(
-                        'Frontend build strategy \'%s\' not implemented.',
-                        $strategy
-                    )
-                );
+        if ($this->locator->has($strategy)) {
+            return $this->locator->get($strategy);
         }
+
+        throw new \Exception(
+            sprintf(
+                'Frontend build strategy \'%s\' not implemented.',
+                $strategy
+            )
+        );
     }
 }

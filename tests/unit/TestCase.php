@@ -6,9 +6,17 @@ use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Waffle\Application;
+use Waffle\DependencyInjection\ContainerCompiler;
 
 class TestCase extends PHPUnitTestCase
 {
+
+    /**
+     * The service container.
+     *
+     * @var ContainerBuilder
+     */
+    private static $container;
 
     /**
      * Gets the service container.
@@ -28,9 +36,27 @@ class TestCase extends PHPUnitTestCase
      */
     protected static function getContainer(): ContainerBuilder
     {
-        // The container is created and compiled in tests/bootstrap.php
-        global $container;
-        return $container;
+        if (empty(static::$container)) {
+            // Load and compile the DI container.
+            $compiler = new ContainerCompiler();
+            static::$container = $compiler->getContainer();
+        }
+
+        return static::$container;
+    }
+
+    /**
+     * Gets an instance of the provided class from the container.
+     *
+     * @param string $clazz
+     *   The class to load from the container.
+     *
+     * @return mixed
+     */
+    protected static function getSystemUnderTest($clazz)
+    {
+        $container = static::getContainer();
+        return $container->get($clazz);
     }
 
     /**

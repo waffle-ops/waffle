@@ -2,27 +2,39 @@
 
 namespace Waffle\Model\Build;
 
-use Waffle\Helper\DiHelper;
+use Psr\Container\ContainerInterface;
+use Symfony\Contracts\Service\ServiceSubscriberInterface;
 use Waffle\Model\Build\Backend\ComposerBackendBuildHandler;
 use Waffle\Model\Config\Item\BuildBackend;
 
-class BackendBuildHandlerFactory
+class BackendBuildHandlerFactory implements ServiceSubscriberInterface
 {
-
     /**
-     * @var DiHelper
-     */
-    private $diHelper;
-
-    /**
-     * Constructor
+     * Service locator.
      *
-     * @param DiHelper $diHelper
+     * @var ContainerInterface
      */
-    public function __construct(
-        DiHelper $diHelper
-    ) {
-        $this->diHelper = $diHelper;
+    private $locator;
+
+    /**
+     * Constructor for BackendBuildHandlerFactory
+     *
+     * @param ContainerInterface $locator
+     */
+    public function __construct(ContainerInterface $locator)
+    {
+        $this->locator = $locator;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public static function getSubscribedServices(): array
+    {
+        return [
+            BuildBackend::STRATEGY_NONE => NullBuildHandler::class,
+            BuildBackend::STRATEGY_COMPOSER => ComposerBackendBuildHandler::class,
+        ];
     }
 
     /**
@@ -34,18 +46,13 @@ class BackendBuildHandlerFactory
      */
     public function getHandler(string $strategy)
     {
-        switch ($strategy) {
-            case BuildBackend::STRATEGY_NONE:
-                return $this->diHelper->getContainer()->get(NullBuildHandler::class);
-
-            case BuildBackend::STRATEGY_COMPOSER:
-                return $this->diHelper->getContainer()->get(ComposerBackendBuildHandler::class);
-
-            default:
-                throw new \Exception(sprintf(
-                    'Backend build strategy \'%s\' not implemented.',
-                    $strategy
-                ));
+        if ($this->locator->has($strategy)) {
+            return $this->locator->get($strategy);
         }
+
+        throw new \Exception(sprintf(
+            'Backend build strategy \'%s\' not implemented.',
+            $strategy
+        ));
     }
 }

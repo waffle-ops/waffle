@@ -14,15 +14,10 @@ services:
     Waffle\Command\DiscoverableRecipeInterface:
       tags: ['recipes']
 
-  di_helper:
-    public: true
-    class: 'Waffle\Helper\DiHelper'
-    calls:
-        - [ setContainer, [ '@service_container' ]]
-
   Waffle\:
-    lazy: true
     resource: '../src'
+    exclude:
+      - '../src/DependencyInjection'
 
   Waffle\Application:
     public: true
@@ -31,60 +26,33 @@ services:
     public: true
 
   Waffle\Model\Config\ConfigTreeService:
-    public: true
     arguments:
       - !tagged config_items
 
   Waffle\Model\Command\CommandManager:
-    public: true
     arguments:
       - !tagged commands
 
   Waffle\Model\Command\TaskManager:
-    public: true
     arguments:
       - '@Waffle\Model\Context\Context'
       - '@Waffle\Model\Command\TaskFactory'
       - !tagged tasks
 
   Waffle\Model\Command\RecipeManager:
-    public: true
     arguments:
       - '@Waffle\Model\Context\Context'
       - '@Waffle\Model\Command\RecipeFactory'
       - !tagged recipes
 
-  # This gets access to the DiHelper so we can avoid loading services we don't
-  # need.
-  Waffle\Model\Site\Sync\SiteSyncFactory:
-    public: true
-    arguments:
-      - '@di_helper'
-
-  Waffle\Model\Site\Sync\DrushSiteSync:
-    public: true
-
-  # Shared null build handler.
-  Waffle\Model\Build\NullBuildHandler:
-    public: true
-
-  # Backend build handlers factory (and related handlers).
+  # The following services get tagged as service subscribers because they either
+  # need to load an unknown service or they need to load a heavy service. Each
+  # of these subscribe to the specific services that they need acces to in the
+  # PHP code.
   Waffle\Model\Build\BackendBuildHandlerFactory:
-    public: true
-    arguments:
-      - '@di_helper'
+    tags:
+      - { name: 'container.service_subscriber'}
 
-  Waffle\Model\Build\Backend\ComposerBackendBuildHandler:
-    public: true
-
-  # Front build handlers factory (and related handlers).
   Waffle\Model\Build\FrontendBuildHandlerFactory:
-    public: true
-    arguments:
-      - '@di_helper'
-
-  Waffle\Model\Build\Frontend\GulpFrontendBuildHandler:
-    public: true
-
-  Waffle\Model\Build\Frontend\CompassFrontendBuildHandler:
-    public: true
+    tags:
+      - { name: 'container.service_subscriber'}
